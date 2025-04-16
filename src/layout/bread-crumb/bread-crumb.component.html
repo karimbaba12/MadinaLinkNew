@@ -1,0 +1,27 @@
+<div class="page-header"
+    *ngIf="navigationList.length && navigationList[navigationList.length - 1].breadcrumbs !== false">
+    <div class="page-block">
+        <div class="row align-item-center">
+            <div class="col-md-12">
+                <div class="flex align-item-center">
+                    <ul class="breadcrumb align-item-center">
+                        <li class="breadcrumb-item">
+                            <a [routerLink]="['/dashboard/default']">Home</a>
+                        </li>
+                        <ng-container *ngFor="let breadcrumb of navigationList">
+                            <li class="breadcrumb-item" *ngIf="breadcrumb.url !== false">
+                                <a *ngIf="breadcrumb.url !== true"
+                                    [routerLink]="breadcrumb.url">{{ breadcrumb.title }}</a>
+                            </li>
+                            <li class="breadcrumb-item" *ngIf="breadcrumb.url === false">
+                                <a href="javascript:void(0)">{{ breadcrumb.title }}</a>
+                            </li>
+                        </ng-container>
+                    </ul>
+                </div>
+            </div>
+
+           
+        </div>
+    </div>
+</div>
