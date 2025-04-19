@@ -1,0 +1,12 @@
+<app-reusable-crud [config]="config" [isLoading]="loading" [rowActionsTemplate]="rowActions" (edit)="onEdit($event)"
+    (delete)="onDelete($event)" (refresh)="onRefresh()" (pageChange)="onPageChange($event)" (add)="onAdd()"
+    (sortChange)="onSortChange($event)">
+    <ng-template #rowActions let-item>
+        <button mat-icon-button class="edit" (click)="onEdit(item)">
+            <mat-icon color="primary">edit</mat-icon>
+        </button>
+        <button mat-icon-button class="delete" (click)="onDelete(item)">
+            <mat-icon color="warn">delete</mat-icon>
+        </button>
+    </ng-template>
+</app-reusable-crud>

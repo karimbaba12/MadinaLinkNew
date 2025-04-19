@@ -89,7 +89,35 @@ export class AuthService {
       return null;
     }
   }
+  getUserRoleId(): number | null {
+    const decodedToken = this.getDecodedToken();
+    if (!decodedToken || !decodedToken['Role']) return null;
+    return Number(decodedToken['Role']);
+  }
 
+  async getUserRoleName(): Promise<string | null> {
+    const roleId = this.getUserRoleId();
+    if (!roleId) return null;
+
+    try {
+      const roleResponse = await firstValueFrom(
+        this.RoleClient.getById(roleId)
+      );
+      return roleResponse?.data?.roleName || null;
+    } catch (err) {
+      console.error('Error fetching role:', err);
+      return null;
+    }
+  }
+  isAdmin(): boolean {
+    const roleId = this.getUserRoleId();
+    return roleId === 2;
+  }
+
+  isSuperAdmin(): boolean {
+    const roleId = this.getUserRoleId();
+    return roleId === 3;
+  }
   isLoggedIn(): boolean {
     return !!this.getDecodedToken();
   }

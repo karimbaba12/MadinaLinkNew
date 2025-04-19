@@ -1,0 +1,161 @@
+<div class="user-form-container" [attr.aria-hidden]="false">
+    <div class="form-header">
+        <h2 class="form-title">
+            <i class="bi bi-person-gear"></i> Edit User
+        </h2>
+    </div>
+
+    <div class="form-scroll-container">
+        <form [formGroup]="userForm" class="user-form">
+            <!-- User Information Section -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="bi bi-person-badge"></i> User Information
+                </h3>
+
+                <div class="form-group">
+                    <label class="form-label required">Full Name</label>
+                    <input type="text" class="form-control" formControlName="name" required>
+                    <div *ngIf="userForm.get('name')?.invalid && (userForm.get('name')?.dirty || userForm.get('name')?.touched)"
+                        class="error-message">
+                        <i class="bi bi-exclamation-circle"></i> Full name is required
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">Username</label>
+                    <input type="text" class="form-control" formControlName="username" required>
+                    <div *ngIf="userForm.get('username')?.invalid && (userForm.get('username')?.dirty || userForm.get('username')?.touched)"
+                        class="error-message">
+                        <i class="bi bi-exclamation-circle"></i> Username is required
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">Email</label>
+                    <input type="email" class="form-control" formControlName="email" required>
+                    <div *ngIf="userForm.get('email')?.invalid && (userForm.get('email')?.dirty || userForm.get('email')?.touched)"
+                        class="error-message">
+                        <i class="bi bi-exclamation-circle"></i> Valid email is required
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">Phone Number</label>
+                    <input type="tel" class="form-control" formControlName="phoneNumber" required>
+                    <div *ngIf="userForm.get('phoneNumber')?.invalid && (userForm.get('phoneNumber')?.dirty || userForm.get('phoneNumber')?.touched)"
+                        class="error-message">
+                        <i class="bi bi-exclamation-circle"></i> Valid phone number (10-15 digits) is required
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <div class="password-input">
+                        <input [type]="hidePassword ? 'password' : 'text'" class="form-control"
+                            formControlName="passwordHash" autocomplete="new-password">
+                        <button type="button" class="toggle-password" (click)="hidePassword = !hidePassword">
+                            <i class="bi" [class.bi-eye]="hidePassword" [class.bi-eye-slash]="!hidePassword"></i>
+                        </button>
+                    </div>
+                    <div *ngIf="userForm.get('passwordHash')?.invalid && (userForm.get('passwordHash')?.dirty || userForm.get('passwordHash')?.touched)"
+                        class="error-message">
+                        <i class="bi bi-exclamation-circle"></i> Password must be at least 8 characters with uppercase,
+                        lowercase, number, and special character
+                    </div>
+                    <div class="text-muted small mt-1">
+                        Leave blank to keep current password
+                    </div>
+                </div>
+
+                <div class="form-group" *ngIf="availableRoles.length > 0 && canEditRole()">
+                    <label class="form-label required">Role</label>
+                    <select class="form-control" formControlName="roleId" required>
+                        <option *ngFor="let role of availableRoles" [value]="role.roleId">
+                            {{ getRoleName(role.roleId) }}
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group" *ngIf="canEditStatus()">
+                    <label class="form-label">Status</label>
+                    <select class="form-control" formControlName="isActive">
+                        <option [ngValue]="true">Active</option>
+                        <option [ngValue]="false">Inactive</option>
+                    </select>
+                </div>
+
+                <div *ngIf="isEditingOwnProfile" class="alert alert-info">
+                    You are editing your own profile. Some fields cannot be modified.
+                </div>
+            </div>
+
+            <!-- Address Information Section -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="bi bi-house-door"></i> Address Information
+                </h3>
+
+                <div class="row">
+                    <div class="col-md-6 form-group">
+                        <label class="form-label">Country</label>
+                        <input type="text" class="form-control" formControlName="country">
+                    </div>
+
+                    <div class="col-md-6 form-group">
+                        <label class="form-label">City</label>
+                        <input type="text" class="form-control" formControlName="city">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Street</label>
+                    <input type="text" class="form-control" formControlName="street">
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 form-group">
+                        <label class="form-label">Region</label>
+                        <input type="text" class="form-control" formControlName="region">
+                    </div>
+
+                    <div class="col-md-6 form-group">
+                        <label class="form-label">Governorate</label>
+                        <input type="text" class="form-control" formControlName="governorates">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 form-group">
+                        <label class="form-label">Building</label>
+                        <input type="text" class="form-control" formControlName="building">
+                    </div>
+
+                    <div class="col-md-4 form-group">
+                        <label class="form-label">Floor</label>
+                        <input type="number" class="form-control" formControlName="floor">
+                    </div>
+
+                    <div class="col-md-4 form-group">
+                        <label class="form-label">Block</label>
+                        <input type="text" class="form-control" formControlName="block">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Direction Notes</label>
+                    <textarea class="form-control" formControlName="direction" rows="3"></textarea>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="form-footer">
+        <button type="button" class="btn btn-cancel" (click)="dialogRef.close()">
+            <i class="bi bi-x-lg"></i> Cancel
+        </button>
+        <button type="button" class="btn btn-submit" (click)="submit()" [disabled]="!userForm.valid">
+            <i class="bi bi-save"></i> Update User
+        </button>
+    </div>
+</div>

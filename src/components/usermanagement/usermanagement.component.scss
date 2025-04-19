@@ -1,0 +1,65 @@
+.delete {
+  border-color: transparent;
+  color: red;
+  background: transparent;
+}
+
+.edit {
+  border-color: transparent;
+  color: blue;
+  background-color: transparent;
+}
+
+/* Additional styling for the crud container if needed */
+.crud-container {
+  padding: 20px;
+  width: 100%;
+}
+
+.mat-table {
+  width: 100%;
+}
+
+.mat-toolbar {
+  margin-bottom: 20px;
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  padding: 50px;
+}
+.edit, .delete {
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  
+  &:hover {
+    transform: scale(1.1);
+    opacity: 0.9;
+  }
+  
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.delete {
+  margin-left: 8px;
+}
+
+.user-management-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+}
+
+.search-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+
+  .search-field {
+    width: 300px;
+    margin-left: auto;
+  }
+}

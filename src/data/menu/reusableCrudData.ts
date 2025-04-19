@@ -5,6 +5,7 @@ export interface ColumnConfig<T = any> {
   displayFn?: (value: any, row?: T) => string | number | boolean;
   width?: string;
   id?: string;
+  formatter?: (value: any) => string;
 }
 
 export interface CrudTableConfig<T = any> {
@@ -13,4 +14,5 @@ export interface CrudTableConfig<T = any> {
   dataSource: T[];
   pageSizeOptions?: number[];
   defaultPageSize?: number;
+  
 }

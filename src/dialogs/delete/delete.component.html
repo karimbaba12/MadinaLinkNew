@@ -1,0 +1,17 @@
+<div class="delete-dialog">
+    <div class="dialog-header">
+        <h2 class="dialog-title">
+            <i class="bi bi-exclamation-triangle"></i> Confirm Deletion
+        </h2>
+    </div>
+
+    <div class="dialog-content">
+        <p>Are you sure you want to delete this user?</p>
+        <p class="warning-text">This action cannot be undone.</p>
+    </div>
+
+    <div class="dialog-actions">
+        <button class="btn btn-cancel" (click)="onCancel()">Cancel</button>
+        <button class="btn btn-delete" (click)="onConfirm()">Delete</button>
+    </div>
+</div>

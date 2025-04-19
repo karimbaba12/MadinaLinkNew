@@ -21,6 +21,5 @@ export function authInterceptor(
     });
     return next(cloned);
   }
-
   return next(req);
 }

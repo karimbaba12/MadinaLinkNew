@@ -66,6 +66,7 @@ export class ReusableCrudComponent<T> implements OnInit {
   onRowClick(_t71: any) {
     throw new Error('Method not implemented.');
   }
+  
   @Input() config!: CrudTableConfig<T>;
   @Input() isLoading = false;
 
@@ -156,6 +157,13 @@ export class ReusableCrudComponent<T> implements OnInit {
     }
 
     return value;
+  }
+ 
+
+  onAddClick(): void {
+    console.log('Add triggered in reusable component');
+    this.add.emit(); // Let parent handle logic (if needed)
+    // OR: Open a generic form here
   }
   onSortChange(sort: Sort): void {
     console.log('Sort changed:', sort);

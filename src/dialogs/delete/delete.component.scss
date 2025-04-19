@@ -1,0 +1,75 @@
+// delete-confirm.component.scss
+.delete-dialog {
+  padding: 24px;
+  max-width: 500px;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+
+  .dialog-header {
+    margin-bottom: 20px;
+
+    .dialog-title {
+      margin: 0;
+      font-size: 1.5rem;
+      color: #2c3e50;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+
+      i {
+        color: #e74c3c;
+        font-size: 1.8rem;
+      }
+    }
+  }
+
+  .dialog-content {
+    margin-bottom: 24px;
+
+    p {
+      margin: 0 0 10px;
+      font-size: 1.1rem;
+    }
+
+    .warning-text {
+      color: #e74c3c;
+      font-weight: 500;
+    }
+  }
+
+  .dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+
+    .btn {
+      padding: 8px 20px;
+      border-radius: 4px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &-cancel {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        color: #495057;
+
+        &:hover {
+          background-color: #e9ecef;
+        }
+      }
+
+      &-delete {
+        background-color: #e74c3c;
+        color: white;
+        border: none;
+
+        &:hover {
+          background-color: #c0392b;
+        }
+      }
+    }
+  }
+}

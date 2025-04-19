@@ -1,0 +1,237 @@
+/* User Form Container */
+.user-form-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Form Header */
+.form-header {
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  
+  .form-title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #2c3e50;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    
+    i {
+      font-size: 1.75rem;
+      color: #3498db;
+    }
+  }
+}
+
+/* Scrollable Content Area */
+.form-scroll-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+  max-height: 70vh;
+  
+  /* Custom scrollbar */
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+    
+    &:hover {
+      background: #a8a8a8;
+    }
+  }
+}
+
+/* Form Sections */
+.user-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.form-section {
+  background-color: #f8fafc;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  
+  .section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #3498db;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    
+    i {
+      font-size: 1.25rem;
+    }
+  }
+}
+
+/* Form Groups */
+.form-group {
+  margin-bottom: 1.25rem;
+  
+  .form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #4a5568;
+    
+    &.required::after {
+      content: ' *';
+      color: #e53e3e;
+    }
+  }
+  
+  .form-control {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    background-color: #fff;
+    
+    &:focus {
+      border-color: #3498db;
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+      outline: none;
+    }
+    
+    &.ng-invalid.ng-touched {
+      border-color: #e53e3e;
+      
+      &:focus {
+        box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
+      }
+    }
+  }
+  
+  textarea.form-control {
+    min-height: 100px;
+    resize: vertical;
+  }
+  
+  .password-input {
+    position: relative;
+    
+    .toggle-password {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #718096;
+      cursor: pointer;
+      padding: 0.5rem;
+      
+      &:hover {
+        color: #2d3748;
+      }
+    }
+  }
+  
+  .error-message {
+    color: #e53e3e;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+}
+
+/* Form Footer */
+.form-footer {
+  padding: 1.25rem 1.5rem;
+  background-color: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  
+  .btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+    
+    &-cancel {
+      background-color: #fff;
+      color: #4a5568;
+      border: 1px solid #e2e8f0;
+      
+      &:hover {
+        background-color: #f1f5f9;
+      }
+    }
+    
+    &-submit {
+      background-color: #3498db;
+      color: white;
+      
+      &:hover {
+        background-color: #2980b9;
+      }
+      
+      &:disabled {
+        background-color: #a0aec0;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .user-form-container {
+    max-width: 100%;
+    border-radius: 0;
+  }
+  
+  .form-header, .form-footer {
+    padding: 1rem;
+  }
+  
+  .form-scroll-container {
+    padding: 1rem;
+    max-height: 60vh;
+  }
+  
+  .form-section {
+    padding: 1rem;
+  }
+  
+  .form-footer .btn {
+    padding: 0.5rem 1rem;
+  }
+}

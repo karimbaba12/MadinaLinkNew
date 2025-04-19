@@ -18,7 +18,10 @@
   border-radius: 0;
 }
 .sidebar-container {
-  height: 100vh;
+  height: 90vh;
+  display: block !important;
+  
+  
 }
 
 .sidebar {
@@ -26,6 +29,7 @@
   background-color: #f4f6f8;
   padding-top: 10px;
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  
 }
 
 mat-list-item,
