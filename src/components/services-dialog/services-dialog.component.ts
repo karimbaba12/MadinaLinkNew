@@ -33,12 +33,15 @@ export class ServicesDialogComponent implements OnInit {
   services: TenantServiceDto[] = [];
   loading = false;
   selectedServiceId: number | null = null;
-  tenantId: number | null = null;
+  tenantId: number; // Changed from TenantId to tenantId
+
   constructor(
     public dialogRef: MatDialogRef<ServicesDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: { tenantId: number },
     private tenantService: TenantServiceClient
-  ) {}
+  ) {
+    this.tenantId = data.tenantId; // Initialize the property
+  }
 
   ngOnInit(): void {
     this.loadServices();
@@ -49,6 +52,7 @@ export class ServicesDialogComponent implements OnInit {
     this.tenantService.getServiceByTenantID().subscribe({
       next: (services: any) => {
         console.log('the services are ', services);
+        this.services = services; // Make sure to assign the response to your services array
         this.loading = false;
       },
       error: (err) => {

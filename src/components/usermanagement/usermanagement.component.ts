@@ -20,6 +20,7 @@ import { UserDto } from '../../../Services/api/api-client.service';
 import { DeleteComponent } from '../../dialogs/delete/delete.component';
 import { of } from 'rxjs';
 import { ServicesDialogComponent } from '../services-dialog/services-dialog.component';
+import { FormsModule } from '@angular/forms';
 
 interface TableUser {
   username: string;
@@ -32,7 +33,7 @@ interface TableUser {
 
 @Component({
   selector: 'app-usermanagement',
-  imports: [ReusableCrudComponent, MatIcon, MatInputModule],
+  imports: [ReusableCrudComponent, MatIcon, MatInputModule, FormsModule],
   templateUrl: './usermanagement.component.html',
   styleUrls: ['./usermanagement.component.scss'],
 })
@@ -42,7 +43,7 @@ export class UsermanagementComponent implements OnInit {
   sortDirection = 'asc';
   pageSize = 10;
   pageIndex = 0;
-
+  searchTerm: string = '';
   // State management
   loading = false;
   isDeleting = false;
@@ -85,30 +86,37 @@ export class UsermanagementComponent implements OnInit {
     return of(null);
   }
 
-  onSearch(term: string) {
+  onSearch(term: string): void {
+    this.searchTerm = term;
+    this.pageIndex = 0;
     this.loadUsers(term);
   }
+  private loadUsersDebounceTimer: any;
   async loadUsers(searchTerm?: string): Promise<void> {
-    this.loading = true;
-    try {
-      const response =
-        searchTerm && searchTerm.length >= 3
-          ? await this.usersClient.search(searchTerm).toPromise()
-          : await this.usersClient.getAll().toPromise();
+    clearTimeout(this.loadUsersDebounceTimer);
 
-      if (!response?.data) {
-        console.log(response);
-        this.handleEmptyData();
-        return;
+    this.loadUsersDebounceTimer = setTimeout(async () => {
+      this.loading = true;
+      try {
+        const response =
+          searchTerm && searchTerm.length >= 1
+            ? await this.usersClient.search(searchTerm).toPromise()
+            : await this.usersClient.getAll().toPromise();
+
+        if (!response?.data) {
+          this.handleEmptyData();
+          return;
+        }
+        console.log('the users are', response.data);
+        
+        this.tableData = response.data.map((user) => this.mapToTableUser(user));
+        this.config.dataSource = [...this.tableData];
+      } catch (err) {
+        this.handleLoadError(err);
+      } finally {
+        this.loading = false;
       }
-
-      this.tableData = response.data.map((user) => this.mapToTableUser(user));
-      this.config.dataSource = [...this.tableData];
-    } catch (err) {
-      this.handleLoadError(err);
-    } finally {
-      this.loading = false;
-    }
+    }, 300);
   }
 
   private mapToTableUser(user: UserDto): TableUser {

@@ -1,10 +1,12 @@
 import { Component, Inject, OnInit } from '@angular/core';
+import * as _ from 'lodash';
 import {
   FormGroup,
   FormBuilder,
   Validators,
   ReactiveFormsModule,
   FormsModule,
+  AbstractControl,
 } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { AuthService } from '../../../Services/Auth/auth.service';
@@ -75,17 +77,21 @@ export class UpdateComponent implements OnInit {
         user.phoneNumber || '',
         [Validators.required, Validators.pattern(/^[0-9]{8,12}$/)],
       ],
-      passwordHash: [PASSWORD_UNCHANGED_FLAG, [
-        (control: AbstractControl) => {
-          if (control.value === PASSWORD_UNCHANGED_FLAG) return null;
-          return Validators.compose([
-            Validators.minLength(8),
-            Validators.pattern(PASSWORD_PATTERN)
-          ])(control);
-        }
-      ]],
+      passwordHash: [
+        PASSWORD_UNCHANGED_FLAG,
+        [
+          (control: AbstractControl) => {
+            if (control.value === PASSWORD_UNCHANGED_FLAG) return null;
+            const composedValidator = Validators.compose([
+              Validators.minLength(8),
+              Validators.pattern(PASSWORD_PATTERN),
+            ]);
+            return composedValidator ? composedValidator(control) : null;
+          },
+        ],
+      ],
       roleId: [
-        { value: user.roleId || 0, disabled: !this.canEditRole() },
+        { value: user.roleId || '', disabled: !this.canEditRole() },
         [Validators.required],
       ],
       tenantId: [user.tenantId || 0],
@@ -110,18 +116,18 @@ export class UpdateComponent implements OnInit {
     this.initialFormValues = this.userForm.getRawValue();
 
     // Track password changes
-    this.userForm.get('passwordHash')?.valueChanges.subscribe(value => {
+    this.userForm.get('passwordHash')?.valueChanges.subscribe((value) => {
       this.isPasswordChanged = value !== PASSWORD_UNCHANGED_FLAG;
     });
   }
-hasFormChanged(): boolean {
+  hasFormChanged(): boolean {
     const currentValues = this.userForm.getRawValue();
     return !_.isEqual(currentValues, this.initialFormValues);
   }
 
   async submit() {
-    if (this.userForm?.valid) {
-      this.isSaving = true; // Set saving state
+    if (this.userForm?.valid && this.hasFormChanged()) {
+      this.isSaving = true;
       try {
         const formValue = this.userForm.getRawValue();
         const userData = this.prepareUserData(formValue);
@@ -129,21 +135,25 @@ hasFormChanged(): boolean {
       } catch (error) {
         console.error('Error during submission:', error);
       } finally {
-        this.isSaving = false; // Reset saving state
+        this.isSaving = false;
       }
     }
   }
   private prepareUserData(formValue: any): UserDto {
-    return {
+    const userData: UserDto = {
       ...formValue,
-      roleId: Number(formValue.roleId),
       phoneNumber: Number(formValue.phoneNumber),
-      passwordHash:
-        formValue.passwordHash === '[UNCHANGED]'
-          ? this.data.user.passwordHash
-          : formValue.passwordHash,
       address: formValue.address,
     };
+
+    // Only include passwordHash if it was changed
+    if (formValue.passwordHash !== PASSWORD_UNCHANGED_FLAG) {
+      userData.passwordHash = formValue.passwordHash;
+    } else {
+      delete userData.passwordHash; // Or set to undefined
+    }
+
+    return userData;
   }
 
   canEditRole(): boolean {

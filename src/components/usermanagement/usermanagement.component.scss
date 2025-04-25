@@ -29,14 +29,15 @@
   justify-content: center;
   padding: 50px;
 }
-.edit, .delete {
+.edit,
+.delete {
   transition: transform 0.2s ease, opacity 0.2s ease;
-  
+
   &:hover {
     transform: scale(1.1);
     opacity: 0.9;
   }
-  
+
   &:active {
     transform: scale(0.95);
   }
@@ -62,4 +63,80 @@
     width: 300px;
     margin-left: auto;
   }
+}
+.search-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+  padding: 0 16px;
+
+  .search-field {
+    width: 100%;
+    max-width: 400px;
+
+    .mat-form-field-wrapper {
+      padding-bottom: 0;
+    }
+
+    .mat-form-field-outline {
+      background-color: white;
+      border-radius: 4px;
+    }
+
+    input {
+      font-size: 14px;
+    }
+
+    .mat-icon {
+      color: rgba(0, 0, 0, 0.54);
+      cursor: pointer;
+      transition: color 0.2s ease;
+
+      &:hover {
+        color: #3f51b5;
+      }
+    }
+  }
+}
+
+/* Add these to your existing styles */
+.mat-table {
+  width: 100%;
+  box-shadow: none;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.mat-paginator {
+  border-radius: 0 0 8px 8px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .search-container {
+    padding: 0 8px;
+
+    .search-field {
+      max-width: 100%;
+    }
+  }
+}
+
+/* Add to your existing button styles */
+.edit,
+.delete {
+  transition: transform 0.2s ease, opacity 0.2s ease;
+
+  &:hover {
+    transform: scale(1.1);
+    opacity: 0.9;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.delete {
+  margin-left: 8px;
 }
