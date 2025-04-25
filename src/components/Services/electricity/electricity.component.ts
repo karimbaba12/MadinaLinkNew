@@ -241,7 +241,7 @@
 //     // this.loadCombinedData();
 //   }
 // }
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { finalize } from 'rxjs/operators';
 import { forkJoin } from 'rxjs';
 import { CommonModule } from '@angular/common';
@@ -289,8 +289,10 @@ interface CombinedServiceData {
   ],
   templateUrl: './electricity.component.html',
   styleUrls: ['./electricity.component.scss'],
+  standalone: true,
 })
 export class ElectricityComponent implements OnInit {
+  @Input() tenantId!: number;
   loading = false;
   combinedData: CombinedServiceData[] = [];
   userId: number = 0;
@@ -314,6 +316,7 @@ export class ElectricityComponent implements OnInit {
 
   constructor(
     private serviceClient: ServiceClient,
+
     private subscriptionClient: SubscriptionClient,
     private subServiceClient: SubServiceClient,
     private subscriptionTypeClient: SubscriptionTypeClient,

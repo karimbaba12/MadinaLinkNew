@@ -1,3 +1,21 @@
 .example-spacer {
   flex: 1 1 auto;
 }
+.avatar-button {
+  padding: 0;
+  margin-left: 8px;
+  border-color: transparent !important;
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+    background-color: #3f51b5;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 16px;
+  }
+}

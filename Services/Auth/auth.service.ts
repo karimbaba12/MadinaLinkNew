@@ -6,9 +6,9 @@ import { jwtDecode } from 'jwt-decode';
 import {
   AuthClient,
   LoginRequestDTO,
-  StringApiResponse,
   UsersClient,
   RoleClient,
+  ApiResponse_1OfOfStringAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e,
 } from '../api/api-client.service';
 @Injectable({
   providedIn: 'root',
@@ -22,7 +22,9 @@ export class AuthService {
     private RoleClient: RoleClient
   ) {}
 
-  login(credentials: LoginRequestDTO): Observable<StringApiResponse> {
+  login(
+    credentials: LoginRequestDTO
+  ): Observable<ApiResponse_1OfOfStringAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e> {
     //console.log('AuthService: Sending login request', credentials);
 
     return this.authClient.login(credentials).pipe(
@@ -94,7 +96,11 @@ export class AuthService {
     if (!decodedToken || !decodedToken['Role']) return null;
     return Number(decodedToken['Role']);
   }
-
+  getUserTenantId(): number | null {
+    const decodedToken = this.getDecodedToken();
+    if (!decodedToken || !decodedToken['TenantId']) return null;
+    return Number(decodedToken['TenantId']);
+  }
   async getUserRoleName(): Promise<string | null> {
     const roleId = this.getUserRoleId();
     if (!roleId) return null;
@@ -109,6 +115,7 @@ export class AuthService {
       return null;
     }
   }
+
   isAdmin(): boolean {
     const roleId = this.getUserRoleId();
     return roleId === 2;

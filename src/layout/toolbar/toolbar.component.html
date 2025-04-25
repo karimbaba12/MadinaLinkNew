@@ -1,30 +1,31 @@
-<!-- <mat-toolbar color="primary">
-    <button mat-icon-button matTooltip="Menu" (click)="menuButtonClicked()">
-        <mat-icon>menu</mat-icon>
-    </button>
-    <span>MadinaLink</span>
-    <span class="example-spacer"></span>
-    <button mat-icon-button class="example-icon favorite-icon" aria-label="Example icon-button with heart icon"
-        (click)="logout()">
-        <mat-icon>logout</mat-icon>
-    </button>
-</mat-toolbar> -->
-
 <mat-toolbar>
-    <button mat-icon-button class="example-icon" aria-label="Example icon-button with menu icon"
-        (click)="menuButtonClicked()">
+    <button mat-icon-button class="example-icon" aria-label="Menu" (click)="menuButtonClicked()">
         <mat-icon>menu</mat-icon>
     </button>
     <span>MadinaLink App</span>
     <span class="example-spacer"></span>
-    <button mat-icon-button class="example-icon favorite-icon" aria-label="Example icon-button with heart icon">
+
+    <button mat-icon-button class="example-icon favorite-icon" aria-label="Heart">
         <mat-icon>favorite</mat-icon>
     </button>
-    <button mat-icon-button class="example-icon" aria-label="Example icon-button with share icon">
+    <button mat-icon-button class="example-icon" aria-label="Share">
         <mat-icon>share</mat-icon>
     </button>
-    <button mat-icon-button class="example-icon favorite-icon" aria-label="Example icon-button with heart icon"
-        (click)="logout()">
+    
+    <!-- 🔒 Logout Button -->
+    <button mat-icon-button class="example-icon" aria-label="Logout" (click)="logout()">
         <mat-icon>logout</mat-icon>
     </button>
+
+    <!-- ⚙️ Admin Configuration / User Avatar Button -->
+    <button mat-button [matMenuTriggerFor]="adminMenu" class="avatar-button" aria-label="Admin Menu">
+        <div class="avatar">{{ userInitial }}</div>
+    </button>
+
+    <mat-menu #adminMenu="matMenu">
+        <button mat-menu-item (click)="goToAdminSettings()">
+            <mat-icon>settings</mat-icon>
+            <span>Admin Configuration</span>
+        </button>
+    </mat-menu>
 </mat-toolbar>

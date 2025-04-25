@@ -10,12 +10,17 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { AuthService } from '../../../Services/Auth/auth.service';
 import { RoleService } from '../../../Services/RoleService/role.service';
 import { AddressDto, UserDto } from '../../../Services/api/api-client.service';
+import { CommonModule } from '@angular/common';
+
+const PASSWORD_UNCHANGED_FLAG = '[UNCHANGED]';
+const PASSWORD_PATTERN =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/;
 
 @Component({
   selector: 'app-update',
   templateUrl: './update.component.html',
-  styleUrls: ['./update.component.scss'],
-  imports: [FormsModule, ReactiveFormsModule],
+  styleUrl: './update.component.scss',
+  imports: [FormsModule, ReactiveFormsModule, CommonModule],
 })
 export class UpdateComponent implements OnInit {
   userForm!: FormGroup;
@@ -23,7 +28,9 @@ export class UpdateComponent implements OnInit {
   availableRoles: any[] = [];
   currentUserRoleId: number | null = null;
   isEditingOwnProfile = false;
-
+  isPasswordChanged = false;
+  isSaving = false;
+  initialFormValues: any;
   constructor(
     public dialogRef: MatDialogRef<UpdateComponent>,
     private fb: FormBuilder,
@@ -33,6 +40,7 @@ export class UpdateComponent implements OnInit {
   ) {}
 
   async ngOnInit() {
+    console.log(`the data are`, this.data.user.address);
     this.currentUserRoleId = this.authService.getUserRoleId();
     this.isEditingOwnProfile =
       this.data.user.userId === this.authService.getUserId();
@@ -44,8 +52,17 @@ export class UpdateComponent implements OnInit {
     this.initializeForm();
   }
 
+  private async initializeRoles() {
+    await this.roleService.loadRoles();
+    this.availableRoles = this.roleService.getAvailableRoles(
+      this.currentUserRoleId || 0
+    );
+  }
+
   initializeForm() {
-    const user = this.data.user;
+    const { user } = this.data;
+    const address = user.address || ({} as AddressDto);
+
     this.userForm = this.fb.group({
       userId: [user.userId || 0],
       name: [user.name || '', [Validators.required, Validators.minLength(2)]],
@@ -55,102 +72,99 @@ export class UpdateComponent implements OnInit {
       ],
       email: [user.email || '', [Validators.required, Validators.email]],
       phoneNumber: [
-        user.phoneNumber?.toString() || '',
-        [Validators.required, Validators.pattern(/^[0-9]{10,15}$/)],
+        user.phoneNumber || '',
+        [Validators.required, Validators.pattern(/^[0-9]{8,12}$/)],
       ],
-      passwordHash: [
-        '',
-        [
-          Validators.minLength(8),
-          Validators.pattern(
-            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/
-          ),
-        ],
-      ],
+      passwordHash: [PASSWORD_UNCHANGED_FLAG, [
+        (control: AbstractControl) => {
+          if (control.value === PASSWORD_UNCHANGED_FLAG) return null;
+          return Validators.compose([
+            Validators.minLength(8),
+            Validators.pattern(PASSWORD_PATTERN)
+          ])(control);
+        }
+      ]],
       roleId: [
         { value: user.roleId || 0, disabled: !this.canEditRole() },
         [Validators.required],
       ],
       tenantId: [user.tenantId || 0],
+      createdAt: [user.createdAt || 0],
       isActive: [
-        { value: user.isActive || true, disabled: !this.canEditStatus() },
+        { value: user.isActive ?? true, disabled: !this.canEditStatus() },
       ],
-      // Address fields
-      addressId: [user.address?.addressId || 0],
-      country: [user.address?.country || ''],
-      street: [user.address?.street || ''],
-      city: [user.address?.city || ''],
-      region: [user.address?.region || ''],
-      governorates: [user.address?.governorates || ''],
-      building: [user.address?.building || ''],
-      floor: [user.address?.floor || 0],
-      direction: [user.address?.direction || ''],
-      block: [user.address?.block || ''],
+      address: this.fb.group({
+        addressId: [address.addressId || 0],
+        country: [address.country || ''],
+        street: [address.street || ''],
+        city: [address.city || ''],
+        region: [address.region || ''],
+        governorates: [address.governorates || ''],
+        building: [address.building || ''],
+        floor: [address.floor || 0],
+        direction: [address.direction || ''],
+        block: [address.block || ''],
+      }),
     });
+
+    this.initialFormValues = this.userForm.getRawValue();
+
+    // Track password changes
+    this.userForm.get('passwordHash')?.valueChanges.subscribe(value => {
+      this.isPasswordChanged = value !== PASSWORD_UNCHANGED_FLAG;
+    });
+  }
+hasFormChanged(): boolean {
+    const currentValues = this.userForm.getRawValue();
+    return !_.isEqual(currentValues, this.initialFormValues);
+  }
+
+  async submit() {
+    if (this.userForm?.valid) {
+      this.isSaving = true; // Set saving state
+      try {
+        const formValue = this.userForm.getRawValue();
+        const userData = this.prepareUserData(formValue);
+        this.dialogRef.close(userData);
+      } catch (error) {
+        console.error('Error during submission:', error);
+      } finally {
+        this.isSaving = false; // Reset saving state
+      }
+    }
+  }
+  private prepareUserData(formValue: any): UserDto {
+    return {
+      ...formValue,
+      roleId: Number(formValue.roleId),
+      phoneNumber: Number(formValue.phoneNumber),
+      passwordHash:
+        formValue.passwordHash === '[UNCHANGED]'
+          ? this.data.user.passwordHash
+          : formValue.passwordHash,
+      address: formValue.address,
+    };
   }
 
   canEditRole(): boolean {
     if (!this.currentUserRoleId) return false;
     if (this.isEditingOwnProfile) return false;
-
     const targetUserRole = this.data.user.roleId;
-
-    // Super Admin can edit anyone's role except their own
     if (this.currentUserRoleId === 3) return true;
-
-    // Admin can only edit users and clients
-    if (this.currentUserRoleId === 2) {
-      return targetUserRole === 1 || targetUserRole === 4; // User or Client
-    }
-
+    if (this.currentUserRoleId === 2)
+      return targetUserRole === 1 || targetUserRole === 4;
     return false;
   }
 
   canEditStatus(): boolean {
     if (!this.currentUserRoleId) return false;
     if (this.isEditingOwnProfile) return false;
-
     const targetUserRole = this.data.user.roleId;
-
-    // Super Admin can edit anyone's status except their own
     if (this.currentUserRoleId === 3) return true;
-
-    // Admin can only edit users and clients status
-    if (this.currentUserRoleId === 2) {
-      return targetUserRole === 1 || targetUserRole === 4; // User or Client
-    }
-
+    if (this.currentUserRoleId === 2)
+      return targetUserRole === 1 || targetUserRole === 4;
+    if (this.currentUserRoleId === 1) return targetUserRole === 4;
     return false;
-  }
-
-  submit() {
-    if (this.userForm.valid) {
-      const formValue = this.userForm.getRawValue(); // Get disabled values too
-      const userData = {
-        userId: formValue.userId,
-        name: formValue.name,
-        username: formValue.username,
-        email: formValue.email,
-        phoneNumber: Number(formValue.phoneNumber),
-        passwordHash: formValue.passwordHash || undefined, // Only send if changed
-        roleId: formValue.roleId,
-        tenantId: formValue.tenantId,
-        isActive: formValue.isActive,
-        // address: {
-        //   addressId: formValue.addressId,
-        //   country: formValue.country,
-        //   street: formValue.street,
-        //   city: formValue.city,
-        //   region: formValue.region,
-        //   governorates: formValue.governorates,
-        //   building: formValue.building,
-        //   floor: formValue.floor,
-        //   direction: formValue.direction,
-        //   block: formValue.block,
-        // },
-      };
-      this.dialogRef.close(userData);
-    }
   }
 
   getRoleName(roleId: number): string {

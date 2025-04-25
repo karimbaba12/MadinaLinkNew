@@ -14,6 +14,13 @@ export const UserMenus: Navigation[] = [
         type: 'item',
       },
       {
+        id: 'usermanagement',
+        title: 'Usermanagement',
+        icon: 'bar_chart',
+        url: 'userManagement',
+        type: 'item',
+      },
+      {
         id: 'electricity',
         title: 'electricity',
         icon: 'person',
@@ -45,6 +52,13 @@ export const AdminMenus: Navigation[] = [
         type: 'item',
       },
       {
+        id: 'usermanagement',
+        title: 'Usermanagement',
+        icon: 'bar_chart',
+        url: 'userManagement',
+        type: 'item',
+      },
+      {
         id: 'management',
         title: 'Management',
         icon: 'settings',
@@ -66,13 +80,6 @@ export const AdminMenus: Navigation[] = [
           },
         ],
       },
-      {
-        id: 'reports',
-        title: 'Reports',
-        icon: 'bar_chart',
-        url: '/reports',
-        type: 'item',
-      },
     ],
   },
 ];
@@ -88,6 +95,13 @@ export const SuperadminMenus: Navigation[] = [
         title: 'Dashboard',
         icon: 'dashboard',
         url: '/dashboard',
+        type: 'item',
+      },
+      {
+        id: 'usermanagement',
+        title: 'Usermanagement',
+        icon: 'bar_chart',
+        url: 'userManagement',
         type: 'item',
       },
       {

@@ -35,6 +35,8 @@ import {
   CrudTableConfig,
   ColumnConfig,
 } from '../../data/menu/reusableCrudData';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
   selector: 'app-reusable-crud',
@@ -58,17 +60,20 @@ import {
     MatCellDef,
     MatFormFieldModule,
     MatChipsModule,
+    ReactiveFormsModule,
   ],
   templateUrl: './reusable-crud.component.html',
   styleUrl: './reusable-crud.component.scss',
 })
 export class ReusableCrudComponent<T> implements OnInit {
-  onRowClick(_t71: any) {
-    throw new Error('Method not implemented.');
-  }
-  
+  searchControl = new FormControl('');
+
+  @Output() rowClick = new EventEmitter<T>();
   @Input() config!: CrudTableConfig<T>;
   @Input() isLoading = false;
+  @Input() showSearch = true;
+  @Input() searchPlaceholder = 'Search...';
+  @Input() minSearchLength = 3;
 
   @Input() rowActionsTemplate?: TemplateRef<any>;
   @Input() columnTemplates: { [key: string]: TemplateRef<any> } = {};
@@ -84,13 +89,23 @@ export class ReusableCrudComponent<T> implements OnInit {
   @ViewChild(MatSort) sort!: MatSort;
   @Input() showFilter: boolean = true;
   @Output() filterChange = new EventEmitter<string>();
-
+  @Output() search = new EventEmitter<string>();
   applyFilter(filterValue: string) {
     this.filterChange.emit(filterValue);
   }
+
   ngOnInit() {
-    console.log('ReusableCrudComponent initialized with config:', this.config);
     this.validateConfig();
+
+    if (this.showSearch) {
+      this.searchControl.valueChanges
+        .pipe(debounceTime(300), distinctUntilChanged())
+        .subscribe((term) => {
+          if ((term && term.length >= this.minSearchLength) || term === '') {
+            this.search.emit(term);
+          }
+        });
+    }
   }
 
   get displayedColumns(): string[] {
@@ -158,8 +173,9 @@ export class ReusableCrudComponent<T> implements OnInit {
 
     return value;
   }
- 
-
+  onRowClick(row: T) {
+    this.rowClick.emit(row);
+  }
   onAddClick(): void {
     console.log('Add triggered in reusable component');
     this.add.emit(); // Let parent handle logic (if needed)

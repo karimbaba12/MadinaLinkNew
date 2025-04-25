@@ -1,5 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { UsersClient } from '../../../Services/api/api-client.service';
+import {
+  TenantServiceClient,
+  TenantServiceDto,
+  UsersClient,
+} from '../../../Services/api/api-client.service';
 import { CrudTableConfig } from '../../data/menu/reusableCrudData';
 import { ReusableCrudComponent } from '../reusable-crud/reusable-crud.component';
 import { MatIcon } from '@angular/material/icon';
@@ -12,12 +16,10 @@ import { MatInputModule } from '@angular/material/input';
 import { UpdateComponent } from '../../dialogs/update/update.component';
 import { AuthService } from '../../../Services/Auth/auth.service';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import {
-  UserDto,
-  UserDtoUpdate,
-} from '../../../Services/api/api-client.service';
+import { UserDto } from '../../../Services/api/api-client.service';
 import { DeleteComponent } from '../../dialogs/delete/delete.component';
 import { of } from 'rxjs';
+import { ServicesDialogComponent } from '../services-dialog/services-dialog.component';
 
 interface TableUser {
   username: string;
@@ -30,7 +32,7 @@ interface TableUser {
 
 @Component({
   selector: 'app-usermanagement',
-  imports: [ReusableCrudComponent, MatIcon, MatInputModule, MatProgressSpinner],
+  imports: [ReusableCrudComponent, MatIcon, MatInputModule],
   templateUrl: './usermanagement.component.html',
   styleUrls: ['./usermanagement.component.scss'],
 })
@@ -69,25 +71,33 @@ export class UsermanagementComponent implements OnInit {
     private usersClient: UsersClient,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private authService: AuthService
+    private authService: AuthService,
+    private tenantServiceClient: TenantServiceClient
   ) {}
 
   async ngOnInit() {
-    this.currentUserRoleId = this.authService.getUserRoleId();
-    await this.loadUsers();
+    this.loadUsers();
   }
   async searchUsers(term: string) {
     if (term.length >= 3 || term.length === 0) {
       await this.loadUsers();
     }
-    return of(null); // Return observable for the pipe
+    return of(null);
   }
-  async loadUsers(): Promise<void> {
+
+  onSearch(term: string) {
+    this.loadUsers(term);
+  }
+  async loadUsers(searchTerm?: string): Promise<void> {
     this.loading = true;
     try {
-      const response = await this.usersClient.getAll().toPromise();
+      const response =
+        searchTerm && searchTerm.length >= 3
+          ? await this.usersClient.search(searchTerm).toPromise()
+          : await this.usersClient.getAll().toPromise();
 
       if (!response?.data) {
+        console.log(response);
         this.handleEmptyData();
         return;
       }
@@ -110,6 +120,43 @@ export class UsermanagementComponent implements OnInit {
       status: user.isActive ? 'Active' : 'Inactive',
       rawData: user,
     };
+  }
+  onRowClicked(user: TableUser): void {
+    const tenantId = this.authService.getUserTenantId();
+    const numberTenantId = Number(tenantId);
+
+    if (!numberTenantId) {
+      this.snackBar.open(
+        'No tenant information available for this user',
+        'Close',
+        { duration: 3000 }
+      );
+      return;
+    }
+
+    this.authService;
+    this.tenantServiceClient
+      .getServiceByTenantID()
+      .subscribe((response: any) => {
+        if (!response || response.length === 0) {
+          console.log(JSON.stringify(response));
+          this.snackBar.open('No services found for this tenant', 'Close', {
+            duration: 3000,
+          });
+          return;
+        }
+
+        this.dialog.open(ServicesDialogComponent, {
+          width: '90vw',
+          maxWidth: '1200px',
+          height: '80vh',
+          data: {
+            tenantId: 1,
+            services: response,
+          },
+          disableClose: true,
+        });
+      });
   }
 
   private getRoleName(roleId: number): string {
@@ -144,17 +191,19 @@ export class UsermanagementComponent implements OnInit {
       data: { user: item.rawData },
     });
 
-    dialogRef.afterClosed().subscribe((result: UserDtoUpdate) => {
+    dialogRef.afterClosed().subscribe((result: UserDto) => {
       if (result) {
         this.updateUser(result);
+        console.log(result);
       }
     });
   }
 
-  private updateUser(updatedUser: UserDtoUpdate): void {
+  private updateUser(updatedUser: UserDto): void {
     this.loading = true;
     this.usersClient.updateUser(updatedUser).subscribe({
       next: () => {
+        console.log(updatedUser);
         this.snackBar.open('User updated successfully', 'Close', {
           duration: 3000,
           panelClass: ['success-snackbar'],

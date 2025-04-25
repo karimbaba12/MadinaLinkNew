@@ -2,6 +2,8 @@
     <mat-toolbar color="primary">
         <span>{{ config.title || 'CRUD Table' }}</span>
         <span class="spacer"></span>
+
+
         <div class="actions">
             <button mat-icon-button (click)="refresh.emit()" matTooltip="Refresh" class="refresh">
                 <mat-icon>refresh</mat-icon>
@@ -44,11 +46,22 @@
             </ng-container>
 
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+            <!-- <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr> -->
+            <tr mat-row *matRowDef="let row; columns: displayedColumns" (click)="onRowClick(row)"
+                style="cursor: pointer">
+            </tr>
         </table>
 
         <mat-paginator [length]="config.dataSource.length || 0" [pageSize]="10" [pageSizeOptions]="[5, 10, 25, 100]"
             (page)="handlePageChange($event)">
         </mat-paginator>
     </div>
+
+
+    <!-- <mat-form-field appearance="outline" class="search-field" *ngIf="showSearch">
+            <mat-label>{{ searchPlaceholder }}</mat-label>
+            <input matInput [formControl]="searchControl" [placeholder]="searchPlaceholder">
+            <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field> -->
+
 </div>

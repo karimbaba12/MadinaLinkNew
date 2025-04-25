@@ -13,23 +13,21 @@ import { Navigation } from '../../src/data/menu/Navigation';
   providedIn: 'root',
 })
 export class NavigationService {
-  constructor(
-    private authService: AuthService,
-  ) {}
+  constructor(private authService: AuthService) {}
 
   getMenu(): Observable<Navigation[]> {
     return from(this.authService.getUserRole()).pipe(
       switchMap((roleName) => {
-       let menus: Navigation[] = [];
+        let menus: Navigation[] = [];
         switch (roleName) {
           case 'superadmin':
-            menus = AdminMenus.filter((menu) => menu.id !== 'auth');
+            menus = SuperadminMenus;
             break;
           case 'admin':
-            menus = SuperadminMenus.filter((menu) => menu.id !== 'other');
+            menus = AdminMenus;
             break;
           case 'user':
-            menus = UserMenus.filter((menu) => menu.id !== 'other');
+            menus = UserMenus;
             break;
           default:
             menus = UserMenus;
