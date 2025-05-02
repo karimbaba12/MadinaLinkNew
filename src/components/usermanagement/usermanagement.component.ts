@@ -1,27 +1,34 @@
 import { Component, OnInit } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { PageEvent } from '@angular/material/paginator';
+import { Sort } from '@angular/material/sort';
+import { FormsModule } from '@angular/forms';
+import {
+  debounceTime,
+  distinctUntilChanged,
+  filter,
+  of,
+  Subject,
+  takeUntil,
+} from 'rxjs';
+
 import {
   TenantServiceClient,
   TenantServiceDto,
   UsersClient,
+  UserDto,
 } from '../../../Services/api/api-client.service';
 import { CrudTableConfig } from '../../data/menu/reusableCrudData';
 import { ReusableCrudComponent } from '../reusable-crud/reusable-crud.component';
-import { MatIcon } from '@angular/material/icon';
-import { PageEvent } from '@angular/material/paginator';
-import { Sort } from '@angular/material/sort';
-import { AddComponent } from '../../dialogs/add/add.component';
-import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatInputModule } from '@angular/material/input';
-import { UpdateComponent } from '../../dialogs/update/update.component';
 import { AuthService } from '../../../Services/Auth/auth.service';
-import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import { UserDto } from '../../../Services/api/api-client.service';
+import { AddComponent } from '../../dialogs/add/add.component';
+import { UpdateComponent } from '../../dialogs/update/update.component';
 import { DeleteComponent } from '../../dialogs/delete/delete.component';
-import { of } from 'rxjs';
 import { ServicesDialogComponent } from '../services-dialog/services-dialog.component';
-import { FormsModule } from '@angular/forms';
-
+import { MatIcon } from '@angular/material/icon';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 interface TableUser {
   username: string;
   phoneNumber: string;
@@ -33,24 +40,30 @@ interface TableUser {
 
 @Component({
   selector: 'app-usermanagement',
-  imports: [ReusableCrudComponent, MatIcon, MatInputModule, FormsModule],
   templateUrl: './usermanagement.component.html',
   styleUrls: ['./usermanagement.component.scss'],
+  standalone: true,
+  imports: [
+    ReusableCrudComponent,
+    FormsModule,
+    MatIcon,
+    MatFormFieldModule,
+    MatInputModule,
+  ],
 })
 export class UsermanagementComponent implements OnInit {
-  // Pagination and sorting
-  sortField = 'username';
-  sortDirection = 'asc';
+  selectedUserForSubscription: UserDto | null = null;
+  searchTerm: string = '';
   pageSize = 10;
   pageIndex = 0;
-  searchTerm: string = '';
-  // State management
+  sortField = 'username';
+  sortDirection = 'asc';
   loading = false;
   isDeleting = false;
+  private searchSubject = new Subject<string>();
+  private destroy$ = new Subject<void>();
   tableData: TableUser[] = [];
-  currentUserRoleId: number | null = null;
 
-  // Table configuration
   config: CrudTableConfig<TableUser> = {
     title: 'User Management',
     columns: [
@@ -65,7 +78,7 @@ export class UsermanagementComponent implements OnInit {
         formatter: (value: boolean) => (value ? 'Active' : 'Inactive'),
       },
     ],
-    dataSource: this.tableData,
+    dataSource: [],
   };
 
   constructor(
@@ -76,50 +89,61 @@ export class UsermanagementComponent implements OnInit {
     private tenantServiceClient: TenantServiceClient
   ) {}
 
-  async ngOnInit() {
+  ngOnInit() {
     this.loadUsers();
+    this.searchSubject
+      .pipe(
+        takeUntil(this.destroy$),
+        debounceTime(500), // wait 500ms after last keystroke
+        distinctUntilChanged(), // only emit if value changed
+        filter((term) => term.length === 0 || term.length >= 2) // changed from 3 to 2
+      )
+      .subscribe((term) => {
+        this.searchTerm = term;
+        this.pageIndex = 0;
+        this.loadUsers(term);
+      });
   }
-  async searchUsers(term: string) {
-    if (term.length >= 3 || term.length === 0) {
-      await this.loadUsers();
-    }
-    return of(null);
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
-
   onSearch(term: string): void {
-    this.searchTerm = term;
-    this.pageIndex = 0;
-    this.loadUsers(term);
+    this.searchSubject.next(term.trim());
+        this.searchTerm = term;
+        this.loadUsers(term);
   }
-  private loadUsersDebounceTimer: any;
-  async loadUsers(searchTerm?: string): Promise<void> {
-    clearTimeout(this.loadUsersDebounceTimer);
 
-    this.loadUsersDebounceTimer = setTimeout(async () => {
-      this.loading = true;
-      try {
-        const response =
-          searchTerm && searchTerm.length >= 1
-            ? await this.usersClient.search(searchTerm).toPromise()
-            : await this.usersClient.getAll().toPromise();
+  async loadUsers(searchTerm?: string) {
+    this.loading = true;
+    this.usersClient.getAll().subscribe({
+      next: (response) => {
+        let users = response?.data || [];
 
-        if (!response?.data) {
-          this.handleEmptyData();
-          return;
+        // Client-side filtering if search term exists
+        if (searchTerm && searchTerm.length >= 1) {
+          const term = searchTerm.toLowerCase();
+          users = users.filter(
+            (user) =>
+              user.username?.toLowerCase().includes(term) ||
+              user.email?.toLowerCase().includes(term) ||
+              user.phoneNumber?.toString().includes(term)
+          );
         }
-        console.log('the users are', response.data);
-        
-        this.tableData = response.data.map((user) => this.mapToTableUser(user));
+
+        this.tableData = users.map((user) => this.mapToTableUser(user));
         this.config.dataSource = [...this.tableData];
-      } catch (err) {
-        this.handleLoadError(err);
-      } finally {
+      },
+      error: (error) => {
+        this.snackBar.open('Failed to load users', 'Close', { duration: 3000 });
+      },
+      complete: () => {
         this.loading = false;
-      }
-    }, 300);
+      },
+    });
   }
 
-  private mapToTableUser(user: UserDto): TableUser {
+  mapToTableUser(user: UserDto): TableUser {
     return {
       username: user.username || 'N/A',
       phoneNumber: user.phoneNumber?.toString() || 'N/A',
@@ -129,45 +153,8 @@ export class UsermanagementComponent implements OnInit {
       rawData: user,
     };
   }
-  onRowClicked(user: TableUser): void {
-    const tenantId = this.authService.getUserTenantId();
-    const numberTenantId = Number(tenantId);
 
-    if (!numberTenantId) {
-      this.snackBar.open(
-        'No tenant information available for this user',
-        'Close',
-        { duration: 3000 }
-      );
-      return;
-    }
-
-    this.authService;
-    this.tenantServiceClient
-      .getServiceByTenantID()
-      .subscribe((response: any) => {
-        if (!response || response.length === 0) {
-          console.log(JSON.stringify(response));
-          this.snackBar.open('No services found for this tenant', 'Close', {
-            duration: 3000,
-          });
-          return;
-        }
-
-        this.dialog.open(ServicesDialogComponent, {
-          width: '90vw',
-          maxWidth: '1200px',
-          height: '80vh',
-          data: {
-            tenantId: 1,
-            services: response,
-          },
-          disableClose: true,
-        });
-      });
-  }
-
-  private getRoleName(roleId: number): string {
+  getRoleName(roleId: number): string {
     const roles: Record<number, string> = {
       1: 'User',
       2: 'Admin',
@@ -177,150 +164,139 @@ export class UsermanagementComponent implements OnInit {
     return roles[roleId] || 'Unknown';
   }
 
-  private handleEmptyData(): void {
-    this.tableData = [];
-    this.config.dataSource = [];
-    this.snackBar.open('No user data available', 'Close', { duration: 3000 });
+  onConfig(user: TableUser) {
+    const tenantId = Number(this.authService.getUserTenantId());
+    if (!tenantId) {
+      return this.snackBar.open('No tenant information available', 'Close', {
+        duration: 3000,
+      });
+    }
+
+    this.tenantServiceClient
+      .getServiceByTenantID()
+      .subscribe((response: any) => {
+        if (!response?.length) {
+          this.snackBar.open('No services found for this tenant', 'Close', {
+            duration: 3000,
+          });
+          return;
+        }
+
+        this.dialog.open(ServicesDialogComponent, {
+          width: '90vw',
+          maxWidth: '1200px',
+          height: '85vh',
+          data: { tenantId, services: response, user: user.rawData },
+          disableClose: true,
+        });
+      });
+    return;
   }
 
-  private handleLoadError(err: any): void {
-    console.error('Failed to load users:', err);
-    this.snackBar.open(
-      'Failed to load users. Please try again later.',
-      'Close',
-      { duration: 3000 }
-    );
-  }
-
-  onEdit(item: TableUser): void {
+  onEdit(user: TableUser) {
     const dialogRef = this.dialog.open(UpdateComponent, {
       width: '800px',
       disableClose: true,
-      data: { user: item.rawData },
+      data: { user: user.rawData },
     });
 
     dialogRef.afterClosed().subscribe((result: UserDto) => {
-      if (result) {
-        this.updateUser(result);
-        console.log(result);
-      }
+      if (result) this.updateUser(result);
     });
   }
 
-  private updateUser(updatedUser: UserDto): void {
+  updateUser(user: UserDto) {
     this.loading = true;
-    this.usersClient.updateUser(updatedUser).subscribe({
+    this.usersClient.updateUser(user).subscribe({
       next: () => {
-        console.log(updatedUser);
         this.snackBar.open('User updated successfully', 'Close', {
           duration: 3000,
-          panelClass: ['success-snackbar'],
         });
         this.loadUsers();
       },
       error: (err) => {
         this.loading = false;
-        this.showError('update', err);
+        this.snackBar.open(err?.message || 'Update failed', 'Close', {
+          duration: 3000,
+        });
       },
     });
   }
 
-  onDelete(item: TableUser): void {
+  onDelete(user: TableUser) {
     const dialogRef = this.dialog.open(DeleteComponent, {
       width: '450px',
       disableClose: true,
-      data: {
-        userId: item.rawData.userId,
-        username: item.username,
-      },
+      data: { userId: user.rawData.userId, username: user.username },
     });
 
     dialogRef.afterClosed().subscribe((confirmed: boolean) => {
-      if (confirmed) {
-        if (item.rawData.userId !== undefined) {
-          this.deleteUser(item.rawData.userId);
-        } else {
-          console.error('User ID is undefined');
-        }
+      if (confirmed && user.rawData.userId) {
+        this.deleteUser(user.rawData.userId);
       }
     });
   }
 
-  private deleteUser(userId: number): void {
+  deleteUser(userId: number) {
     this.isDeleting = true;
     this.usersClient.deleteById(userId).subscribe({
       next: () => {
         this.snackBar.open('User deleted successfully', 'Close', {
           duration: 3000,
-          panelClass: ['success-snackbar'],
         });
         this.loadUsers();
       },
       error: (err) => {
-        this.isDeleting = false;
-        this.showError('delete', err);
+        this.snackBar.open(err?.message || 'Delete failed', 'Close', {
+          duration: 3000,
+        });
       },
       complete: () => (this.isDeleting = false),
     });
   }
 
-  onAdd(): void {
+  onAdd() {
     const dialogRef = this.dialog.open(AddComponent, {
       width: '800px',
       disableClose: true,
     });
 
     dialogRef.afterClosed().subscribe((result: UserDto) => {
-      if (result) {
-        this.createUser(result);
-      }
+      if (result) this.createUser(result);
     });
   }
 
-  private createUser(newUser: UserDto): void {
+  createUser(user: UserDto) {
     this.loading = true;
-    this.usersClient.add(newUser).subscribe({
+    this.usersClient.add(user).subscribe({
       next: () => {
         this.snackBar.open('User created successfully', 'Close', {
           duration: 3000,
-          panelClass: ['success-snackbar'],
         });
         this.loadUsers();
       },
       error: (err) => {
+        this.snackBar.open(err?.message || 'Create failed', 'Close', {
+          duration: 3000,
+        });
         this.loading = false;
-        this.showError('create', err);
       },
     });
   }
 
-  private showError(action: string, err: any): void {
-    const errorMessage =
-      err.error?.message || err.message || 'Unknown error occurred';
-    this.snackBar.open(`Failed to ${action} user: ${errorMessage}`, 'Close', {
-      duration: 5000,
-      panelClass: ['error-snackbar'],
-    });
-    console.error(`Error ${action} user:`, err);
-  }
-
-  onRefresh(): void {
-    this.loadUsers();
-  }
-
-  onPageChange(event: PageEvent): void {
-    this.pageSize = event.pageSize;
+  onPageChange(event: PageEvent) {
     this.pageIndex = event.pageIndex;
-    this.loadUsers();
+    this.pageSize = event.pageSize;
+    this.loadUsers(this.searchTerm);
   }
 
-  onSortChange(sort: Sort): void {
-    this.sortField = sort.active;
-    this.sortDirection = sort.direction;
-    this.loadUsers();
+  onSortChange(event: Sort) {
+    this.sortField = event.active;
+    this.sortDirection = event.direction;
+    this.loadUsers(this.searchTerm);
   }
 
-  canAddUsers(): boolean {
-    return this.authService.isAdmin() || this.authService.isSuperAdmin();
+  onRefresh() {
+    this.loadUsers(this.searchTerm);
   }
 }

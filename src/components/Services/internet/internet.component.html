@@ -1,1 +1,82 @@
-<p>internet works!</p>
+<div class="container">
+    <div class="subscription-card">
+        <h2 class="card-title">
+            🌐 {{ selectedSubscriptionId ? 'Update' : 'Create' }} Internet Subscription
+        </h2>
+
+        <div class="subscription-list" *ngIf="hasSubscriptions">
+            <div class="list-header">Your Electricity Subscriptions</div>
+            <ul class="subscription-items">
+                <li *ngFor="let s of subscriptions" (click)="selectSubscriptionToEdit(s)" class="subscription-item"
+                    [class.selected]="selectedSubscriptionId === s.subscriptionId">
+                    <div class="subscription-content">
+                        <div class="subscription-title">
+                            {{ getSubServiceName(s.subServiceId ?? 0) }}
+                        </div>
+                        <div class="subscription-details">
+                            <span>{{ getFormattedDate(s.startDate ?? 0) }}</span>
+                            <span>→</span>
+                            <span>{{ getFormattedDate(s.endDate ?? 0) }}</span>
+                            <span>({{ s.discount }}% discount)</span>
+                        </div>
+                    </div>
+                    <span class="arrow">›</span>
+                </li>
+            </ul>
+        </div>
+
+        <form [formGroup]="subscriptionForm" (ngSubmit)="submit()" class="subscription-form">
+            <div class="form-group">
+                <label for="subServiceId">Subservice</label>
+                <select id="subServiceId" formControlName="subServiceId" class="form-control">
+                    <option value="" disabled>Select a subservice</option>
+                    <option *ngFor="let service of subServices" [value]="service.subServiceId">
+                        {{ service.subServiceName }} ({{ service.subServiceCode }})
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="discount">Discount (%)</label>
+                <input type="number" id="discount" formControlName="discount" min="0" max="100" />
+            </div>
+            <div class="form-group">
+                <span *ngIf="subscriptionForm.get('subServiceId')?.value" class="calculated-price">
+                    Calculated Price: {{ calculatedPrice | currency }}
+                </span>
+            </div>
+
+            <div class="dates-container">
+                <div class="date-field">
+                    <label>Start Date</label>
+                    <p>{{ getFormattedDate(subscriptionForm.get('startDate')?.value) }}</p>
+                </div>
+                <div class="date-field">
+                    <label>End Date</label>
+                    <p>{{ getFormattedDate(subscriptionForm.get('endDate')?.value) }}</p>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-create" [disabled]="subscriptionForm.invalid || isLoading">
+                    <span *ngIf="!isLoading">{{ selectedSubscriptionId ? 'Update' : 'Create' }}</span>
+                    <span *ngIf="isLoading">Processing...</span>
+                </button>
+
+                <button *ngIf="selectedSubscriptionId" type="button" class="btn btn-delete"
+                    (click)="deleteSubscription()" [disabled]="isLoading">
+                    Delete
+                </button>
+
+                <button *ngIf="isEditing && hasSubscriptions" type="button" class="btn btn-cancel" (click)="resetForm()"
+                    [disabled]="isLoading">
+                    Cancel
+                </button>
+            </div>
+
+            <div *ngIf="errorMessage" class="error-message-box">
+                {{ errorMessage }}
+            </div>
+        </form>
+    </div>
+</div>

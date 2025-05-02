@@ -3,6 +3,11 @@
   color: red;
   background: transparent;
 }
+.config {
+  border-color: transparent;
+  color: rgb(102, 209, 94);
+  background: transparent;
+}
 
 .edit {
   border-color: transparent;
@@ -30,6 +35,7 @@
   padding: 50px;
 }
 .edit,
+.config,
 .delete {
   transition: transform 0.2s ease, opacity 0.2s ease;
 
@@ -56,20 +62,38 @@
 
 .search-container {
   display: flex;
-  justify-content: flex-end;
-  margin-bottom: 16px;
-
-  .search-field {
-    width: 300px;
-    margin-left: auto;
-  }
-}
-.search-container {
-  display: flex;
-  justify-content: flex-end;
   margin-bottom: 20px;
   padding: 0 16px;
+  position: absolute;
+  justify-content: end;
+  align-items: center;
 
+  mat-form-field {
+    width: 300px;
+
+    .searchIcon {
+      background-color: transparent !important;
+      color: #3f51b5 !important;
+      border: none !important;
+    }
+    .mat-icon[matSuffix] {
+      transition: opacity 0.2s;
+
+      &.hourglass_empty {
+        color: #3f51b5;
+        animation: spin 1s linear infinite;
+      }
+    }
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
   .search-field {
     width: 100%;
     max-width: 400px;

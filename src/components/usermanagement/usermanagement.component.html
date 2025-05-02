@@ -1,26 +1,30 @@
-<!-- Custom search input outside the reusable component -->
-<div class="search-container">
-    <mat-form-field appearance="outline" class="search-field">
-        <mat-label>Search users...</mat-label>
-        <input matInput type="text" [(ngModel)]="searchTerm" (keyup.enter)="onSearch(searchTerm)"
-            placeholder="Search by username, email or phone">
-        <button mat-icon-button matSuffix (click)="onSearch(searchTerm)">
-            <mat-icon>search</mat-icon>
-        </button>
-    </mat-form-field>
+<div class="user-management-container">
+    <!-- Add this search bar section -->
+    <!-- <div class="search-container">
+        <mat-form-field appearance="outline" floatLabel="always">
+            <mat-label>Search Users</mat-label>
+            <input matInput [(ngModel)]="searchTerm" (keyup.enter)="onSearch(searchTerm)"
+                placeholder="Search by name, email or phone">
+            <button mat-icon-button matSuffix (click)="onSearch(searchTerm)" class="searchIcon">
+                <mat-icon>search</mat-icon>
+            </button>
+        </mat-form-field>
+    </div> -->
+
+    <app-reusable-crud [config]="config" [isLoading]="loading" [rowActionsTemplate]="rowActions" [showSearch]="true"
+        [searchTerm]="searchTerm" (searchTermChange)="onSearch($event)" (edit)="onEdit($event)" (delete)="onDelete($event)"
+        (refresh)="onRefresh()" (pageChange)="onPageChange($event)" (add)="onAdd()" (sortChange)="onSortChange($event)">
+
+        <ng-template #rowActions let-item>
+            <button mat-icon-button class="config" (click)="onConfig(item)">
+                <mat-icon color="warn">build</mat-icon>
+            </button>
+            <button mat-icon-button class="edit" (click)="onEdit(item); $event.stopPropagation()">
+                <mat-icon color="primary">edit</mat-icon>
+            </button>
+            <button mat-icon-button class="delete" (click)="onDelete(item); $event.stopPropagation()">
+                <mat-icon color="warn">delete</mat-icon>
+            </button>
+        </ng-template>
+    </app-reusable-crud>
 </div>
-<app-reusable-crud [config]="config" [isLoading]="loading" [rowActionsTemplate]="rowActions" [showSearch]="false"
-    (edit)="onEdit($event)" (delete)="onDelete($event)" (refresh)="onRefresh()" (pageChange)="onPageChange($event)"
-    (add)="onAdd()" (sortChange)="onSortChange($event)" (rowClick)="onRowClicked($event)">
-
-
-
-    <ng-template #rowActions let-item>
-        <button mat-icon-button class="edit" (click)="onEdit(item); $event.stopPropagation()">
-            <mat-icon color="primary">edit</mat-icon>
-        </button>
-        <button mat-icon-button class="delete" (click)="onDelete(item); $event.stopPropagation()">
-            <mat-icon color="warn">delete</mat-icon>
-        </button>
-    </ng-template>
-</app-reusable-crud>

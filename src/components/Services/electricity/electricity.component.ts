@@ -1,477 +1,268 @@
-// import { Component, OnInit } from '@angular/core';
-// import { finalize } from 'rxjs/operators';
-// import { forkJoin } from 'rxjs';
-// import { CommonModule } from '@angular/common';
-// import { MatIcon } from '@angular/material/icon';
-// import { PageEvent } from '@angular/material/paginator';
-// import { Sort } from '@angular/material/sort';
-
-// import { MatDialog } from '@angular/material/dialog';
-// import { MatFormFieldModule } from '@angular/material/form-field';
-// import { MatInputModule } from '@angular/material/input';
-// import { ReusableCrudComponent } from '../../reusable-crud/reusable-crud.component';
-// import {
-//   PaymentClient,
-//   PaymentMethodClient,
-//   ServiceClient,
-//   SubscriptionClient,
-//   SubscriptionTypeClient,
-//   SubServiceClient,
-//   UsersClient,
-// } from '../../../../Services/api/api-client.service';
-// import { DateFormatService } from '../../../../Services/dateFormate/date-format.service';
-// import { CrudTableConfig } from '../../../data/menu/reusableCrudData';
-// import { AuthService } from '../../../../Services/Auth/auth.service';
-
-// interface CombinedServiceData {
-//   userId: number;
-//   userName: string;
-//   serviceName: string;
-//   subscriptionType: string;
-//   subServiceCode: string;
-//   paymentMethod: string;
-//   startDate: string;
-//   endDate: string;
-//   discount: number;
-//   status: string;
-//   serviceId: number;
-//   rawData: any;
-// }
-// @Component({
-//   selector: 'app-electricity',
-//   imports: [
-//     CommonModule,
-//     ReusableCrudComponent,
-//     MatIcon,
-//     MatInputModule,
-//     MatFormFieldModule,
-//   ],
-//   templateUrl: './electricity.component.html',
-//   styleUrl: './electricity.component.scss',
-// })
-// export class ElectricityComponent implements OnInit {
-//   loading = false;
-//   combinedData: CombinedServiceData[] = [];
-//   UserId: number = 0;
-//   electricityServiceId = 1;
-//   servicesConfig: CrudTableConfig<CombinedServiceData> = {
-//     title: 'User Services Management',
-//     columns: [
-//       { name: 'userName', header: 'Username', sortable: true },
-//       { name: 'serviceName', header: 'Service', sortable: true },
-//       { name: 'subscriptionType', header: 'Type' },
-//       { name: 'subServiceCode', header: 'Subservice' },
-//       { name: 'paymentMethod', header: 'Payment Method' },
-//       {
-//         name: 'startDate',
-//         header: 'Start Date',
-//       },
-//       {
-//         name: 'endDate',
-//         header: 'End Date',
-//       },
-//       { name: 'discount', header: 'Discount(%)' },
-//       {
-//         name: 'status',
-//         header: 'Status',
-//       },
-//     ],
-//     dataSource: this.combinedData,
-//   };
-
-//   constructor(
-//     private serviceClient: ServiceClient,
-//     private subscriptionClient: SubscriptionClient,
-//     private subServiceClient: SubServiceClient,
-//     private paymentClient: PaymentClient,
-//     private subscriptionTypeClient: SubscriptionTypeClient,
-//     private userClient: UsersClient,
-//     private paymentMethodClient: PaymentMethodClient,
-//     private dateFormatService: DateFormatService,
-//     private dialog: MatDialog,
-//     private authService: AuthService
-//   ) {}
-
-//   ngOnInit(): void {
-//     this.loadCombinedData();
-//     const userId = this.authService.getUserId();
-//     if (userId !== null && userId !== undefined) {
-//       console.log('User ID:', userId);
-//       this.UserId = userId;
-//     }
-//   }
-
-//   getFormattedDate(unixTimestamp: number): string {
-//     return this.dateFormatService.unixToDateString(unixTimestamp);
-//   }
-
-//   loadCombinedData(): void {
-//     this.loading = true;
-
-//     forkJoin({
-//       users: this.userClient.getAll(),
-//       services: this.serviceClient.getAll(),
-//       subscriptions: this.subscriptionClient.getAll(),
-//       subServices: this.subServiceClient.getAll(),
-//       paymentMethods: this.paymentMethodClient.getAll(),
-//       subscriptionTypes: this.subscriptionTypeClient.getAll(),
-//     })
-//       .pipe(finalize(() => (this.loading = false)))
-//       .subscribe({
-//         next: (responses) => {
-//           this.combinedData = this.combineData(
-//             responses.users.data || [],
-//             responses.services.data || [],
-//             responses.subscriptions.data || [],
-//             responses.subServices.data || [],
-//             responses.paymentMethods.data || [],
-//             responses.subscriptionTypes.data || []
-//           );
-
-//           this.servicesConfig.dataSource = [...this.combinedData];
-//         },
-//         error: (err) => {
-//           console.error('Error loading data:', err);
-//         },
-//       });
-//   }
-
-//   private combineData(
-//     users: any[],
-//     services: any[],
-//     subscriptions: any[],
-//     subServices: any[],
-//     paymentMethods: any[],
-//     subscriptionTypes: any[]
-//   ): CombinedServiceData[] {
-//     const result: CombinedServiceData[] = [];
-
-//     subscriptions.forEach((subscription) => {
-//       const user = users.find((u) => u.userId === subscription.userId);
-//       const subService = subServices.find(
-//         (ss) => ss.subServiceId === subscription.subServiceId
-//       );
-//       const service = services.find(
-//         (s) => subService && s.serviceId === subService.serviceId
-//       );
-//       const paymentMethod = paymentMethods.find(
-//         (pm) => pm.id === subscription.paymentMethodId
-//       );
-//       const subscriptionType = subscriptionTypes.find(
-//         (st) =>
-//           subService && st.subscriptionTypeId === subService.subscriptionTypeId
-//       );
-//       //console.log('payment method:', paymentMethod);
-//       if (user && service && subService) {
-//         if (service.serviceId === this.electricityServiceId) {
-//           result.push({
-//             userId: user.userId,
-//             userName: user.name,
-//             serviceName: service.serviceCode,
-//             subscriptionType: subscriptionType?.subscriptionTypeName || 'N/A',
-//             subServiceCode: subService.subServiceCode,
-//             paymentMethod: paymentMethod?.paymentMethodName || 'N/A',
-//             startDate: this.getFormattedDate(subscription.startDate),
-//             endDate: this.getFormattedDate(subscription.endDate),
-//             discount: subscription.discount || 0,
-//             status: subscription.isActive ? 'Active' : 'Inactive',
-//             serviceId: service.serviceId,
-//             rawData: {
-//               user,
-//               service,
-//               subscription,
-//               subService,
-//               paymentMethod,
-//               subscriptionType,
-//             },
-//           });
-//         }
-//       }
-//     });
-
-//     return result;
-//   }
-
-//   // onAdd(): void {
-//   //   const dialogRef = this.dialog.open(AddComponent, {
-//   //     width: '800px', // Adjust width as needed
-//   //     maxHeight: '90vh', // Adjust height as needed
-//   //     disableClose: true, // Prevent closing by clicking outside
-//   //     data: {}, // You can pass initial data here if needed
-//   //   });
-
-//   //   dialogRef.afterClosed().subscribe((result) => {
-//   //     if (result) {
-//   //       // Handle the result if the dialog was closed with data
-//   //       console.log('Dialog closed with result:', result);
-//   //       // You might want to refresh your data here
-//   //     }
-//   //   });
-//   // }
-
-//   onEdit(item: CombinedServiceData): void {
-//     console.log('Edit item:', item);
-//   }
-
-//   onDelete(item: CombinedServiceData): void {
-//     console.log('Delete item:', item);
-//     this.subscriptionClient
-//       .deleteById(item.rawData.subscription.subscriptionId)
-//       .subscribe({
-//         next: () => this.loadCombinedData(),
-//         error: (err) => console.error('Delete failed:', err),
-//       });
-//   }
-
-//   onRefresh(): void {
-//     this.loadCombinedData();
-//   }
-//   onPageChange(event: PageEvent): void {
-//     console.log('Page changed:', event);
-//     // Add your pagination logic here, e.g.:
-//     // this.currentPage = event.pageIndex;
-//     // this.pageSize = event.pageSize;
-//     // this.loadCombinedData();
-//   }
-
-//   onSortChange(sort: Sort): void {
-//     console.log('Sort changed:', sort);
-//     // Add your sorting logic here, e.g.:
-//     // this.currentSort = sort;
-//     // this.loadCombinedData();
-//   }
-// }
 import { Component, Input, OnInit } from '@angular/core';
-import { finalize } from 'rxjs/operators';
-import { forkJoin } from 'rxjs';
-import { CommonModule } from '@angular/common';
-import { MatIcon } from '@angular/material/icon';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { ReusableCrudComponent } from '../../reusable-crud/reusable-crud.component';
 import {
-  ServiceClient,
+  FormGroup,
+  FormBuilder,
+  Validators,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
+import { CommonModule, DatePipe } from '@angular/common';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import {
   SubscriptionClient,
   SubServiceClient,
-  UsersClient,
-  SubscriptionTypeClient,
-  PaymentMethodClient,
+  SubscriptionDto,
+  UserDto,
+  SubServiceDto,
 } from '../../../../Services/api/api-client.service';
-import { DateFormatService } from '../../../../Services/dateFormate/date-format.service';
-import { CrudTableConfig } from '../../../data/menu/reusableCrudData';
-import { AuthService } from '../../../../Services/Auth/auth.service';
-import { PageEvent } from '@angular/material/paginator';
-import { Sort } from '@angular/material/sort';
-
-interface CombinedServiceData {
-  userId: number;
-  userName: string;
-  serviceName: string;
-  subscriptionType: string;
-  subServiceCode: string;
-  paymentMethod: string;
-  startDate: string;
-  endDate: string;
-  discount: number;
-  status: string;
-  serviceId: number;
-  rawData: any;
-}
+import {
+  MatCard,
+  MatCardActions,
+  MatCardContent,
+  MatCardTitle,
+} from '@angular/material/card';
+import { MatIcon } from '@angular/material/icon';
+import {
+  MatError,
+  MatFormField,
+  MatFormFieldModule,
+} from '@angular/material/form-field';
+import { MatList, MatListItem } from '@angular/material/list';
+import { MatSelectModule } from '@angular/material/select';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-electricity',
-  imports: [
-    CommonModule,
-    ReusableCrudComponent,
-    MatIcon,
-    MatInputModule,
-    MatFormFieldModule,
-  ],
+  standalone: true,
   templateUrl: './electricity.component.html',
   styleUrls: ['./electricity.component.scss'],
-  standalone: true,
+  providers: [DatePipe],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatCard,
+    MatCardTitle,
+    MatCardContent,
+    MatCardActions,
+    MatIcon,
+    MatFormFieldModule,
+    MatFormField,
+    MatError,
+    MatList,
+    MatListItem,
+    MatSelectModule,
+  ],
 })
 export class ElectricityComponent implements OnInit {
+  isEditing = false;
+  subscriptionForm: FormGroup;
+  isLoading = false;
+  errorMessage = '';
+  subServices: SubServiceDto[] = [];
+  subscriptions: SubscriptionDto[] = [];
+  selectedSubscriptionId: number | null = null;
+  subServiceNames: { [key: number]: string } = {};
   @Input() tenantId!: number;
-  loading = false;
-  combinedData: CombinedServiceData[] = [];
-  userId: number = 0;
-  electricityServiceId = 1;
-
-  servicesConfig: CrudTableConfig<CombinedServiceData> = {
-    title: 'Electricity Services Management',
-    columns: [
-      { name: 'userName', header: 'Username', sortable: true },
-      { name: 'serviceName', header: 'Service', sortable: true },
-      { name: 'subscriptionType', header: 'Sub Type' },
-      { name: 'subServiceCode', header: 'Subservice' },
-      { name: 'paymentMethod', header: 'Payment Method' },
-      { name: 'startDate', header: 'Start Date' },
-      { name: 'endDate', header: 'End Date' },
-      { name: 'discount', header: 'Discount(%)' },
-      { name: 'status', header: 'Status' },
-    ],
-    dataSource: this.combinedData,
-  };
+  @Input() selectedUser!: UserDto;
 
   constructor(
-    private serviceClient: ServiceClient,
-
+    private fb: FormBuilder,
     private subscriptionClient: SubscriptionClient,
     private subServiceClient: SubServiceClient,
-    private subscriptionTypeClient: SubscriptionTypeClient,
-    private userClient: UsersClient,
-    private paymentMethodClient: PaymentMethodClient,
-    private dateFormatService: DateFormatService,
-    private authService: AuthService
-  ) {}
-
-  ngOnInit(): void {
-    this.userId = this.authService.getUserId() || 0;
-    this.loadCombinedData();
-  }
-
-  private fetchAllData() {
-    return forkJoin({
-      users: this.userClient.getAll(),
-      services: this.serviceClient.getAll(),
-      subscriptions: this.subscriptionClient.getAll(),
-      subServices: this.subServiceClient.getAll(),
-      paymentMethods: this.paymentMethodClient.getAll(),
-      subscriptionTypes: this.subscriptionTypeClient.getAll(),
+    private snackBar: MatSnackBar,
+    private datePipe: DatePipe
+  ) {
+    this.subscriptionForm = this.fb.group({
+      subscriptionId: [0],
+      subServiceId: [null, Validators.required],
+      startDate: [0],
+      endDate: [0],
+      discount: [0, [Validators.min(0), Validators.max(100)]],
+      isActive: [true],
+      tenantId: [1],
     });
   }
 
-  loadCombinedData(): void {
-    this.loading = true;
+  async ngOnInit() {
+    try {
+      this.isLoading = true;
+      await this.loadSubServices();
+      await this.loadUserSubscriptions();
+      const currentDate = Math.floor(Date.now() / 1000);
+      const endDate = currentDate + 30 * 24 * 60 * 60;
+      this.subscriptionForm.patchValue({ startDate: currentDate, endDate });
 
-    this.fetchAllData()
-      .pipe(finalize(() => (this.loading = false)))
-      .subscribe({
-        next: (responses) => {
-          console.log('API Responses:', responses);
-          this.combinedData = this.processData(
-            responses.users.data || [],
-            responses.services.data || [],
-            responses.subscriptions.data || [],
-            responses.subServices.data || [],
-            responses.paymentMethods.data || [],
-            responses.subscriptionTypes.data || []
-          );
-          this.servicesConfig.dataSource = [...this.combinedData];
-          console.log(responses.users.data);
-          console.log(responses.services.data);
-          console.log(responses.subscriptions.data);
-          console.log(responses.subServices.data);
-          console.log(responses.paymentMethods.data);
-          console.log(responses.subscriptionTypes.data);
-        },
-        error: (err) => {
-          console.error('Error loading data:', err);
-        },
-      });
-  }
-
-  private processData(
-    users: any[],
-    services: any[],
-    subscriptions: any[],
-    subServices: any[],
-    paymentMethods: any[],
-    subscriptionTypes: any[]
-  ): CombinedServiceData[] {
-    return subscriptions
-      .map((subscription) => {
-        const user = users.find((u) => u.userId === subscription.userId);
-        const subService = subServices.find(
-          (ss) => ss.subServiceId === subscription.subServiceId
-        );
-        const service = services.find(
-          (s) => subService && s.serviceId === subService.serviceId
-        );
-
-        const paymentMethod = paymentMethods.find(
-          (pm) => pm.Payment === subscription.paymentMethodId
-        );
-
-        const subscriptionType = subscriptionTypes.find(
-          (st) => st.subService === subscription.subscriptionTypeId
-        );
-
-        if (user && service && subService) {
-          if (service.serviceId === this.electricityServiceId) {
-            const startDate =
-              typeof subscription.startDate === 'string'
-                ? Number(subscription.startDate)
-                : subscription.startDate;
-            const endDate =
-              typeof subscription.endDate === 'string'
-                ? Number(subscription.endDate)
-                : subscription.endDate;
-
-            return {
-              userId: user.userId,
-              userName: user.name,
-              serviceName: service.serviceName,
-              subscriptionType:
-                subscriptionType?.name ||
-                subscriptionType?.subscriptionTypeName ||
-                'N/A',
-              subServiceCode: subService.subServiceCode,
-              paymentMethod:
-                paymentMethod?.name ||
-                paymentMethod?.paymentMethodName ||
-                'N/A',
-              startDate: this.dateFormatService.unixToDateString(startDate),
-              endDate: this.dateFormatService.unixToDateString(endDate),
-              discount: subscription.discount || 0,
-              status: subscription.isActive ? 'Active' : 'Inactive',
-              serviceId: service.serviceId,
-              rawData: {
-                user,
-                service,
-                subscription,
-                subService,
-                paymentMethod,
-                subscriptionType,
-              },
-            };
+      this.subscriptionForm
+        .get('subServiceId')
+        ?.valueChanges.subscribe(async (id) => {
+          if (id) {
+            const price = await this.getPrice(id);
+            // Optional: update a field or state with price if needed
+            console.log('Base Price:', price);
           }
-        }
-        return null;
-      })
-      .filter((item) => item !== null) as CombinedServiceData[];
+        });
+
+      if (this.subscriptions.length > 0) {
+        this.subscriptionForm.disable();
+      }
+    } catch (error) {
+      this.errorMessage = 'Failed to initialize form.';
+      this.snackBar.open(this.errorMessage, 'Close', { duration: 3000 });
+    } finally {
+      this.isLoading = false;
+    }
   }
 
-  private getFormattedDate(timestamp: number): string {
-    const date = new Date(timestamp);
-    return date.toISOString();
-  }
-
-  onEdit(item: CombinedServiceData): void {
-    console.log('Edit item:', item);
-    // Add edit logic here
-  }
-
-  onDelete(item: CombinedServiceData): void {
-    console.log('Delete item:', item);
-    this.subscriptionClient
-      .deleteById(item.rawData.subscription.subscriptionId)
-      .subscribe({
-        next: () => this.loadCombinedData(),
-        error: (err) => console.error('Delete failed:', err),
+  private async loadSubServices() {
+    try {
+      const response = await this.subServiceClient.getAll().toPromise();
+      this.subServices = (response?.data || []).filter(
+        (s: any) => s.serviceId === 1
+      );
+      // Cache subservice names
+      this.subServices.forEach((service) => {
+        this.subServiceNames[service.subServiceId!] =
+          service.subServiceName || 'Unknown';
       });
+    } catch (error) {
+      console.error('Error loading subservices:', error);
+    }
   }
 
-  onRefresh(): void {
-    this.loadCombinedData();
+  private async loadUserSubscriptions() {
+    try {
+      const response = await this.subscriptionClient.getAll().toPromise();
+      this.subscriptions = (response?.data || []).filter(
+        (s: SubscriptionDto) => s.userId === this.selectedUser.userId
+      );
+    } catch (error) {
+      console.error('Error loading subscriptions:', error);
+    }
   }
 
-  onPageChange(event: PageEvent): void {
-    console.log('Page changed:', event);
+  selectSubscriptionToEdit(subscription: SubscriptionDto) {
+    this.selectedSubscriptionId = subscription.subscriptionId ?? null;
+    this.subscriptionForm.patchValue(subscription);
+    this.subscriptionForm.enable();
+    this.isEditing = true;
   }
 
-  onSortChange(sort: Sort): void {
-    console.log('Sort changed:', sort);
+  async submit() {
+    if (this.subscriptionForm.invalid) {
+      this.snackBar.open('Please fix form errors.', 'Close', {
+        duration: 3000,
+      });
+      return;
+    }
+
+    this.isLoading = true;
+    try {
+      const data = new SubscriptionDto();
+      Object.assign(data, this.subscriptionForm.value);
+      data.userId = this.selectedUser.userId;
+
+      if (this.selectedSubscriptionId) {
+        data.subscriptionId = this.selectedSubscriptionId;
+        await this.subscriptionClient.update(data).toPromise();
+        this.snackBar.open('Subscription updated successfully!', 'Close', {
+          duration: 3000,
+        });
+      } else {
+        data.subscriptionId = 0;
+        await this.subscriptionClient.add(data).toPromise();
+        this.snackBar.open('Subscription created successfully!', 'Close', {
+          duration: 3000,
+        });
+      }
+
+      await this.loadUserSubscriptions();
+      this.resetForm();
+    } catch (error) {
+      this.snackBar.open('Error saving subscription.', 'Close', {
+        duration: 3000,
+      });
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  async deleteSubscription() {
+    if (!this.selectedSubscriptionId) return;
+    this.isLoading = true;
+    try {
+      await this.subscriptionClient
+        .delete({
+          subscriptionId: this.selectedSubscriptionId,
+        } as SubscriptionDto)
+        .toPromise();
+      this.snackBar.open('Subscription deleted successfully!', 'Close', {
+        duration: 3000,
+      });
+      await this.loadUserSubscriptions();
+      this.resetForm();
+    } catch (error) {
+      this.snackBar.open('Error deleting subscription.', 'Close', {
+        duration: 3000,
+      });
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  resetForm() {
+    this.selectedSubscriptionId = null;
+    this.isEditing = false;
+    const currentDate = Math.floor(Date.now() / 1000);
+    const endDate = currentDate + 30 * 24 * 60 * 60;
+    this.subscriptionForm.reset({
+      subServiceId: null,
+      discount: 0,
+      startDate: currentDate,
+      endDate,
+      isActive: true,
+      tenantId: this.tenantId,
+    });
+
+    // Disable form if there are existing subscriptions
+    if (this.subscriptions.length > 0) {
+      this.subscriptionForm.disable();
+    } else {
+      this.subscriptionForm.enable();
+    }
+  }
+
+  getFormattedDate(timestamp: number): string {
+    return (
+      this.datePipe.transform(new Date(timestamp * 1000), 'mediumDate') || ''
+    );
+  }
+
+  get hasSubscriptions(): boolean {
+    return this.subscriptions.length > 0;
+  }
+
+  getSubServiceName(subServiceId: number): string {
+    return this.subServiceNames[subServiceId] || 'Unknown';
+  }
+  private async getPrice(subServiceId: number): Promise<number> {
+    try {
+      const subService = await firstValueFrom(
+        this.subServiceClient.getById(subServiceId)
+      );
+      return subService?.data?.price ?? 0;
+    } catch (error) {
+      console.error('Failed to fetch price for subservice:', error);
+      return 0;
+    }
+  }
+  get calculatedPrice(): number {
+    const subServiceId = this.subscriptionForm.get('subServiceId')?.value;
+    const discount = this.subscriptionForm.get('discount')?.value || 0;
+    const subService = this.subServices.find(
+      (s) => s.subServiceId === subServiceId
+    );
+    const basePrice = subService?.price || 0;
+    return basePrice - (basePrice * discount) / 100;
   }
 }

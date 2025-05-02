@@ -37,6 +37,7 @@ import {
 } from '../../data/menu/reusableCrudData';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
+import { MatInputModule } from '@angular/material/input';
 
 @Component({
   selector: 'app-reusable-crud',
@@ -61,13 +62,15 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
     MatFormFieldModule,
     MatChipsModule,
     ReactiveFormsModule,
+    MatInputModule,
   ],
   templateUrl: './reusable-crud.component.html',
   styleUrl: './reusable-crud.component.scss',
 })
 export class ReusableCrudComponent<T> implements OnInit {
   searchControl = new FormControl('');
-
+  @Input() searchTerm: string = ''; // Add this input
+  @Output() searchTermChange = new EventEmitter<string>(); // Add this output
   @Output() rowClick = new EventEmitter<T>();
   @Input() config!: CrudTableConfig<T>;
   @Input() isLoading = false;
@@ -96,7 +99,14 @@ export class ReusableCrudComponent<T> implements OnInit {
 
   ngOnInit() {
     this.validateConfig();
-
+    this.searchControl.valueChanges
+      .pipe(debounceTime(300), distinctUntilChanged())
+      .subscribe((term) => {
+        if (term !== null) {
+          this.searchTerm = term;
+          this.searchTermChange.emit(term);
+        }
+      });
     if (this.showSearch) {
       this.searchControl.valueChanges
         .pipe(debounceTime(300), distinctUntilChanged())

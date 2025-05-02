@@ -1,16 +1,35 @@
-<div class="container">
-<h2 mat-dialog-title>Tenant Services</h2>
 <mat-dialog-content class="mat-typography">
-    <div *ngFor="let service of services" class="service-container">
-        <ng-container [ngSwitch]="service.serviceId">
-            <app-electricity *ngSwitchCase="1" [tenantId]="tenantId"></app-electricity>
-            <app-water *ngSwitchCase="2" [tenantId]="tenantId"></app-water>
-            <app-internet *ngSwitchCase="3" [tenantId]="tenantId"></app-internet>
-            <div *ngSwitchDefault>Unknown service type (ID: {{service.serviceId}})</div>
+    <div *ngIf="loading" class="loading-spinner">
+        <mat-spinner diameter="50"></mat-spinner>
+    </div>
+
+    <!-- Tab buttons -->
+    <div class="service-tabs">
+        <button mat-raised-button *ngFor="let service of services"
+            [class.active]="activeServiceId === service.serviceId" (click)="setActiveService(service.serviceId ?? 0)">
+            {{getServiceName(service.serviceId ??0)}}
+        </button>
+    </div>
+
+    <!-- Content area -->
+    <div class="service-content">
+        <ng-container [ngSwitch]="activeServiceId">
+            <app-electricity *ngSwitchCase="1" [tenantId]="tenantId" [selectedUser]="selectedUser">
+            </app-electricity>
+
+            <app-water *ngSwitchCase="2" [tenantId]="tenantId" [selectedUser]="selectedUser">
+            </app-water>
+
+            <app-internet *ngSwitchCase="3" [tenantId]="tenantId" [selectedUser]="selectedUser">
+            </app-internet>
+
+            <div *ngSwitchDefault class="unknown-service">
+                Please select a service
+            </div>
         </ng-container>
     </div>
 </mat-dialog-content>
-<mat-dialog-actions align="end">
-    <button mat-button mat-dialog-close="false">Close</button>
+
+<mat-dialog-actions align="end" class="end-actions">
+    <button mat-button mat-dialog-close>Close</button>
 </mat-dialog-actions>
-</div>
