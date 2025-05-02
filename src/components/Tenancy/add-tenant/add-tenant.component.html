@@ -1,0 +1,178 @@
+<div class="form-container">
+    <h1>Create New Tenant</h1>
+
+    <form [formGroup]="tenantForm" class="tenant-form">
+        <!-- Tenant Information Section -->
+        <div class="row">
+            <div class="col-md-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Tenant Name</mat-label>
+                    <input matInput formControlName="tenantName" required>
+                    <mat-error *ngIf="tenantForm.get('tenantName')?.hasError('required')">
+                        Tenant name is required
+                    </mat-error>
+                </mat-form-field>
+            </div>
+            <div class="col-md-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Address</mat-label>
+                    <input matInput formControlName="address" required>
+                    <mat-error *ngIf="tenantForm.get('address')?.hasError('required')">
+                        Address is required
+                    </mat-error>
+                </mat-form-field>
+            </div>
+        </div>
+        <div class="row my-3">
+            <div class="col-md-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Phone Number</mat-label>
+                    <input matInput formControlName="phoneNumber" required>
+                    <mat-error *ngIf="tenantForm.get('phoneNumber')?.hasError('required')">
+                        Phone number is required
+                    </mat-error>
+                    <mat-error *ngIf="tenantForm.get('phoneNumber')?.hasError('pattern')">
+                        Please enter a valid phone number (digits only)
+                    </mat-error>
+                </mat-form-field>
+            </div>
+            <div class="col-md-6">
+                <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Email</mat-label>
+                    <input matInput formControlName="email" required>
+                    <mat-error *ngIf="tenantForm.get('email')?.hasError('required')">
+                        Email is required
+                    </mat-error>
+                    <mat-error *ngIf="tenantForm.get('email')?.hasError('email')">
+                        Please enter a valid email
+                    </mat-error>
+                </mat-form-field>
+            </div>
+        </div>
+
+        <!-- Admin Information Section -->
+        <div class="form-section d-flex justify-content-start flex-wrap">
+            <h2>Admin Account Details</h2>
+            <div class="form-grid">
+                <div class="row">
+                    <mat-form-field appearance="outline">
+                        <mat-label>Full Name</mat-label>
+                        <input matInput formControlName="adminName" required>
+                        <mat-error *ngIf="tenantForm.get('adminName')?.hasError('required')">
+                            Name is required
+                        </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                        <mat-label>Username</mat-label>
+                        <input matInput formControlName="adminUsername" required>
+                        <mat-error *ngIf="tenantForm.get('adminUsername')?.hasError('required')">
+                            Username is required
+                        </mat-error>
+                        <mat-error *ngIf="tenantForm.get('adminUsername')?.hasError('minlength')">
+                            Username must be at least 3 characters
+                        </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                        <mat-label>Email</mat-label>
+                        <input matInput formControlName="adminEmail" required>
+                        <mat-error *ngIf="tenantForm.get('adminEmail')?.hasError('required')">
+                            Email is required
+                        </mat-error>
+                        <mat-error *ngIf="tenantForm.get('adminEmail')?.hasError('email')">
+                            Please enter a valid email
+                        </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                        <mat-label>Phone Number</mat-label>
+                        <input matInput formControlName="adminPhoneNumber">
+                        <mat-error *ngIf="tenantForm.get('adminPhoneNumber')?.hasError('pattern')">
+                            Please enter a valid phone number (digits only)
+                        </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="password-field">
+                        <mat-label>Password</mat-label>
+                        <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="adminPasswordHash"
+                            required>
+                        <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword"
+                            [attr.aria-label]="'Hide password'" [attr.aria-pressed]="hidePassword">
+                            <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+                        </button>
+                        <mat-hint>Must contain at least 8 characters, one uppercase, one lowercase, one number and one
+                            special character</mat-hint>
+                        <mat-error *ngIf="tenantForm.get('adminPasswordHash')?.hasError('required')">
+                            Password is required
+                        </mat-error>
+                        <mat-error *ngIf="tenantForm.get('adminPasswordHash')?.hasError('minlength')">
+                            Password must be at least 8 characters
+                        </mat-error>
+                        <mat-error *ngIf="tenantForm.get('adminPasswordHash')?.hasError('pattern')">
+                            Password doesn't meet complexity requirements
+                        </mat-error>
+                    </mat-form-field>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Address Section (Optional) -->
+        <div class="form-section">
+            <h2>Admin Address (Optional)</h2>
+            <div class="address-grid">
+                <mat-form-field appearance="outline">
+                    <mat-label>Country</mat-label>
+                    <input matInput formControlName="adminCountry">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Street</mat-label>
+                    <input matInput formControlName="adminStreet">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>City</mat-label>
+                    <input matInput formControlName="adminCity">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Region</mat-label>
+                    <input matInput formControlName="adminRegion">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Governorates</mat-label>
+                    <input matInput formControlName="adminGovernorates">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Building</mat-label>
+                    <input matInput formControlName="adminBuilding">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Floor</mat-label>
+                    <input matInput type="number" formControlName="adminFloor">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Direction</mat-label>
+                    <input matInput formControlName="adminDirection">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Block</mat-label>
+                    <input matInput formControlName="adminBlock">
+                </mat-form-field>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button mat-raised-button color="warn" type="button" (click)="resetForm()">Reset</button>
+            <button mat-raised-button color="primary" (click)="submit()" [disabled]="!tenantForm.valid || isSubmitting">
+                createTenant
+            </button>
+        </div>
+    </form>
+</div>

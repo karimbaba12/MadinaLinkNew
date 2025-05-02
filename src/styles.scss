@@ -2,6 +2,7 @@
 // For more information: https://material.angular.io/guide/theming
 @use "@angular/material" as mat;
 
+
 html {
   @include mat.theme(
     (
@@ -28,7 +29,7 @@ body {
 .success-snackbar {
   background-color: #2ecc71 !important;
   color: white !important;
-  
+
   .mat-simple-snackbar-action {
     color: white !important;
   }
@@ -37,7 +38,7 @@ body {
 .error-snackbar {
   background-color: #e74c3c !important;
   color: white !important;
-  
+
   .mat-simple-snackbar-action {
     color: white !important;
   }

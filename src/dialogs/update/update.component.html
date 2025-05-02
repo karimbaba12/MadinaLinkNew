@@ -164,8 +164,8 @@
         <button type="button" class="btn btn-cancel" (click)="dialogRef.close()" [disabled]="isSaving">
             <i class="bi bi-x-lg"></i> Cancel
         </button>
-        <button type="button" class="btn btn-submit" (click)="submit()"
-            [disabled]="!userForm?.valid || !hasFormChanged() || isSaving" [class.btn-saving]="isSaving">
+        <button type="button" class="btn btn-submit" (click)="submit()" [disabled]="!userForm?.valid  || isSaving"
+            [class.btn-saving]="isSaving">
             <span *ngIf="!isSaving"><i class="bi bi-save"></i> Update User</span>
             <span *ngIf="isSaving"><i class="bi bi-hourglass"></i> Saving...</span>
         </button>

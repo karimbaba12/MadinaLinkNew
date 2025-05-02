@@ -72,7 +72,6 @@ export class AddComponent implements OnInit {
       this.isLoading = true;
       this.currentUserRoleId = this.authService.getUserRoleId();
       this.currentUserTenantId = this.authService.getUserTenantId();
-      // Load roles and update form
       await this.roleService.loadRoles();
       this.availableRoles = this.roleService.getAvailableRoles(
         this.currentUserRoleId || 0
@@ -91,10 +90,6 @@ export class AddComponent implements OnInit {
   }
 
   async submit() {
-    const payloadSize = JSON.stringify(this.userForm.value).length;
-    console.log('rnnnning');
-    console.log('Payload size:', payloadSize, 'bytes');
-
     if (this.userForm.valid) {
       const formValue = this.userForm.value;
 
@@ -137,11 +132,6 @@ export class AddComponent implements OnInit {
     }
   }
 
-  private markAllAsTouched() {
-    Object.values(this.userForm.controls).forEach((control) => {
-      control.markAsTouched();
-    });
-  }
   private validateDataBeforeSubmit(formValue: any): boolean {
     // Check roleId is a valid number
     if (isNaN(Number(formValue.roleId))) {

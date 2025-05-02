@@ -5,6 +5,8 @@ import { AdminComponent } from '../Pages/admin/admin/admin.component';
 import { AuthGuard } from '../../guards/auth.guard';
 import { ElectricityComponent } from '../components/Services/electricity/electricity.component';
 import { UsermanagementComponent } from '../components/usermanagement/usermanagement.component';
+import { AddTenantComponent } from '../components/Tenancy/add-tenant/add-tenant.component';
+import { UpdateTenantComponent } from '../components/Tenancy/update-tenant/update-tenant.component';
 
 export const routes: Routes = [
   {
@@ -27,6 +29,14 @@ export const routes: Routes = [
       {
         path: 'userManagement',
         component: UsermanagementComponent,
+      },
+      {
+        path: 'addTenant',
+        component: AddTenantComponent,
+      },
+      {
+        path: 'updateTenant',
+        component: UpdateTenantComponent,
       },
     ],
   },

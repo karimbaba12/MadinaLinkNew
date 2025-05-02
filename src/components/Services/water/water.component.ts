@@ -31,6 +31,7 @@ import { MatIcon } from '@angular/material/icon';
 import { MatList, MatListItem } from '@angular/material/list';
 import { MatSelectModule } from '@angular/material/select';
 import { firstValueFrom } from 'rxjs';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
 @Component({
   selector: 'app-water',
@@ -49,6 +50,7 @@ import { firstValueFrom } from 'rxjs';
     MatListItem,
     MatCard,
     MatSelectModule,
+    MatSlideToggleModule,
   ],
   templateUrl: './water.component.html',
   styleUrl: './water.component.scss',
@@ -266,5 +268,8 @@ export class WaterComponent {
       console.error('Failed to fetch price for subservice:', error);
       return 0;
     }
+  }
+  onStatusChange(isActive: boolean) {
+    this.subscriptionForm.patchValue({ isActive });
   }
 }

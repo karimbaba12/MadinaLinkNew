@@ -45,6 +45,12 @@
                     Calculated Price: {{ calculatedPrice | currency }}
                 </span>
             </div>
+            <div class="toggle my-3">
+                <mat-slide-toggle formControlName="isActive" color="primary" (change)="onStatusChange($event.checked)">
+                    <span *ngIf="subscriptionForm.get('isActive')?.value">Active</span>
+                    <span *ngIf="!subscriptionForm.get('isActive')?.value">Inactive</span>
+                </mat-slide-toggle>
+            </div>
             <div class="dates-container">
                 <div class="date-field">
                     <label>Start Date</label>

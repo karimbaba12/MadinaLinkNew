@@ -3543,6 +3543,16 @@ export class SubServiceClient implements ISubServiceClient {
 
 export interface ITenantClient {
     /**
+     * @param body (optional) 
+     * @return OK
+     */
+    addTenantWithAdmin(body?: TenantWithAdminDto | undefined): Observable<void>;
+    /**
+     * @param name (optional) 
+     * @return OK
+     */
+    search(name?: string | undefined): Observable<void>;
+    /**
      * @return OK
      */
     getAll(): Observable<ApiResponse_1OfOfIEnumerable_1OfOfTenantDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
@@ -3584,6 +3594,112 @@ export class TenantClient implements ITenantClient {
     constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
         this.http = http;
         this.baseUrl = baseUrl ?? "";
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    addTenantWithAdmin(body?: TenantWithAdminDto | undefined, httpContext?: HttpContext): Observable<void> {
+        let url_ = this.baseUrl + "/api/Tenant/AddTenantWithAdmin";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            context: httpContext,
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processAddTenantWithAdmin(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processAddTenantWithAdmin(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<void>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<void>;
+        }));
+    }
+
+    protected processAddTenantWithAdmin(response: HttpResponseBase): Observable<void> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return _observableOf(null as any);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param name (optional) 
+     * @return OK
+     */
+    search(name?: string | undefined, httpContext?: HttpContext): Observable<void> {
+        let url_ = this.baseUrl + "/api/Tenant/search?";
+        if (name === null)
+            throw new Error("The parameter 'name' cannot be null.");
+        else if (name !== undefined)
+            url_ += "name=" + encodeURIComponent("" + name) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            context: httpContext,
+            headers: new HttpHeaders({
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processSearch(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processSearch(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<void>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<void>;
+        }));
+    }
+
+    protected processSearch(response: HttpResponseBase): Observable<void> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return _observableOf(null as any);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
     }
 
     /**
@@ -5617,7 +5733,8 @@ export class SubServiceDto implements ISubServiceDto {
     serviceId?: number;
     subscriptionTypeId?: number;
     subServiceCode?: string | undefined;
-    subService1?: string | undefined;
+    subServiceName?: string | undefined;
+    subServiceQuantity?: number;
     price?: number;
     tenantId?: number;
 
@@ -5636,7 +5753,8 @@ export class SubServiceDto implements ISubServiceDto {
             this.serviceId = _data["serviceId"];
             this.subscriptionTypeId = _data["subscriptionTypeId"];
             this.subServiceCode = _data["subServiceCode"];
-            this.subService1 = _data["subService1"];
+            this.subServiceName = _data["subServiceName"];
+            this.subServiceQuantity = _data["subServiceQuantity"];
             this.price = _data["price"];
             this.tenantId = _data["tenantId"];
         }
@@ -5655,7 +5773,8 @@ export class SubServiceDto implements ISubServiceDto {
         data["serviceId"] = this.serviceId;
         data["subscriptionTypeId"] = this.subscriptionTypeId;
         data["subServiceCode"] = this.subServiceCode;
-        data["subService1"] = this.subService1;
+        data["subServiceName"] = this.subServiceName;
+        data["subServiceQuantity"] = this.subServiceQuantity;
         data["price"] = this.price;
         data["tenantId"] = this.tenantId;
         return data;
@@ -5667,7 +5786,8 @@ export interface ISubServiceDto {
     serviceId?: number;
     subscriptionTypeId?: number;
     subServiceCode?: string | undefined;
-    subService1?: string | undefined;
+    subServiceName?: string | undefined;
+    subServiceQuantity?: number;
     price?: number;
     tenantId?: number;
 }
@@ -5718,6 +5838,7 @@ export class SubscriptionDto implements ISubscriptionDto {
     userId?: number;
     startDate?: number;
     endDate?: number;
+    price?: number;
     discount?: number;
     isActive?: boolean;
     tenantId?: number;
@@ -5738,6 +5859,7 @@ export class SubscriptionDto implements ISubscriptionDto {
             this.userId = _data["userId"];
             this.startDate = _data["startDate"];
             this.endDate = _data["endDate"];
+            this.price = _data["price"];
             this.discount = _data["discount"];
             this.isActive = _data["isActive"];
             this.tenantId = _data["tenantId"];
@@ -5758,6 +5880,7 @@ export class SubscriptionDto implements ISubscriptionDto {
         data["userId"] = this.userId;
         data["startDate"] = this.startDate;
         data["endDate"] = this.endDate;
+        data["price"] = this.price;
         data["discount"] = this.discount;
         data["isActive"] = this.isActive;
         data["tenantId"] = this.tenantId;
@@ -5771,6 +5894,7 @@ export interface ISubscriptionDto {
     userId?: number;
     startDate?: number;
     endDate?: number;
+    price?: number;
     discount?: number;
     isActive?: boolean;
     tenantId?: number;
@@ -5878,6 +6002,70 @@ export interface ITenantDto {
     email?: string | undefined;
     createdAt?: number;
     isActive?: boolean;
+}
+
+export class TenantWithAdminDto implements ITenantWithAdminDto {
+    tenantId?: number;
+    tenantName?: string | undefined;
+    address?: string | undefined;
+    phoneNumber?: number;
+    email?: string | undefined;
+    createdAt?: number;
+    isActive?: boolean;
+    user?: UserDto;
+
+    constructor(data?: ITenantWithAdminDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.tenantId = _data["tenantId"];
+            this.tenantName = _data["tenantName"];
+            this.address = _data["address"];
+            this.phoneNumber = _data["phoneNumber"];
+            this.email = _data["email"];
+            this.createdAt = _data["createdAt"];
+            this.isActive = _data["isActive"];
+            this.user = _data["user"] ? UserDto.fromJS(_data["user"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): TenantWithAdminDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new TenantWithAdminDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["tenantId"] = this.tenantId;
+        data["tenantName"] = this.tenantName;
+        data["address"] = this.address;
+        data["phoneNumber"] = this.phoneNumber;
+        data["email"] = this.email;
+        data["createdAt"] = this.createdAt;
+        data["isActive"] = this.isActive;
+        data["user"] = this.user ? this.user.toJSON() : <any>undefined;
+        return data;
+    }
+}
+
+export interface ITenantWithAdminDto {
+    tenantId?: number;
+    tenantName?: string | undefined;
+    address?: string | undefined;
+    phoneNumber?: number;
+    email?: string | undefined;
+    createdAt?: number;
+    isActive?: boolean;
+    user?: UserDto;
 }
 
 export class TokenDto implements ITokenDto {

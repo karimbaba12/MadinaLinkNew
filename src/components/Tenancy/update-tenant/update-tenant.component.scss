@@ -1,0 +1,153 @@
+.tenant-management-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+
+  .header {
+    margin-bottom: 2rem;
+
+    h1 {
+      margin-bottom: 1.5rem;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+
+      .search-field {
+        flex: 1;
+        min-width: 100px;
+      }
+
+      .filter-buttons {
+        display: flex;
+        gap: 0.5rem;
+
+        button {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+      }
+    }
+  }
+
+  .content {
+    min-height: 300px;
+    position: relative;
+
+    mat-spinner {
+      margin: 2rem auto;
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 3rem;
+
+      mat-icon {
+        font-size: 3rem;
+        width: 3rem;
+        height: 3rem;
+        margin-bottom: 1rem;
+      }
+
+      p {
+        font-size: 1.2rem;
+      }
+    }
+  }
+
+  .tenant-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+
+    .tenant-card {
+      transition: all 0.3s ease;
+
+      &.active {
+        border-left: 4px solid green;
+      }
+
+      &.inactive {
+        border-left: 4px solid red;
+      }
+
+      mat-card-header {
+        padding-bottom: 0.5rem;
+
+        .status-badge {
+          padding: 0.25rem 0.5rem;
+          border-radius: 12px;
+          font-size: 0.75rem;
+          font-weight: 500;
+
+          &.active {
+            background-color: green;
+            color: green;
+          }
+
+          &:not(.active) {
+            background-color: red;
+            color: red;
+          }
+        }
+      }
+
+      mat-card-content {
+        .tenant-info {
+          p {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            color: gray;
+
+            mat-icon {
+              color: gray;
+              font-size: 1rem;
+              width: 1rem;
+              height: 1rem;
+            }
+          }
+        }
+      }
+
+      mat-card-actions {
+        display: flex;
+        justify-content: flex-end;
+        padding: 0.5rem 1rem 1rem;
+
+        .status-toggle {
+          font-size: 0.875rem;
+        }
+      }
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .tenant-management-container {
+    padding: 1rem;
+
+    .controls {
+      flex-direction: column;
+      align-items: stretch;
+
+      .search-field {
+        min-width: 100% !important;
+      }
+
+      .filter-buttons {
+        flex-direction: column;
+      }
+    }
+
+    .tenant-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+}

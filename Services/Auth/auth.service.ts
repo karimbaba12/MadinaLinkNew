@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { catchError, firstValueFrom, map, Observable, of, tap } from 'rxjs';
@@ -13,7 +13,7 @@ import {
 @Injectable({
   providedIn: 'root',
 })
-export class AuthService {
+export class AuthService implements OnInit {
   constructor(
     private http: HttpClient,
     private router: Router,
@@ -21,6 +21,11 @@ export class AuthService {
     private UsersClient: UsersClient,
     private RoleClient: RoleClient
   ) {}
+  ngOnInit(): void {
+    setInterval(() => {
+      this.checkTokenValidity();
+    }, 60000);
+  }
 
   login(
     credentials: LoginRequestDTO
@@ -49,8 +54,33 @@ export class AuthService {
 
   logout(): void {
     localStorage.removeItem('auth_token');
-    localStorage.removeItem('data');
     this.router.navigate(['/login']);
+  }
+  checkTokenValidity() {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      this.logout();
+      return;
+    }
+
+    const isExpired = this.isTokenExpired(token);
+    if (isExpired) {
+      this.logout();
+    }
+  }
+
+  private isTokenExpired(token: string): boolean {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const exp = payload.exp;
+      console.log('Token expiration time:', exp);
+
+      const now = Math.floor(Date.now() / 1000);
+
+      return exp < now;
+    } catch (error) {
+      return true;
+    }
   }
 
   getDecodedToken(): any {
@@ -116,15 +146,6 @@ export class AuthService {
     }
   }
 
-  isAdmin(): boolean {
-    const roleId = this.getUserRoleId();
-    return roleId === 2;
-  }
-
-  isSuperAdmin(): boolean {
-    const roleId = this.getUserRoleId();
-    return roleId === 3;
-  }
   isLoggedIn(): boolean {
     return !!this.getDecodedToken();
   }

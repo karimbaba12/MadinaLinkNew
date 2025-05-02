@@ -30,7 +30,7 @@ import {
 import { MatList, MatListItem } from '@angular/material/list';
 import { MatSelectModule } from '@angular/material/select';
 import { firstValueFrom } from 'rxjs';
-
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 @Component({
   selector: 'app-electricity',
   standalone: true,
@@ -52,6 +52,7 @@ import { firstValueFrom } from 'rxjs';
     MatList,
     MatListItem,
     MatSelectModule,
+    MatSlideToggleModule,
   ],
 })
 export class ElectricityComponent implements OnInit {
@@ -78,6 +79,7 @@ export class ElectricityComponent implements OnInit {
       subServiceId: [null, Validators.required],
       startDate: [0],
       endDate: [0],
+      price: [0],
       discount: [0, [Validators.min(0), Validators.max(100)]],
       isActive: [true],
       tenantId: [1],
@@ -264,5 +266,9 @@ export class ElectricityComponent implements OnInit {
     );
     const basePrice = subService?.price || 0;
     return basePrice - (basePrice * discount) / 100;
+  }
+
+  onStatusChange(isActive: boolean) {
+    this.subscriptionForm.patchValue({ isActive });
   }
 }

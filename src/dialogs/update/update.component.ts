@@ -14,7 +14,7 @@ import { RoleService } from '../../../Services/RoleService/role.service';
 import { AddressDto, UserDto } from '../../../Services/api/api-client.service';
 import { CommonModule } from '@angular/common';
 
-const PASSWORD_UNCHANGED_FLAG = '[UNCHANGED]';
+const PASSWORD_UNCHANGED_FLAG = '[unchanged]';
 const PASSWORD_PATTERN =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/;
 
@@ -42,7 +42,6 @@ export class UpdateComponent implements OnInit {
   ) {}
 
   async ngOnInit() {
-    console.log(`the data are`, this.data.user.address);
     this.currentUserRoleId = this.authService.getUserRoleId();
     this.isEditingOwnProfile =
       this.data.user.userId === this.authService.getUserId();
@@ -52,13 +51,6 @@ export class UpdateComponent implements OnInit {
     );
 
     this.initializeForm();
-  }
-
-  private async initializeRoles() {
-    await this.roleService.loadRoles();
-    this.availableRoles = this.roleService.getAvailableRoles(
-      this.currentUserRoleId || 0
-    );
   }
 
   initializeForm() {
@@ -115,45 +107,31 @@ export class UpdateComponent implements OnInit {
 
     this.initialFormValues = this.userForm.getRawValue();
 
-    // Track password changes
     this.userForm.get('passwordHash')?.valueChanges.subscribe((value) => {
       this.isPasswordChanged = value !== PASSWORD_UNCHANGED_FLAG;
     });
   }
-  hasFormChanged(): boolean {
-    const currentValues = this.userForm.getRawValue();
-    return !_.isEqual(currentValues, this.initialFormValues);
-  }
 
   async submit() {
-    if (this.userForm?.valid && this.hasFormChanged()) {
+    if (this.userForm?.valid) {
       this.isSaving = true;
       try {
         const formValue = this.userForm.getRawValue();
         const userData = this.prepareUserData(formValue);
         this.dialogRef.close(userData);
       } catch (error) {
-        console.error('Error during submission:', error);
       } finally {
         this.isSaving = false;
       }
     }
   }
+
   private prepareUserData(formValue: any): UserDto {
-    const userData: UserDto = {
+    return {
       ...formValue,
       phoneNumber: Number(formValue.phoneNumber),
       address: formValue.address,
     };
-
-    // Only include passwordHash if it was changed
-    if (formValue.passwordHash !== PASSWORD_UNCHANGED_FLAG) {
-      userData.passwordHash = formValue.passwordHash;
-    } else {
-      delete userData.passwordHash; // Or set to undefined
-    }
-
-    return userData;
   }
 
   canEditRole(): boolean {

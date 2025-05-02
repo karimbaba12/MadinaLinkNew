@@ -105,28 +105,6 @@ export const SuperadminMenus: Navigation[] = [
         type: 'item',
       },
       {
-        id: 'system',
-        title: 'System Settings',
-        icon: 'build',
-        type: 'collapse',
-        children: [
-          {
-            id: 'config',
-            title: 'Configuration',
-            icon: 'tune',
-            url: '/system/configuration',
-            type: 'item',
-          },
-          {
-            id: 'logs',
-            title: 'System Logs',
-            icon: 'history',
-            url: '/system/logs',
-            type: 'item',
-          },
-        ],
-      },
-      {
         id: 'admin-management',
         title: 'Admin Management',
         icon: 'admin_panel_settings',
@@ -153,6 +131,27 @@ export const SuperadminMenus: Navigation[] = [
         title: 'Advanced Analytics',
         icon: 'insights',
         url: '/analytics',
+        type: 'item',
+      },
+    ],
+  },
+  {
+    id: 'superadmin-group',
+    title: 'Tenant',
+    type: 'group',
+    children: [
+      {
+        id: 'allTenant',
+        title: 'All Tenants',
+        icon: 'dashboard',
+        url: '/admin/updateTenant',
+        type: 'item',
+      },
+      {
+        id: 'addTenant',
+        title: 'Add Tenant',
+        icon: 'dashboard',
+        url: '/admin/addTenant',
         type: 'item',
       },
     ],

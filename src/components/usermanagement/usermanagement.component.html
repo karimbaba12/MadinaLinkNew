@@ -1,16 +1,4 @@
 <div class="user-management-container">
-    <!-- Add this search bar section -->
-    <!-- <div class="search-container">
-        <mat-form-field appearance="outline" floatLabel="always">
-            <mat-label>Search Users</mat-label>
-            <input matInput [(ngModel)]="searchTerm" (keyup.enter)="onSearch(searchTerm)"
-                placeholder="Search by name, email or phone">
-            <button mat-icon-button matSuffix (click)="onSearch(searchTerm)" class="searchIcon">
-                <mat-icon>search</mat-icon>
-            </button>
-        </mat-form-field>
-    </div> -->
-
     <app-reusable-crud [config]="config" [isLoading]="loading" [rowActionsTemplate]="rowActions" [showSearch]="true"
         [searchTerm]="searchTerm" (searchTermChange)="onSearch($event)" (edit)="onEdit($event)" (delete)="onDelete($event)"
         (refresh)="onRefresh()" (pageChange)="onPageChange($event)" (add)="onAdd()" (sortChange)="onSortChange($event)">

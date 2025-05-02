@@ -31,6 +31,7 @@ import { MatList, MatListItem } from '@angular/material/list';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { firstValueFrom } from 'rxjs';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
 @Component({
   selector: 'app-internet',
@@ -49,6 +50,7 @@ import { firstValueFrom } from 'rxjs';
     MatListItem,
     MatCard,
     MatSelectModule,
+    MatSlideToggleModule,
   ],
   templateUrl: './internet.component.html',
   styleUrl: './internet.component.scss',
@@ -266,5 +268,8 @@ export class InternetComponent {
     );
     const basePrice = subService?.price || 0;
     return basePrice - (basePrice * discount) / 100;
+  }
+  onStatusChange(isActive: boolean) {
+    this.subscriptionForm.patchValue({ isActive });
   }
 }

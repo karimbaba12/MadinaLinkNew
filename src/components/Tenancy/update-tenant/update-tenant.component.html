@@ -1,0 +1,69 @@
+<div class="tenant-management-container">
+    <div class="header">
+        <h1>Tenant Management</h1>
+
+        <div class="controls">
+            <mat-form-field appearance="outline" class="search-field">
+                <mat-label>Search tenants</mat-label>
+                <input matInput type="text" [value]="searchTerm" (input)="onSearchInput($event)"
+                    placeholder="Search by name, email, or phone">
+                <mat-icon matSuffix>search</mat-icon>
+            </mat-form-field>
+
+            <div class="filter-buttons">
+                <button mat-stroked-button [color]="showInactiveOnly ? 'primary' : ''" (click)="toggleInactiveFilter()">
+                    <mat-icon>filter_alt</mat-icon>
+                    {{ showInactiveOnly ? 'Showing Inactive Only' : 'Show Inactive' }}
+                </button>
+                <button mat-stroked-button (click)="resetFilters()"
+                    [disabled]="!searchTerm && !showInactiveOnly && pageIndex === 0">
+                    <mat-icon>refresh</mat-icon>
+                    Reset Filters
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="content">
+        <mat-spinner *ngIf="loading" diameter="50"></mat-spinner>
+
+        <div *ngIf="!loading && displayedTenants.length === 0" class="no-results">
+            <mat-icon>search_off</mat-icon>
+            <p>No tenants found matching your criteria</p>
+        </div>
+
+        <div class="tenant-grid" *ngIf="!loading && displayedTenants.length > 0">
+            <mat-card *ngFor="let tenant of displayedTenants" class="tenant-card" [class.active]="tenant.isActive"
+                [class.inactive]="!tenant.isActive">
+                <mat-card-header>
+                    <mat-card-title>{{ tenant.tenantName }}</mat-card-title>
+                    <mat-card-subtitle>
+                        <span class="status-badge" [class.active]="tenant.isActive">
+                            {{ tenant.isActive ? 'Active' : 'Inactive' }}
+                        </span>
+                    </mat-card-subtitle>
+                </mat-card-header>
+
+                <mat-card-content>
+                    <div class="tenant-info">
+                        <p><mat-icon>email</mat-icon> {{ tenant.email || 'No email' }}</p>
+                        <p><mat-icon>phone</mat-icon> {{ tenant.phoneNumber || 'No phone' }}</p>
+                        <p><mat-icon>location_on</mat-icon> {{ tenant.address || 'No address' }}</p>
+                    </div>
+                </mat-card-content>
+
+                <mat-card-actions class="d-flex justify-content-start">
+                    <mat-slide-toggle [checked]="tenant.isActive" (change)="toggleStatus(tenant)" color="primary"
+                        class="status-toggle">
+                        {{ tenant.isActive ? 'Deactivate' : 'Activate' }}
+                    </mat-slide-toggle>
+                </mat-card-actions>
+            </mat-card>
+        </div>
+
+        <mat-paginator *ngIf="!loading && totalItems > 0" [length]="totalItems" [pageSize]="pageSize"
+            [pageSizeOptions]="pageSizeOptions" [pageIndex]="pageIndex" (page)="onPageChange($event)"
+            aria-label="Select page">
+        </mat-paginator>
+    </div>
+</div>

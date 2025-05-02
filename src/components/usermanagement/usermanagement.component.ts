@@ -94,9 +94,9 @@ export class UsermanagementComponent implements OnInit {
     this.searchSubject
       .pipe(
         takeUntil(this.destroy$),
-        debounceTime(500), // wait 500ms after last keystroke
-        distinctUntilChanged(), // only emit if value changed
-        filter((term) => term.length === 0 || term.length >= 2) // changed from 3 to 2
+        debounceTime(500),
+        distinctUntilChanged(),
+        filter((term) => term.length === 0 || term.length >= 2)
       )
       .subscribe((term) => {
         this.searchTerm = term;
@@ -110,8 +110,8 @@ export class UsermanagementComponent implements OnInit {
   }
   onSearch(term: string): void {
     this.searchSubject.next(term.trim());
-        this.searchTerm = term;
-        this.loadUsers(term);
+    this.searchTerm = term;
+    this.loadUsers(term);
   }
 
   async loadUsers(searchTerm?: string) {
