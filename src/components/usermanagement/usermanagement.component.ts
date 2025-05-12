@@ -52,7 +52,6 @@ interface TableUser {
   ],
 })
 export class UsermanagementComponent implements OnInit {
-  selectedUserForSubscription: UserDto | null = null;
   searchTerm: string = '';
   pageSize = 10;
   pageIndex = 0;

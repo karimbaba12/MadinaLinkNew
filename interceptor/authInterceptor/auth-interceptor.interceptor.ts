@@ -3,23 +3,52 @@ import {
   HttpHandlerFn,
   HttpInterceptorFn,
   HttpRequest,
+  HttpErrorResponse,
 } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { inject } from '@angular/core';
+import { Router } from '@angular/router';
+import { Observable, catchError, of, throwError } from 'rxjs';
 
-export function authInterceptor(
-  this: any,
+export const authInterceptor: HttpInterceptorFn = (
   req: HttpRequest<unknown>,
   next: HttpHandlerFn
-): Observable<HttpEvent<unknown>> {
+): Observable<HttpEvent<unknown>> => {
+  const router = inject(Router);
   const token = localStorage.getItem('auth_token');
 
+  let modifiedReq = req;
+
   if (token) {
-    const cloned = req.clone({
-      setHeaders: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    return next(cloned);
+    const [, payload] = token.split('.');
+    try {
+      const decoded = JSON.parse(atob(payload));
+      const exp = decoded.exp;
+
+      if (exp && Date.now() >= exp * 1000) {
+        localStorage.removeItem('auth_token');
+        router.navigate(['/login']);
+        return of(); // Cancel the request
+      }
+
+      modifiedReq = req.clone({
+        setHeaders: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    } catch (e) {
+      localStorage.removeItem('auth_token');
+      router.navigate(['/login']);
+      return of(); // Cancel the request
+    }
   }
-  return next(req);
-}
+
+  return next(modifiedReq).pipe(
+    catchError((error: HttpErrorResponse) => {
+      if (error.status === 401) {
+        localStorage.removeItem('auth_token');
+        router.navigate(['/login']);
+      }
+      return throwError(() => error);
+    })
+  );
+};

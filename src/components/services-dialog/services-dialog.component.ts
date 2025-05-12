@@ -65,7 +65,6 @@ export class ServicesDialogComponent implements OnInit {
     this.tenantService.getServiceByTenantID().subscribe({
       next: (services: TenantServiceDto[]) => {
         this.services = services;
-        // Set first available service as active by default
         if (this.services.length > 0) {
           this.activeServiceId = this.services[0].serviceId ?? null;
         }

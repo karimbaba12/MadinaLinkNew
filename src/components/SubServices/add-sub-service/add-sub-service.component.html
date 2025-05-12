@@ -1,0 +1,147 @@
+<div class="sub-service-form-container">
+    <!-- Loading indicator -->
+    <div *ngIf="isLoading" class="loading-overlay">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <!-- Error message -->
+    <div *ngIf="errorMessage" class="alert alert-danger">
+        <i class="bi bi-exclamation-triangle"></i> {{ errorMessage }}
+    </div>
+
+    <div class="form-header">
+        <h2 class="form-title">
+            <i class="bi bi-plus-circle"></i> Add New Sub-Service
+        </h2>
+    </div>
+
+    <div class="form-scroll-container">
+        <form [formGroup]="subServiceForm" class="sub-service-form">
+            <!-- Service Information Section -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="bi bi-gear"></i> Service Information
+                </h3>
+
+                <div class="row">
+                    <!-- Service Selection -->
+                    <div class="col-md-6 form-group">
+                        <label class="form-label required">Service</label>
+                        <select class="form-control" formControlName="serviceId" required>
+                            <option [value]="null" disabled selected>
+                                {{ services.length ? 'Select Service' : 'Loading services...' }}
+                            </option>
+                            <option *ngFor="let service of services" [value]="service.serviceId">
+                                {{ service.serviceName }}
+                            </option>
+                        </select>
+                        <div *ngIf="subServiceForm.get('serviceId')?.invalid && 
+                                    (subServiceForm.get('serviceId')?.dirty || subServiceForm.get('serviceId')?.touched)"
+                            class="error-message">
+                            <i class="bi bi-exclamation-circle"></i> Please select a service
+                        </div>
+                    </div>
+
+                    <!-- Subscription Type Selection -->
+                    <div class="col-md-6 form-group">
+                        <label class="form-label required">Subscription Type</label>
+                        <select class="form-control" formControlName="subscriptionTypeId" required>
+                            <option [value]="null" disabled selected>
+                                {{ subscriptionTypes.length ? 'Select Type' : 'Loading types...' }}
+                            </option>
+                            <option *ngFor="let type of subscriptionTypes" [value]="type.subscriptionTypeId">
+                                {{ type.subscriptionTypeName }}
+                            </option>
+                        </select>
+                        <div *ngIf="subServiceForm.get('subscriptionTypeId')?.invalid && 
+                                    (subServiceForm.get('subscriptionTypeId')?.dirty || subServiceForm.get('subscriptionTypeId')?.touched)"
+                            class="error-message">
+                            <i class="bi bi-exclamation-circle"></i> Please select a subscription type
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Sub-Service Code -->
+                    <div class="col-md-6 form-group">
+                        <label class="form-label required">Sub-Service Code</label>
+                        <input type="text" class="form-control" formControlName="subServiceCode"
+                            placeholder="e.g. SRV-001" maxlength="20" required>
+                        <div *ngIf="subServiceForm.get('subServiceCode')?.invalid && 
+                                    (subServiceForm.get('subServiceCode')?.dirty || subServiceForm.get('subServiceCode')?.touched)"
+                            class="error-message">
+                            <div *ngIf="subServiceForm.get('subServiceCode')?.errors?.['required']">
+                                <i class="bi bi-exclamation-circle"></i> Code is required
+                            </div>
+                            <div *ngIf="subServiceForm.get('subServiceCode')?.errors?.['maxlength']">
+                                <i class="bi bi-exclamation-circle"></i> Maximum 20 characters
+                            </div>
+                            <div *ngIf="subServiceForm.get('subServiceCode')?.errors?.['pattern']">
+                                <i class="bi bi-exclamation-circle"></i> Only letters, numbers, hyphens and underscores
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sub-Service Name -->
+                    <div class="col-md-6 form-group">
+                        <label class="form-label required">Sub-Service Name</label>
+                        <input type="text" class="form-control" formControlName="subServiceName"
+                            placeholder="e.g. Premium Support" maxlength="100" required>
+                        <div *ngIf="subServiceForm.get('subServiceName')?.invalid && 
+                                    (subServiceForm.get('subServiceName')?.dirty || subServiceForm.get('subServiceName')?.touched)"
+                            class="error-message">
+                            <div *ngIf="subServiceForm.get('subServiceName')?.errors?.['required']">
+                                <i class="bi bi-exclamation-circle"></i> Name is required
+                            </div>
+                            <div *ngIf="subServiceForm.get('subServiceName')?.errors?.['maxlength']">
+                                <i class="bi bi-exclamation-circle"></i> Maximum 100 characters
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pricing and Quantity Section -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="bi bi-cash"></i> Pricing
+                </h3>
+                <div class="col-12 form-group">
+                    <label class="form-label required">Price</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="number" class="form-control" formControlName="price" min="0" max="1000000"
+                            step="0.1" required>
+                    </div>
+                    <div *ngIf="subServiceForm.get('price')?.invalid && 
+                                    (subServiceForm.get('price')?.dirty || subServiceForm.get('price')?.touched)"
+                        class="error-message">
+                        <div *ngIf="subServiceForm.get('price')?.errors?.['required']">
+                            <i class="bi bi-exclamation-circle"></i> Price is required
+                        </div>
+                        <div *ngIf="subServiceForm.get('price')?.errors?.['min']">
+                            <i class="bi bi-exclamation-circle"></i> Price must be positive
+                        </div>
+                        <div *ngIf="subServiceForm.get('price')?.errors?.['max']">
+                            <i class="bi bi-exclamation-circle"></i> Maximum price is $1,000,000
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+    </div>
+
+    <div class="form-footer">
+        <button type="button" class="btn btn-cancel" (click)="closeDialog()">
+            <i class="bi bi-x-lg"></i> Cancel
+        </button>
+        <button type="button" class="btn btn-submit" (click)="submit()"
+            [disabled]="subServiceForm.invalid || isLoading">
+            <i class="bi bi-save"></i> Save Sub-Service
+            <span *ngIf="isLoading" class="ms-2 spinner-border spinner-border-sm" role="status"></span>
+        </button>
+    </div>
+</div>

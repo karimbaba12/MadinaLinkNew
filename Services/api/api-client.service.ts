@@ -2394,6 +2394,11 @@ export class ServiceClient implements IServiceClient {
 
 export interface ISubscriptionClient {
     /**
+     * @param userId (optional) 
+     * @return OK
+     */
+    getUserSubscription(userId?: number | undefined): Observable<ApiResponse_1OfOfIEnumerable_1OfOfSubscriptionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+    /**
      * @return OK
      */
     getAll(): Observable<ApiResponse_1OfOfIEnumerable_1OfOfSubscriptionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
@@ -2435,6 +2440,63 @@ export class SubscriptionClient implements ISubscriptionClient {
     constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
         this.http = http;
         this.baseUrl = baseUrl ?? "";
+    }
+
+    /**
+     * @param userId (optional) 
+     * @return OK
+     */
+    getUserSubscription(userId?: number | undefined, httpContext?: HttpContext): Observable<ApiResponse_1OfOfIEnumerable_1OfOfSubscriptionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e> {
+        let url_ = this.baseUrl + "/api/Subscription/GetUserSubscription?";
+        if (userId === null)
+            throw new Error("The parameter 'userId' cannot be null.");
+        else if (userId !== undefined)
+            url_ += "userId=" + encodeURIComponent("" + userId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            context: httpContext,
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetUserSubscription(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetUserSubscription(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ApiResponse_1OfOfIEnumerable_1OfOfSubscriptionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ApiResponse_1OfOfIEnumerable_1OfOfSubscriptionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+        }));
+    }
+
+    protected processGetUserSubscription(response: HttpResponseBase): Observable<ApiResponse_1OfOfIEnumerable_1OfOfSubscriptionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ApiResponse_1OfOfIEnumerable_1OfOfSubscriptionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
     }
 
     /**
@@ -4869,17 +4931,541 @@ export class TokensClient implements ITokensClient {
     }
 }
 
+export interface ITransactionClient {
+    /**
+     * @param id (optional) 
+     * @return OK
+     */
+    getBalanceByID(id?: number | undefined): Observable<ApiResponse_1OfOfDecimalAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    generateReceipt(body?: TransactionPaymentDto | undefined): Observable<FileResponse>;
+    /**
+     * @return OK
+     */
+    getAll(): Observable<ApiResponse_1OfOfIEnumerable_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+    /**
+     * @param id (optional) 
+     * @return OK
+     */
+    getById(id?: number | undefined): Observable<ApiResponse_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null>;
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    add(body?: TransactionDto | undefined): Observable<ApiResponse_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null>;
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    update(body?: TransactionDto | undefined): Observable<ApiResponse_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null>;
+    /**
+     * @param id (optional) 
+     * @return OK
+     */
+    deleteById(id?: number | undefined): Observable<ApiResponse_1OfOfBooleanAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    delete(body?: TransactionDto | undefined): Observable<ApiResponse_1OfOfBooleanAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+}
+
+@Injectable({
+    providedIn: 'root'
+})
+export class TransactionClient implements ITransactionClient {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl ?? "";
+    }
+
+    /**
+     * @param id (optional) 
+     * @return OK
+     */
+    getBalanceByID(id?: number | undefined, httpContext?: HttpContext): Observable<ApiResponse_1OfOfDecimalAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e> {
+        let url_ = this.baseUrl + "/api/Transaction/GetBalanceByID?";
+        if (id === null)
+            throw new Error("The parameter 'id' cannot be null.");
+        else if (id !== undefined)
+            url_ += "id=" + encodeURIComponent("" + id) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            context: httpContext,
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetBalanceByID(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetBalanceByID(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ApiResponse_1OfOfDecimalAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ApiResponse_1OfOfDecimalAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+        }));
+    }
+
+    protected processGetBalanceByID(response: HttpResponseBase): Observable<ApiResponse_1OfOfDecimalAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ApiResponse_1OfOfDecimalAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    generateReceipt(body?: TransactionPaymentDto | undefined, httpContext?: HttpContext): Observable<FileResponse> {
+        let url_ = this.baseUrl + "/api/Transaction/GenerateReceipt";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            context: httpContext,
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGenerateReceipt(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGenerateReceipt(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<FileResponse>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<FileResponse>;
+        }));
+    }
+
+    protected processGenerateReceipt(response: HttpResponseBase): Observable<FileResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            let fileNameMatch = contentDisposition ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(contentDisposition) : undefined;
+            let fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[3] || fileNameMatch[2] : undefined;
+            if (fileName) {
+                fileName = decodeURIComponent(fileName);
+            } else {
+                fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+                fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            }
+            return _observableOf({ fileName: fileName, data: responseBlob as any, status: status, headers: _headers });
+        } else if (status === 500) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result500 = resultData500 !== undefined ? resultData500 : <any>null;
+    
+            return throwException("Internal Server Error", status, _responseText, _headers, result500);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    getAll(httpContext?: HttpContext): Observable<ApiResponse_1OfOfIEnumerable_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e> {
+        let url_ = this.baseUrl + "/api/Transaction/GetAll";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            context: httpContext,
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetAll(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetAll(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ApiResponse_1OfOfIEnumerable_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ApiResponse_1OfOfIEnumerable_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+        }));
+    }
+
+    protected processGetAll(response: HttpResponseBase): Observable<ApiResponse_1OfOfIEnumerable_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ApiResponse_1OfOfIEnumerable_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param id (optional) 
+     * @return OK
+     */
+    getById(id?: number | undefined, httpContext?: HttpContext): Observable<ApiResponse_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null> {
+        let url_ = this.baseUrl + "/api/Transaction/GetById?";
+        if (id === null)
+            throw new Error("The parameter 'id' cannot be null.");
+        else if (id !== undefined)
+            url_ += "id=" + encodeURIComponent("" + id) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            context: httpContext,
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetById(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetById(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ApiResponse_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ApiResponse_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null>;
+        }));
+    }
+
+    protected processGetById(response: HttpResponseBase): Observable<ApiResponse_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ApiResponse_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    add(body?: TransactionDto | undefined, httpContext?: HttpContext): Observable<ApiResponse_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null> {
+        let url_ = this.baseUrl + "/api/Transaction/Add";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            context: httpContext,
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processAdd(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processAdd(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ApiResponse_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ApiResponse_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null>;
+        }));
+    }
+
+    protected processAdd(response: HttpResponseBase): Observable<ApiResponse_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ApiResponse_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    update(body?: TransactionDto | undefined, httpContext?: HttpContext): Observable<ApiResponse_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null> {
+        let url_ = this.baseUrl + "/api/Transaction/Update";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            context: httpContext,
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("put", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processUpdate(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processUpdate(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ApiResponse_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ApiResponse_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null>;
+        }));
+    }
+
+    protected processUpdate(response: HttpResponseBase): Observable<ApiResponse_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ApiResponse_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param id (optional) 
+     * @return OK
+     */
+    deleteById(id?: number | undefined, httpContext?: HttpContext): Observable<ApiResponse_1OfOfBooleanAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e> {
+        let url_ = this.baseUrl + "/api/Transaction/DeleteById?";
+        if (id === null)
+            throw new Error("The parameter 'id' cannot be null.");
+        else if (id !== undefined)
+            url_ += "id=" + encodeURIComponent("" + id) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            context: httpContext,
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("delete", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processDeleteById(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processDeleteById(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ApiResponse_1OfOfBooleanAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ApiResponse_1OfOfBooleanAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+        }));
+    }
+
+    protected processDeleteById(response: HttpResponseBase): Observable<ApiResponse_1OfOfBooleanAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ApiResponse_1OfOfBooleanAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    delete(body?: TransactionDto | undefined, httpContext?: HttpContext): Observable<ApiResponse_1OfOfBooleanAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e> {
+        let url_ = this.baseUrl + "/api/Transaction/Delete";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            context: httpContext,
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("delete", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processDelete(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processDelete(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ApiResponse_1OfOfBooleanAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ApiResponse_1OfOfBooleanAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+        }));
+    }
+
+    protected processDelete(response: HttpResponseBase): Observable<ApiResponse_1OfOfBooleanAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ApiResponse_1OfOfBooleanAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+}
+
 export interface IUsersClient {
     /**
      * @param name (optional) 
      * @return OK
      */
-    search(name?: string | undefined): Observable<void>;
+    search(name?: string | undefined): Observable<ApiResponse_1OfOfIEnumerable_1OfOfUserDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
     /**
      * @param body (optional) 
      * @return OK
      */
     updateUser(body?: UserDto | undefined): Observable<void>;
+    /**
+     * @param serviceId (optional) 
+     * @return OK
+     */
+    getUsersHasService(serviceId?: number | undefined): Observable<ApiResponse_1OfOfUsersHasServiceDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null>;
     /**
      * @return OK
      */
@@ -4928,7 +5514,7 @@ export class UsersClient implements IUsersClient {
      * @param name (optional) 
      * @return OK
      */
-    search(name?: string | undefined, httpContext?: HttpContext): Observable<void> {
+    search(name?: string | undefined, httpContext?: HttpContext): Observable<ApiResponse_1OfOfIEnumerable_1OfOfUserDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e> {
         let url_ = this.baseUrl + "/api/Users/search?";
         if (name === null)
             throw new Error("The parameter 'name' cannot be null.");
@@ -4941,6 +5527,7 @@ export class UsersClient implements IUsersClient {
             responseType: "blob",
             context: httpContext,
             headers: new HttpHeaders({
+                "Accept": "text/plain"
             })
         };
 
@@ -4951,14 +5538,14 @@ export class UsersClient implements IUsersClient {
                 try {
                     return this.processSearch(response_ as any);
                 } catch (e) {
-                    return _observableThrow(e) as any as Observable<void>;
+                    return _observableThrow(e) as any as Observable<ApiResponse_1OfOfIEnumerable_1OfOfUserDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
                 }
             } else
-                return _observableThrow(response_) as any as Observable<void>;
+                return _observableThrow(response_) as any as Observable<ApiResponse_1OfOfIEnumerable_1OfOfUserDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
         }));
     }
 
-    protected processSearch(response: HttpResponseBase): Observable<void> {
+    protected processSearch(response: HttpResponseBase): Observable<ApiResponse_1OfOfIEnumerable_1OfOfUserDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
@@ -4967,7 +5554,10 @@ export class UsersClient implements IUsersClient {
         let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
         if (status === 200) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            return _observableOf(null as any);
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ApiResponse_1OfOfIEnumerable_1OfOfUserDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e.fromJS(resultData200);
+            return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
@@ -5021,6 +5611,63 @@ export class UsersClient implements IUsersClient {
         if (status === 200) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
             return _observableOf(null as any);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param serviceId (optional) 
+     * @return OK
+     */
+    getUsersHasService(serviceId?: number | undefined, httpContext?: HttpContext): Observable<ApiResponse_1OfOfUsersHasServiceDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null> {
+        let url_ = this.baseUrl + "/api/Users/GetUsersHasService?";
+        if (serviceId === null)
+            throw new Error("The parameter 'serviceId' cannot be null.");
+        else if (serviceId !== undefined)
+            url_ += "serviceId=" + encodeURIComponent("" + serviceId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            context: httpContext,
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetUsersHasService(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetUsersHasService(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ApiResponse_1OfOfUsersHasServiceDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ApiResponse_1OfOfUsersHasServiceDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null>;
+        }));
+    }
+
+    protected processGetUsersHasService(response: HttpResponseBase): Observable<ApiResponse_1OfOfUsersHasServiceDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ApiResponse_1OfOfUsersHasServiceDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null.fromJS(resultData200);
+            return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
@@ -5728,13 +6375,52 @@ export interface IServiceDto {
     tenantId?: number;
 }
 
+export class UsersHasServiceDto implements IUsersHasServiceDto {
+    serviceId?: number;
+    userCount?: number;
+
+    constructor(data?: IUsersHasServiceDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.serviceId = _data["serviceId"];
+            this.userCount = _data["userCount"];
+        }
+    }
+
+    static fromJS(data: any): UsersHasServiceDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new UsersHasServiceDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["serviceId"] = this.serviceId;
+        data["userCount"] = this.userCount;
+        return data;
+    }
+}
+
+export interface IUsersHasServiceDto {
+    serviceId?: number;
+    userCount?: number;
+}
+
 export class SubServiceDto implements ISubServiceDto {
     subServiceId?: number;
     serviceId?: number;
     subscriptionTypeId?: number;
     subServiceCode?: string | undefined;
     subServiceName?: string | undefined;
-    subServiceQuantity?: number;
     price?: number;
     tenantId?: number;
 
@@ -5754,7 +6440,6 @@ export class SubServiceDto implements ISubServiceDto {
             this.subscriptionTypeId = _data["subscriptionTypeId"];
             this.subServiceCode = _data["subServiceCode"];
             this.subServiceName = _data["subServiceName"];
-            this.subServiceQuantity = _data["subServiceQuantity"];
             this.price = _data["price"];
             this.tenantId = _data["tenantId"];
         }
@@ -5774,7 +6459,6 @@ export class SubServiceDto implements ISubServiceDto {
         data["subscriptionTypeId"] = this.subscriptionTypeId;
         data["subServiceCode"] = this.subServiceCode;
         data["subServiceName"] = this.subServiceName;
-        data["subServiceQuantity"] = this.subServiceQuantity;
         data["price"] = this.price;
         data["tenantId"] = this.tenantId;
         return data;
@@ -5787,7 +6471,6 @@ export interface ISubServiceDto {
     subscriptionTypeId?: number;
     subServiceCode?: string | undefined;
     subServiceName?: string | undefined;
-    subServiceQuantity?: number;
     price?: number;
     tenantId?: number;
 }
@@ -5839,6 +6522,7 @@ export class SubscriptionDto implements ISubscriptionDto {
     startDate?: number;
     endDate?: number;
     price?: number;
+    quantity?: number;
     discount?: number;
     isActive?: boolean;
     tenantId?: number;
@@ -5860,6 +6544,7 @@ export class SubscriptionDto implements ISubscriptionDto {
             this.startDate = _data["startDate"];
             this.endDate = _data["endDate"];
             this.price = _data["price"];
+            this.quantity = _data["quantity"];
             this.discount = _data["discount"];
             this.isActive = _data["isActive"];
             this.tenantId = _data["tenantId"];
@@ -5881,6 +6566,7 @@ export class SubscriptionDto implements ISubscriptionDto {
         data["startDate"] = this.startDate;
         data["endDate"] = this.endDate;
         data["price"] = this.price;
+        data["quantity"] = this.quantity;
         data["discount"] = this.discount;
         data["isActive"] = this.isActive;
         data["tenantId"] = this.tenantId;
@@ -5895,6 +6581,7 @@ export interface ISubscriptionDto {
     startDate?: number;
     endDate?: number;
     price?: number;
+    quantity?: number;
     discount?: number;
     isActive?: boolean;
     tenantId?: number;
@@ -6125,6 +6812,226 @@ export interface ITokenDto {
     createdAt?: number;
     expiresAt?: number;
     isActive?: boolean;
+    tenantId?: number;
+}
+
+export class SubscriptionPaymentDto implements ISubscriptionPaymentDto {
+    subscriptionId?: number;
+    subServiceId?: number;
+    userId?: number;
+    startDate?: number;
+    endDate?: number;
+    price?: number;
+    quantity?: number;
+    discount?: number;
+    isActive?: boolean;
+    tenantId?: number;
+
+    constructor(data?: ISubscriptionPaymentDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.subscriptionId = _data["subscriptionId"];
+            this.subServiceId = _data["subServiceId"];
+            this.userId = _data["userId"];
+            this.startDate = _data["startDate"];
+            this.endDate = _data["endDate"];
+            this.price = _data["price"];
+            this.quantity = _data["quantity"];
+            this.discount = _data["discount"];
+            this.isActive = _data["isActive"];
+            this.tenantId = _data["tenantId"];
+        }
+    }
+
+    static fromJS(data: any): SubscriptionPaymentDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new SubscriptionPaymentDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["subscriptionId"] = this.subscriptionId;
+        data["subServiceId"] = this.subServiceId;
+        data["userId"] = this.userId;
+        data["startDate"] = this.startDate;
+        data["endDate"] = this.endDate;
+        data["price"] = this.price;
+        data["quantity"] = this.quantity;
+        data["discount"] = this.discount;
+        data["isActive"] = this.isActive;
+        data["tenantId"] = this.tenantId;
+        return data;
+    }
+}
+
+export interface ISubscriptionPaymentDto {
+    subscriptionId?: number;
+    subServiceId?: number;
+    userId?: number;
+    startDate?: number;
+    endDate?: number;
+    price?: number;
+    quantity?: number;
+    discount?: number;
+    isActive?: boolean;
+    tenantId?: number;
+}
+
+export class TransactionPaymentDto implements ITransactionPaymentDto {
+    userId?: number;
+    name?: string | undefined;
+    phoneNumber?: number;
+    email?: string | undefined;
+    createdAt?: number;
+    tenantId?: number;
+    username?: string | undefined;
+    roleId?: number;
+    isActive?: boolean;
+    transactionId?: number;
+    credit?: number;
+    debit?: number;
+    subscriptions?: SubscriptionPaymentDto[] | undefined;
+
+    constructor(data?: ITransactionPaymentDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.userId = _data["userId"];
+            this.name = _data["name"];
+            this.phoneNumber = _data["phoneNumber"];
+            this.email = _data["email"];
+            this.createdAt = _data["createdAt"];
+            this.tenantId = _data["tenantId"];
+            this.username = _data["username"];
+            this.roleId = _data["roleId"];
+            this.isActive = _data["isActive"];
+            this.transactionId = _data["transactionId"];
+            this.credit = _data["credit"];
+            this.debit = _data["debit"];
+            if (Array.isArray(_data["subscriptions"])) {
+                this.subscriptions = [] as any;
+                for (let item of _data["subscriptions"])
+                    this.subscriptions!.push(SubscriptionPaymentDto.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): TransactionPaymentDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new TransactionPaymentDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["userId"] = this.userId;
+        data["name"] = this.name;
+        data["phoneNumber"] = this.phoneNumber;
+        data["email"] = this.email;
+        data["createdAt"] = this.createdAt;
+        data["tenantId"] = this.tenantId;
+        data["username"] = this.username;
+        data["roleId"] = this.roleId;
+        data["isActive"] = this.isActive;
+        data["transactionId"] = this.transactionId;
+        data["credit"] = this.credit;
+        data["debit"] = this.debit;
+        if (Array.isArray(this.subscriptions)) {
+            data["subscriptions"] = [];
+            for (let item of this.subscriptions)
+                data["subscriptions"].push(item.toJSON());
+        }
+        return data;
+    }
+}
+
+export interface ITransactionPaymentDto {
+    userId?: number;
+    name?: string | undefined;
+    phoneNumber?: number;
+    email?: string | undefined;
+    createdAt?: number;
+    tenantId?: number;
+    username?: string | undefined;
+    roleId?: number;
+    isActive?: boolean;
+    transactionId?: number;
+    credit?: number;
+    debit?: number;
+    subscriptions?: SubscriptionPaymentDto[] | undefined;
+}
+
+export class TransactionDto implements ITransactionDto {
+    transactionId?: number;
+    userId?: number;
+    credit?: number;
+    debit?: number;
+    createdAt?: number;
+    tenantId?: number;
+
+    constructor(data?: ITransactionDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.transactionId = _data["transactionId"];
+            this.userId = _data["userId"];
+            this.credit = _data["credit"];
+            this.debit = _data["debit"];
+            this.createdAt = _data["createdAt"];
+            this.tenantId = _data["tenantId"];
+        }
+    }
+
+    static fromJS(data: any): TransactionDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new TransactionDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["transactionId"] = this.transactionId;
+        data["userId"] = this.userId;
+        data["credit"] = this.credit;
+        data["debit"] = this.debit;
+        data["createdAt"] = this.createdAt;
+        data["tenantId"] = this.tenantId;
+        return data;
+    }
+}
+
+export interface ITransactionDto {
+    transactionId?: number;
+    userId?: number;
+    credit?: number;
+    debit?: number;
+    createdAt?: number;
     tenantId?: number;
 }
 
@@ -6516,6 +7423,58 @@ export interface IApiResponse_1OfOfServiceDtoAndMLBLLAnd_0AndCulture_neutralAndP
     errorMessage?: string | undefined;
 }
 
+export class ApiResponse_1OfOfUsersHasServiceDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null implements IApiResponse_1OfOfUsersHasServiceDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null {
+    success?: boolean;
+    data?: UsersHasServiceDto;
+    statusCode?: number;
+    message?: string | undefined;
+    errorMessage?: string | undefined;
+
+    constructor(data?: IApiResponse_1OfOfUsersHasServiceDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.success = _data["success"];
+            this.data = _data["data"] ? UsersHasServiceDto.fromJS(_data["data"]) : <any>undefined;
+            this.statusCode = _data["statusCode"];
+            this.message = _data["message"];
+            this.errorMessage = _data["errorMessage"];
+        }
+    }
+
+    static fromJS(data: any): ApiResponse_1OfOfUsersHasServiceDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null {
+        data = typeof data === 'object' ? data : {};
+        let result = new ApiResponse_1OfOfUsersHasServiceDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["success"] = this.success;
+        data["data"] = this.data ? this.data.toJSON() : <any>undefined;
+        data["statusCode"] = this.statusCode;
+        data["message"] = this.message;
+        data["errorMessage"] = this.errorMessage;
+        return data;
+    }
+}
+
+export interface IApiResponse_1OfOfUsersHasServiceDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null {
+    success?: boolean;
+    data?: UsersHasServiceDto;
+    statusCode?: number;
+    message?: string | undefined;
+    errorMessage?: string | undefined;
+}
+
 export class ApiResponse_1OfOfSubServiceDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null implements IApiResponse_1OfOfSubServiceDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null {
     success?: boolean;
     data?: SubServiceDto;
@@ -6823,6 +7782,58 @@ export class ApiResponse_1OfOfTokenDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKe
 export interface IApiResponse_1OfOfTokenDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null {
     success?: boolean;
     data?: TokenDto;
+    statusCode?: number;
+    message?: string | undefined;
+    errorMessage?: string | undefined;
+}
+
+export class ApiResponse_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null implements IApiResponse_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null {
+    success?: boolean;
+    data?: TransactionDto;
+    statusCode?: number;
+    message?: string | undefined;
+    errorMessage?: string | undefined;
+
+    constructor(data?: IApiResponse_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.success = _data["success"];
+            this.data = _data["data"] ? TransactionDto.fromJS(_data["data"]) : <any>undefined;
+            this.statusCode = _data["statusCode"];
+            this.message = _data["message"];
+            this.errorMessage = _data["errorMessage"];
+        }
+    }
+
+    static fromJS(data: any): ApiResponse_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null {
+        data = typeof data === 'object' ? data : {};
+        let result = new ApiResponse_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["success"] = this.success;
+        data["data"] = this.data ? this.data.toJSON() : <any>undefined;
+        data["statusCode"] = this.statusCode;
+        data["message"] = this.message;
+        data["errorMessage"] = this.errorMessage;
+        return data;
+    }
+}
+
+export interface IApiResponse_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null {
+    success?: boolean;
+    data?: TransactionDto;
     statusCode?: number;
     message?: string | undefined;
     errorMessage?: string | undefined;
@@ -7652,6 +8663,66 @@ export interface IApiResponse_1OfOfIEnumerable_1OfOfTokenDtoAndMLBLLAnd_0AndCult
     errorMessage?: string | undefined;
 }
 
+export class ApiResponse_1OfOfIEnumerable_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e implements IApiResponse_1OfOfIEnumerable_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e {
+    success?: boolean;
+    data?: TransactionDto[] | undefined;
+    statusCode?: number;
+    message?: string | undefined;
+    errorMessage?: string | undefined;
+
+    constructor(data?: IApiResponse_1OfOfIEnumerable_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.success = _data["success"];
+            if (Array.isArray(_data["data"])) {
+                this.data = [] as any;
+                for (let item of _data["data"])
+                    this.data!.push(TransactionDto.fromJS(item));
+            }
+            this.statusCode = _data["statusCode"];
+            this.message = _data["message"];
+            this.errorMessage = _data["errorMessage"];
+        }
+    }
+
+    static fromJS(data: any): ApiResponse_1OfOfIEnumerable_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e {
+        data = typeof data === 'object' ? data : {};
+        let result = new ApiResponse_1OfOfIEnumerable_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["success"] = this.success;
+        if (Array.isArray(this.data)) {
+            data["data"] = [];
+            for (let item of this.data)
+                data["data"].push(item.toJSON());
+        }
+        data["statusCode"] = this.statusCode;
+        data["message"] = this.message;
+        data["errorMessage"] = this.errorMessage;
+        return data;
+    }
+}
+
+export interface IApiResponse_1OfOfIEnumerable_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e {
+    success?: boolean;
+    data?: TransactionDto[] | undefined;
+    statusCode?: number;
+    message?: string | undefined;
+    errorMessage?: string | undefined;
+}
+
 export class ApiResponse_1OfOfIEnumerable_1OfOfUserDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e implements IApiResponse_1OfOfIEnumerable_1OfOfUserDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e {
     success?: boolean;
     data?: UserDto[] | undefined;
@@ -7712,6 +8783,58 @@ export interface IApiResponse_1OfOfIEnumerable_1OfOfUserDtoAndMLBLLAnd_0AndCultu
     errorMessage?: string | undefined;
 }
 
+export class ApiResponse_1OfOfDecimalAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e implements IApiResponse_1OfOfDecimalAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e {
+    success?: boolean;
+    data?: number;
+    statusCode?: number;
+    message?: string | undefined;
+    errorMessage?: string | undefined;
+
+    constructor(data?: IApiResponse_1OfOfDecimalAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.success = _data["success"];
+            this.data = _data["data"];
+            this.statusCode = _data["statusCode"];
+            this.message = _data["message"];
+            this.errorMessage = _data["errorMessage"];
+        }
+    }
+
+    static fromJS(data: any): ApiResponse_1OfOfDecimalAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e {
+        data = typeof data === 'object' ? data : {};
+        let result = new ApiResponse_1OfOfDecimalAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["success"] = this.success;
+        data["data"] = this.data;
+        data["statusCode"] = this.statusCode;
+        data["message"] = this.message;
+        data["errorMessage"] = this.errorMessage;
+        return data;
+    }
+}
+
+export interface IApiResponse_1OfOfDecimalAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e {
+    success?: boolean;
+    data?: number;
+    statusCode?: number;
+    message?: string | undefined;
+    errorMessage?: string | undefined;
+}
+
 export class ApiResponse_1OfOfStringAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e implements IApiResponse_1OfOfStringAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e {
     success?: boolean;
     data?: string | undefined;
@@ -7762,6 +8885,13 @@ export interface IApiResponse_1OfOfStringAndCoreLibAnd_0AndCulture_neutralAndPub
     statusCode?: number;
     message?: string | undefined;
     errorMessage?: string | undefined;
+}
+
+export interface FileResponse {
+    data: Blob;
+    status: number;
+    fileName?: string;
+    headers?: { [name: string]: any };
 }
 
 export class ApiException extends Error {

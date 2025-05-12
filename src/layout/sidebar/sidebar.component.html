@@ -1,20 +1,17 @@
 <mat-drawer-container class="sidebar-container">
     <mat-drawer mode="side" [opened]="sidebarOpened" class="sidebar">
         <mat-nav-list>
-
             <ng-container *ngFor="let menu of menus">
-                <mat-list-item *ngIf="menu.type === 'item'" [routerLink]="menu.url">
+                <!-- Single Menu Item (no children) -->
+                <a mat-list-item *ngIf="!menu.children || menu.type === 'item'" [routerLink]="menu.url"
+                    routerLinkActive="active-link">
                     <mat-icon>{{ menu.icon }}</mat-icon>
-                    <span>{{ menu.title }}</span>
-                </mat-list-item>
-
-                <a mat-list-item *ngIf="!menu.children" [routerLink]="menu.url" routerLinkActive="active-link">
-                    <mat-icon>{{ menu.icon }}</mat-icon>
-                    <span>{{ menu.title }}</span>
+                    <span style="margin-left: 10px;">{{ menu.title }}</span>
                 </a>
 
                 <!-- Menu with dropdown (children) -->
-                <mat-expansion-panel *ngIf="menu.children && menu.children.length > 0" class="menu-group">
+                <mat-expansion-panel *ngIf="menu.children && menu.children.length > 0 && menu.type !== 'item'"
+                    class="menu-group">
                     <mat-expansion-panel-header>
                         <mat-icon>{{ menu.icon }}</mat-icon>
                         <span>{{ menu.title }}</span>
@@ -29,7 +26,6 @@
                     </mat-nav-list>
                 </mat-expansion-panel>
             </ng-container>
-
         </mat-nav-list>
     </mat-drawer>
 

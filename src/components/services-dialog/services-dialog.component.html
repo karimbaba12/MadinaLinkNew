@@ -14,18 +14,19 @@
     <!-- Content area -->
     <div class="service-content">
         <ng-container [ngSwitch]="activeServiceId">
-            <app-electricity *ngSwitchCase="1" [tenantId]="tenantId" [selectedUser]="selectedUser">
-            </app-electricity>
+            <ng-container *ngSwitchCase="1">
+                <app-electricity [tenantId]="tenantId" [selectedUser]="selectedUser" *ngIf="activeServiceId === 1">
+                </app-electricity>
+            </ng-container>
+            <ng-container *ngSwitchCase="2">
+                <app-water [tenantId]="tenantId" [selectedUser]="selectedUser" *ngIf="activeServiceId === 2">
+                </app-water>
+            </ng-container>
+            <ng-container *ngSwitchCase="3">
+                <app-internet [tenantId]="tenantId" [selectedUser]="selectedUser" *ngIf="activeServiceId === 3">
+                </app-internet>
+            </ng-container>
 
-            <app-water *ngSwitchCase="2" [tenantId]="tenantId" [selectedUser]="selectedUser">
-            </app-water>
-
-            <app-internet *ngSwitchCase="3" [tenantId]="tenantId" [selectedUser]="selectedUser">
-            </app-internet>
-
-            <div *ngSwitchDefault class="unknown-service">
-                Please select a service
-            </div>
         </ng-container>
     </div>
 </mat-dialog-content>

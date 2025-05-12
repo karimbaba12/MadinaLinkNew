@@ -1,0 +1,4 @@
+<div  class="chart w-75 center chart-container">
+    <canvas baseChart [datasets]="labelMFL" [labels]="lineChartLabels" [options]="lineChartOptions" [type]="ChartType"
+        (chartHover)="chartHovered($event)" (chartClick)="chartClicked($event)"></canvas>
+</div>

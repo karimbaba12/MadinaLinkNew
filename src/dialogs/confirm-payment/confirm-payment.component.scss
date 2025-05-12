@@ -1,0 +1,73 @@
+.payment-confirmation-dialog {
+    padding: 24px;
+    max-width: 500px;
+    margin: 0 auto;
+
+    .header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 24px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #e0e0e0;
+
+        &.success {
+            color: #4caf50;
+        }
+
+        mat-icon {
+            font-size: 32px;
+            width: 32px;
+            height: 32px;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 500;
+        }
+    }
+
+    .confirmation-details {
+        margin-bottom: 20px;
+        box-shadow: none;
+        border: 1px solid #e0e0e0;
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+
+            .label {
+                font-weight: 500;
+                color: #616161;
+            }
+
+            .value {
+                font-weight: 400;
+                color: #212121;
+            }
+        }
+    }
+
+    .receipt-option {
+        margin: 16px 0;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 24px;
+
+        button {
+            min-width: 120px;
+        }
+    }
+}

@@ -114,7 +114,6 @@ export class AddComponent implements OnInit {
         userData.createdAt = 0;
         userData.isActive = true;
         userData.address = new AddressDto();
-
         userData.address.addressId = 0;
         userData.address.country = formValue.country;
         userData.address.street = formValue.street;

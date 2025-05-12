@@ -30,8 +30,10 @@ import { MatIcon } from '@angular/material/icon';
 import { MatList, MatListItem } from '@angular/material/list';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { firstValueFrom } from 'rxjs';
+import { combineLatest, firstValueFrom } from 'rxjs';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmComponent } from '../../../dialogs/confirm/confirm.component';
 
 @Component({
   selector: 'app-internet',
@@ -65,7 +67,6 @@ export class InternetComponent {
   subscriptions: SubscriptionDto[] = [];
   selectedSubscriptionId: number | null = null;
   subServiceNames: { [key: number]: string } = {};
-
   @Input() tenantId!: number;
   @Input() selectedUser!: UserDto;
 
@@ -74,16 +75,18 @@ export class InternetComponent {
     private subscriptionClient: SubscriptionClient,
     private subServiceClient: SubServiceClient,
     private snackBar: MatSnackBar,
-    private datePipe: DatePipe
+    private datePipe: DatePipe,
+    private dialog: MatDialog
   ) {
     this.subscriptionForm = this.fb.group({
       subscriptionId: [0],
       subServiceId: [null, Validators.required],
       startDate: [0],
       endDate: [0],
+      price: [0],
       discount: [0, [Validators.min(0), Validators.max(100)]],
       isActive: [true],
-      tenantId: [1],
+      tenantId: [0],
     });
   }
 
@@ -94,22 +97,19 @@ export class InternetComponent {
       await this.loadUserSubscriptions();
       const currentDate = Math.floor(Date.now() / 1000);
       const endDate = currentDate + 30 * 24 * 60 * 60;
-      this.subscriptionForm.patchValue({ startDate: currentDate, endDate });
+      this.subscriptionForm.patchValue({
+        startDate: currentDate,
+        endDate,
+        price: 0,
+      });
 
-      this.subscriptionForm
-        .get('subServiceId')
-        ?.valueChanges.subscribe(async (id) => {
-          if (id) {
-            const price = await this.getPrice(id);
-            // Optional: update a field or state with price if needed
-            console.log('Base Price:', price);
-          }
-        });
-
-      // Disable form if there are existing subscriptions
-      if (this.subscriptions.length > 0) {
-        this.subscriptionForm.disable();
-      }
+      // Listen to both subServiceId and discount changes
+      combineLatest([
+        this.subscriptionForm.get('subServiceId')!.valueChanges,
+        this.subscriptionForm.get('discount')!.valueChanges,
+      ]).subscribe(([subServiceId, discount]) => {
+        this.updateCalculatedPrice(subServiceId, discount);
+      });
     } catch (error) {
       this.errorMessage = 'Failed to initialize form.';
       this.snackBar.open(this.errorMessage, 'Close', { duration: 3000 });
@@ -118,13 +118,23 @@ export class InternetComponent {
     }
   }
 
+  updateCalculatedPrice(subServiceId: number, discount: number) {
+    const price = this.calculatePrice(subServiceId, discount);
+    this.subscriptionForm.patchValue(
+      {
+        price: price,
+      },
+      { emitEvent: false }
+    );
+  }
+
   private async loadSubServices() {
     try {
       const response = await this.subServiceClient.getAll().toPromise();
       this.subServices = (response?.data || []).filter(
-        (s: any) => s.serviceId === 3
+        (s: SubServiceDto) => s.serviceId === 3
       );
-      // Cache subservice names
+
       this.subServices.forEach((service) => {
         this.subServiceNames[service.subServiceId!] =
           service.subServiceName || 'Unknown';
@@ -138,7 +148,11 @@ export class InternetComponent {
     try {
       const response = await this.subscriptionClient.getAll().toPromise();
       this.subscriptions = (response?.data || []).filter(
-        (s: SubscriptionDto) => s.userId === this.selectedUser.userId
+        (s: SubscriptionDto) =>
+          s.userId === this.selectedUser.userId &&
+          this.subServices.some(
+            (sub) => sub.subServiceId === s.subServiceId && sub.serviceId === 3
+          )
       );
     } catch (error) {
       console.error('Error loading subscriptions:', error);
@@ -147,8 +161,13 @@ export class InternetComponent {
 
   selectSubscriptionToEdit(subscription: SubscriptionDto) {
     this.selectedSubscriptionId = subscription.subscriptionId ?? null;
-    this.subscriptionForm.patchValue(subscription);
-    this.subscriptionForm.enable();
+    this.subscriptionForm.patchValue({
+      ...subscription,
+      price: this.calculatePrice(
+        subscription.subServiceId!,
+        subscription.discount!
+      ),
+    });
     this.isEditing = true;
   }
 
@@ -162,18 +181,26 @@ export class InternetComponent {
 
     this.isLoading = true;
     try {
-      const data = new SubscriptionDto();
-      Object.assign(data, this.subscriptionForm.value);
-      data.userId = this.selectedUser.userId;
+      const formValue = this.subscriptionForm.value;
+      const price = this.calculatePrice(
+        formValue.subServiceId,
+        formValue.discount || 0
+      );
+
+      const data = new SubscriptionDto({
+        ...formValue,
+        subscriptionId: Number(this.selectedSubscriptionId ?? 0),
+        userId: Number(this.selectedUser.userId),
+        price: price,
+        tenantId: Number(this.tenantId),
+      });
 
       if (this.selectedSubscriptionId) {
-        data.subscriptionId = this.selectedSubscriptionId;
         await this.subscriptionClient.update(data).toPromise();
         this.snackBar.open('Subscription updated successfully!', 'Close', {
           duration: 3000,
         });
       } else {
-        data.subscriptionId = 0;
         await this.subscriptionClient.add(data).toPromise();
         this.snackBar.open('Subscription created successfully!', 'Close', {
           duration: 3000,
@@ -196,9 +223,7 @@ export class InternetComponent {
     this.isLoading = true;
     try {
       await this.subscriptionClient
-        .delete({
-          subscriptionId: this.selectedSubscriptionId,
-        } as SubscriptionDto)
+        .deleteById(this.selectedSubscriptionId)
         .toPromise();
       this.snackBar.open('Subscription deleted successfully!', 'Close', {
         duration: 3000,
@@ -217,6 +242,7 @@ export class InternetComponent {
   resetForm() {
     this.selectedSubscriptionId = null;
     this.isEditing = false;
+
     const currentDate = Math.floor(Date.now() / 1000);
     const endDate = currentDate + 30 * 24 * 60 * 60;
     this.subscriptionForm.reset({
@@ -226,14 +252,10 @@ export class InternetComponent {
       endDate,
       isActive: true,
       tenantId: this.tenantId,
+      price: 0,
     });
 
-    // Disable form if there are existing subscriptions
-    if (this.subscriptions.length > 0) {
-      this.subscriptionForm.disable();
-    } else {
-      this.subscriptionForm.enable();
-    }
+    this.subscriptionForm.enable();
   }
 
   getFormattedDate(timestamp: number): string {
@@ -249,27 +271,40 @@ export class InternetComponent {
   getSubServiceName(subServiceId: number): string {
     return this.subServiceNames[subServiceId] || 'Unknown';
   }
-  private async getPrice(subServiceId: number): Promise<number> {
-    try {
-      const subService = await firstValueFrom(
-        this.subServiceClient.getById(subServiceId)
-      );
-      return subService?.data?.price ?? 0;
-    } catch (error) {
-      console.error('Failed to fetch price for subservice:', error);
-      return 0;
-    }
-  }
+
   get calculatedPrice(): number {
     const subServiceId = this.subscriptionForm.get('subServiceId')?.value;
     const discount = this.subscriptionForm.get('discount')?.value || 0;
+    return this.calculatePrice(subServiceId, discount);
+  }
+
+  private calculatePrice(subServiceId: number, discount: number): number {
+    if (!subServiceId) return 0;
+
     const subService = this.subServices.find(
       (s) => s.subServiceId === subServiceId
     );
-    const basePrice = subService?.price || 0;
+
+    if (!subService || typeof subService.price !== 'number') return 0;
+
+    const basePrice = subService.price;
     return basePrice - (basePrice * discount) / 100;
   }
-  onStatusChange(isActive: boolean) {
-    this.subscriptionForm.patchValue({ isActive });
+  confirmDelete() {
+    const dialogRef = this.dialog.open(ConfirmComponent, {
+      width: '350px',
+      data: {
+        title: 'Confirm Delete',
+        message: 'Are you sure you want to delete this subscription?',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.deleteSubscription();
+      }
+    });
   }
 }

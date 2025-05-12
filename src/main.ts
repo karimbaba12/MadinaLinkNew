@@ -10,6 +10,7 @@ import { API_BASE_URL } from '../Services/api/api-client.service';
 import { routes } from './app/app.routes';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { loggingInterceptor } from '../interceptor/logging/logging-interceptor.interceptor';
+import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 
 bootstrapApplication(AppComponent, {
   providers: [
@@ -20,5 +21,6 @@ bootstrapApplication(AppComponent, {
       provide: API_BASE_URL,
       useValue: 'https://localhost:7222',
     },
+    provideCharts(withDefaultRegisterables()),
   ],
 }).catch((err) => console.error(err));

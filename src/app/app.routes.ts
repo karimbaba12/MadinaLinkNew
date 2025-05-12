@@ -7,6 +7,8 @@ import { ElectricityComponent } from '../components/Services/electricity/electri
 import { UsermanagementComponent } from '../components/usermanagement/usermanagement.component';
 import { AddTenantComponent } from '../components/Tenancy/add-tenant/add-tenant.component';
 import { UpdateTenantComponent } from '../components/Tenancy/update-tenant/update-tenant.component';
+import { SubserviceManagementComponent } from '../components/SubServices/subservice-management/subservice-management.component';
+import { PaymentComponent } from '../components/payment/payment.component';
 
 export const routes: Routes = [
   {
@@ -37,6 +39,14 @@ export const routes: Routes = [
       {
         path: 'updateTenant',
         component: UpdateTenantComponent,
+      },
+      {
+        path: 'SubServiceManagement',
+        component: SubserviceManagementComponent,
+      },
+      {
+        path: 'PaymentManagement',
+        component: PaymentComponent,
       },
     ],
   },

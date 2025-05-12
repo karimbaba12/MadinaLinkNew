@@ -1,0 +1,17 @@
+<h2 mat-dialog-title>Receipt #{{data.transactionId}}</h2>
+<mat-dialog-content class="pdf-container">
+    <object [data]="data.pdfUrl" type="application/pdf" width="100%" height="500px">
+        <p>Unable to display PDF. <a [href]="data.pdfUrl" target="_blank">Download</a> instead.</p>
+    </object>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+    <button mat-button (click)="download()">
+        <mat-icon>download</mat-icon> Download
+    </button>
+    <button mat-button (click)="print()" color="primary">
+        <mat-icon>print</mat-icon> Print
+    </button>
+    <button mat-button mat-dialog-close>
+        <mat-icon>close</mat-icon> Close
+    </button>
+</mat-dialog-actions>

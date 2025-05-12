@@ -1,0 +1,157 @@
+<div class="payment-container">
+    <mat-card class="payment-card">
+        <mat-card-header>
+            <mat-card-title>
+                <mat-icon>payment</mat-icon>
+                Payment Processing
+            </mat-card-title>
+        </mat-card-header>
+
+        <mat-card-content>
+            <!-- User Search Section -->
+            <div class="search-section my-3">
+                <form [formGroup]="searchForm">
+                    <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Search User by Name or Number</mat-label>
+                        <input matInput formControlName="searchTerm" placeholder="Start typing...">
+                        <mat-icon matSuffix>search</mat-icon>
+                    </mat-form-field>
+                </form>
+
+                <div class="user-results" *ngIf="searchForm.get('searchTerm')?.value">
+                    <div *ngIf="(users$ | async)?.length === 0" class="no-results">
+                        No users found
+                    </div>
+                    <mat-list>
+                        <mat-list-item *ngFor="let user of users$ | async" (click)="selectUser(user)"
+                            class="my-2 cursor-pointer">
+                            <div matLine>{{ user.name }}</div>
+                            <div matLine class="secondary-text">{{ user.phoneNumber }}</div>
+                        </mat-list-item>
+                    </mat-list>
+                </div>
+            </div>
+
+            <!-- Selected User Info -->
+            <div class="selected-user" *ngIf="selectedUser">
+                <mat-card class="user-card">
+                    <mat-card-header>
+                        <mat-card-title>
+                            <mat-icon>person</mat-icon>
+                            {{ selectedUser.name }}
+                        </mat-card-title>
+                        <mat-card-subtitle class="my-3">
+                            {{ selectedUser.phoneNumber }}
+                        </mat-card-subtitle>
+                        <mat-card-subtitle class="my-3">
+                            {{ selectedUser.email }}
+                        </mat-card-subtitle>
+                    </mat-card-header>
+                    <mat-card-content>
+                        <div class="balance-info">
+                            <p><strong>Current Balance:</strong> {{ userBalance | currency }}</p>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+            </div>
+
+            <!-- Subscriptions List -->
+            <div class="subscriptions-section" *ngIf="selectedUser?.subscriptions?.length">
+                <h3 class="section-title">
+                    <mat-icon>subscriptions</mat-icon>
+                    Active Subscriptions
+                </h3>
+
+                <mat-table [dataSource]="selectedUser?.subscriptions ?? []" class="mat-elevation-z1">
+                    <!-- Service Column -->
+                    <ng-container matColumnDef="serviceName">
+                        <mat-header-cell *matHeaderCellDef>Service</mat-header-cell>
+                        <mat-cell *matCellDef="let sub">
+                            {{ getSubServiceName(sub.subServiceId) }}
+                        </mat-cell>
+                    </ng-container>
+
+                    <ng-container matColumnDef="quantity">
+                        <mat-header-cell *matHeaderCellDef>Quantity</mat-header-cell>
+                        <mat-cell *matCellDef="let sub">
+                            {{ sub.quantity }}
+                        </mat-cell>
+                    </ng-container>
+
+                    <!-- Start Date Column -->
+                    <ng-container matColumnDef="startDate">
+                        <mat-header-cell *matHeaderCellDef>Start Date</mat-header-cell>
+                        <mat-cell *matCellDef="let sub">
+                            {{ getFormattedDate(sub.startDate) }}
+                        </mat-cell>
+                    </ng-container>
+
+                    <!-- End Date Column -->
+                    <ng-container matColumnDef="endDate">
+                        <mat-header-cell *matHeaderCellDef>End Date</mat-header-cell>
+                        <mat-cell *matCellDef="let sub">
+                            {{ getFormattedDate(sub.endDate) }}
+                        </mat-cell>
+                    </ng-container>
+
+                    <!-- Price Column -->
+                    <ng-container matColumnDef="price">
+                        <mat-header-cell *matHeaderCellDef>Price</mat-header-cell>
+                        <mat-cell *matCellDef="let sub">
+                            {{ sub.price | currency }}
+                        </mat-cell>
+                    </ng-container>
+
+                    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+                    <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+                </mat-table>
+            </div>
+
+            <!-- Payment Form -->
+            <div class="payment-form" *ngIf="selectedUser">
+                <form [formGroup]="paymentForm">
+                    <div class="form-row">
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>Amount to Pay</mat-label>
+                            <input matInput type="number" formControlName="credit" step="0.01" min="0.01">
+                            <span matPrefix class="px-2">$&nbsp;</span>
+                            <mat-error *ngIf="paymentForm.get('credit')?.invalid">
+                                Valid amount required (minimum $0.01)
+                            </mat-error>
+                        </mat-form-field>
+                    </div>
+
+                    <div class="form-row">
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>Payment Method</mat-label>
+                            <mat-select formControlName="paymentMethod">
+                                <mat-option value="cash">Cash</mat-option>
+                                <mat-option value="credit_card">Credit Card</mat-option>
+                                <mat-option value="bank_transfer">Bank Transfer</mat-option>
+                                <mat-option value="mobile_payment">Mobile Payment</mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+
+                    <div class="form-row">
+                        <mat-form-field appearance="outline" class="full-width">
+                            <mat-label>Notes (Optional)</mat-label>
+                            <textarea matInput formControlName="notes" rows="2"></textarea>
+                        </mat-form-field>
+                    </div>
+
+                    <div class="form-actions">
+                        <button mat-raised-button color="warn" type="button" (click)="resetForm()">
+                            Cancel
+                        </button>
+                        <button mat-raised-button color="primary" type="button"
+                            [disabled]="paymentForm.invalid || isProcessingPayment" (click)="confirmPayment()">
+                            Process Payment
+                            <mat-spinner *ngIf="isProcessingPayment" diameter="20"></mat-spinner>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </mat-card-content>
+    </mat-card>
+</div>

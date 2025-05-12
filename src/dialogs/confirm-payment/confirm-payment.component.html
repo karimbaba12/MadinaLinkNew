@@ -1,0 +1,41 @@
+<div class="payment-confirmation-dialog">
+    <div class="header" [class.success]="true">
+        <mat-icon>check_circle</mat-icon>
+        <h2>Confirm Payment</h2>
+    </div>
+
+    <mat-card class="confirmation-details">
+        <mat-card-content>
+            <div class="detail-row">
+                <span class="label">User:</span>
+                <span class="value">{{ data.user.name }}</span>
+            </div>
+
+            <div class="detail-row">
+                <span class="label">Amount:</span>
+                <span class="value">{{ data.amount | currency }}</span>
+            </div>
+
+            <div class="detail-row">
+                <span class="label">Payment Method:</span>
+                <span class="value">{{ getPaymentMethodName(data.paymentMethod) }}</span>
+            </div>
+
+            <div class="detail-row">
+                <span class="label">New Balance:</span>
+                <span class="value">{{ data.balance | currency }}</span>
+            </div>
+        </mat-card-content>
+    </mat-card>
+
+    <div class="receipt-option">
+        <mat-checkbox [(ngModel)]="generateReceipt">Generate receipt</mat-checkbox>
+    </div>
+
+    <div class="actions">
+        <button mat-raised-button color="warn" (click)="onCancel()">Cancel</button>
+        <button mat-raised-button color="primary" (click)="onConfirm()">
+            Confirm Payment
+        </button>
+    </div>
+</div>

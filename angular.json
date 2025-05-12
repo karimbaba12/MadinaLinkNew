@@ -20,10 +20,7 @@
             "outputPath": "dist/madina-link-frontend-new",
             "index": "src/index.html",
             "browser": "src/main.ts",
-            "polyfills": [
-              "zone.js",
-              "@angular/localize/init"
-            ],
+            "polyfills": ["zone.js", "@angular/localize/init"],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
@@ -34,6 +31,7 @@
             ],
             "styles": [
               "src/styles.scss",
+              "node_modules/primeflex/primeflex.css",
               "@angular/material/prebuilt-themes/azure-blue.css",
               "node_modules/bootstrap/dist/css/bootstrap.min.css"
             ],

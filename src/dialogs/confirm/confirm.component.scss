@@ -1,0 +1,15 @@
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .btn-danger:hover {
+    background-color: #c82333;
+  }
+  
+  .btn-danger[disabled] {
+    background-color: #dc354566;
+  }

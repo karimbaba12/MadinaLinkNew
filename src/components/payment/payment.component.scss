@@ -1,0 +1,116 @@
+.payment-container {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.payment-card {
+  padding: 24px;
+  border-radius: 8px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.search-section {
+  margin-bottom: 24px;
+
+  .user-results {
+    margin-top: 16px;
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 4px;
+
+    .no-results {
+      padding: 16px;
+      text-align: center;
+      color: rgba(97, 97, 97, 1);
+    }
+
+    mat-list-item {
+      cursor: pointer;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background-color: rgba(245, 245, 245, 1);
+      }
+    }
+
+    .secondary-text {
+      color: rgba(97, 97, 97, 1);
+      font-size: 12px;
+    }
+  }
+}
+
+.selected-user {
+  margin-bottom: 24px;
+
+  .user-card {
+    background-color: rgba(227, 242, 253, 1);
+    border-left: 4px solid rgba(33, 150, 243, 1);
+  }
+}
+
+.subscriptions-section {
+  margin-bottom: 24px;
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+
+    mat-icon {
+      margin-right: 8px;
+    }
+  }
+
+  .total-amount {
+    margin-top: 16px;
+    text-align: right;
+    padding: 16px;
+    background-color: rgba(
+      200,
+      230,
+      201,
+      1
+    ); // Equivalent to mat-color($mat-green, 50)
+    border-left: 4px solid rgba(76, 175, 80, 1); // Equivalent to mat-color($mat-green, 500)
+    border-radius: 4px;
+  }
+}
+
+.payment-form {
+  .form-row {
+    margin-bottom: 16px;
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+    margin-top: 24px;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .payment-container {
+    padding: 16px;
+  }
+
+  .payment-card {
+    padding: 16px;
+  }
+
+  mat-table {
+    display: block;
+    overflow-x: auto;
+  }
+}
+.success-snackbar {
+  background-color: #4caf50 !important;
+  color: white !important;
+}
