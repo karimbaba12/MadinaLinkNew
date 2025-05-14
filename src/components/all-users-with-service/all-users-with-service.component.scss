@@ -1,0 +1,207 @@
+.delete {
+  border-color: transparent;
+  color: red;
+  background: transparent;
+}
+.config {
+  border-color: transparent;
+  color: rgb(102, 209, 94);
+  background: transparent;
+}
+
+.edit {
+  border-color: transparent;
+  color: blue;
+  background-color: transparent;
+}
+
+/* Additional styling for the crud container if needed */
+.crud-container {
+  padding: 20px;
+  width: 100%;
+}
+
+.mat-table {
+  width: 100%;
+}
+
+.mat-toolbar {
+  margin-bottom: 20px;
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  padding: 50px;
+}
+.edit,
+.config,
+.delete {
+  transition: transform 0.2s ease, opacity 0.2s ease;
+
+  &:hover {
+    transform: scale(1.1);
+    opacity: 0.9;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.delete {
+  margin-left: 8px;
+}
+
+.user-management-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+}
+
+.search-container {
+  display: flex;
+  margin-bottom: 20px;
+  padding: 0 16px;
+  position: absolute;
+  justify-content: end;
+  align-items: center;
+
+  mat-form-field {
+    width: 300px;
+
+    .searchIcon {
+      background-color: transparent !important;
+      color: #3f51b5 !important;
+      border: none !important;
+    }
+    .mat-icon[matSuffix] {
+      transition: opacity 0.2s;
+
+      &.hourglass_empty {
+        color: #3f51b5;
+        animation: spin 1s linear infinite;
+      }
+    }
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  .search-field {
+    width: 100%;
+    max-width: 400px;
+
+    .mat-form-field-wrapper {
+      padding-bottom: 0;
+    }
+
+    .mat-form-field-outline {
+      background-color: white;
+      border-radius: 4px;
+    }
+
+    input {
+      font-size: 14px;
+    }
+
+    .mat-icon {
+      color: rgba(0, 0, 0, 0.54);
+      cursor: pointer;
+      transition: color 0.2s ease;
+
+      &:hover {
+        color: #3f51b5;
+      }
+    }
+  }
+}
+
+/* Add these to your existing styles */
+.mat-table {
+  width: 100%;
+  box-shadow: none;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.mat-paginator {
+  border-radius: 0 0 8px 8px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .search-container {
+    padding: 0 8px;
+
+    .search-field {
+      max-width: 100%;
+    }
+  }
+}
+
+/* Add to your existing button styles */
+.edit,
+.delete {
+  transition: transform 0.2s ease, opacity 0.2s ease;
+
+  &:hover {
+    transform: scale(1.1);
+    opacity: 0.9;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.delete {
+  margin-left: 8px;
+}
+.service-selector {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    
+    button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      border: 1px solid #e0e0e0;
+      background-color: #f5f5f5;
+      color: #424242;
+      
+      mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+  
+      &:hover {
+        background-color: #e0e0e0;
+        transform: translateY(-2px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+  
+      &.selected {
+        background-color: #3f51b5;
+        color: white;
+        border-color: #3f51b5;
+        box-shadow: 0 2px 8px rgba(63, 81, 181, 0.3);
+        
+        &:hover {
+          background-color: #303f9f;
+        }
+      }
+    }
+  }

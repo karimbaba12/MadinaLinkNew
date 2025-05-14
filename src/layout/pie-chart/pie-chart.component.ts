@@ -41,7 +41,7 @@ export class PieChartComponent {
 
   public pieChartLabels = ['Electricity', 'Water', 'Internet'];
 
-  public pieChartData: ChartData<'pie'> = {
+  public pieChartData: ChartData<'bar'> = {
     labels: this.pieChartLabels,
     datasets: [
       {
@@ -52,7 +52,7 @@ export class PieChartComponent {
     ],
   };
 
-  public pieChartType: ChartType = 'pie';
+  public pieChartType: ChartType = 'bar';
   public pieChartLegend = true;
   public pieChartPlugins = [];
 

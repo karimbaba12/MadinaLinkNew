@@ -37,11 +37,6 @@
                 [class.inactive]="!tenant.isActive">
                 <mat-card-header>
                     <mat-card-title>{{ tenant.tenantName }}</mat-card-title>
-                    <mat-card-subtitle>
-                        <span class="status-badge" [class.active]="tenant.isActive">
-                            {{ tenant.isActive ? 'Active' : 'Inactive' }}
-                        </span>
-                    </mat-card-subtitle>
                 </mat-card-header>
 
                 <mat-card-content>

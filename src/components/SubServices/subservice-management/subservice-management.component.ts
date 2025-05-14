@@ -71,8 +71,7 @@ interface DisplaySubServiceDto extends SubServiceDto {
     MatOption,
     MatError,
     MatProgressSpinner,
-    MatCardActions,
-    MatHint,
+
   ],
   templateUrl: './subservice-management.component.html',
   styleUrls: ['./subservice-management.component.scss'],

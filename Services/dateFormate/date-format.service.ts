@@ -31,7 +31,6 @@ export class DateFormatService {
     return Math.floor(date.getTime() / 1000);
   }
 
-  // Helper method to debug timestamps
   debugTimestamp(timestamp: number): void {
     console.log('Original timestamp:', timestamp);
     console.log('As milliseconds:', timestamp * 1000);

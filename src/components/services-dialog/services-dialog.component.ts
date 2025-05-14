@@ -26,7 +26,6 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
   imports: [
     MatDialogActions,
     MatDialogContent,
-    MatDialogTitle,
     ElectricityComponent,
     WaterComponent,
     InternetComponent,

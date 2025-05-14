@@ -12,7 +12,6 @@ import { FormsModule } from '@angular/forms';
 @Component({
   selector: 'app-confirm',
   imports: [
-    MatDialogActions,
     MatDialogContent,
     MatDialogClose,
     MatCheckboxModule,

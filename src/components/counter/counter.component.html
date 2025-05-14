@@ -1,0 +1,66 @@
+<div class="counter-update-container">
+    <mat-card class="header-card">
+        <mat-card-header>
+            <mat-card-title style="padding-left: 30px;">Counter Value Updates</mat-card-title>
+            <mat-card-subtitle>Update electricity counter values for users</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+            <p *ngIf="subscriptions.length === 0 && !loading" class="no-data-message">
+                No users require counter updates at this time.
+            </p>
+        </mat-card-content>
+    </mat-card>
+
+    <mat-card *ngFor="let subscription of subscriptions; let i = index" class="subscription-card"
+        [class.completed]="!subscription.isActive">
+        <mat-card-header>
+            <div class="card-header-content">
+                <mat-card-title>{{ usernames.get(subscription.userId ?? 0) || ('User ' + subscription.userId) }}</mat-card-title>
+                <mat-card-title class="my-2">
+                   End Date In :  {{ DateFormatted.get(subscription.subscriptionId ?? 0) }}
+                </mat-card-title>
+                  
+
+                <mat-card-subtitle >Subscription : 
+                    {{subServiceName.get(subscription.subServiceId ??0)}}</mat-card-subtitle>
+            </div>
+            <span class="status-badge" *ngIf="!subscription.isActive">Completed</span>
+        </mat-card-header>
+
+        <mat-card-content>
+            <ng-container *ngIf="subscription.isActive && updateForms[i]">
+                <form [formGroup]="updateForms[i]">
+                    <div class="form-row my-3">
+                        <mat-form-field appearance="outline" class="value-field">
+                            <mat-label>New Value</mat-label>
+                            <input matInput type="number" formControlName="newQuantity" required>
+                            <mat-hint>Previous value: <strong>{{ subscription.quantity }}</strong></mat-hint>
+                            <mat-error *ngIf="updateForms[i].controls['newQuantity'].hasError('required')">
+                                Required
+                            </mat-error>
+                            <mat-error *ngIf="updateForms[i].controls['newQuantity'].hasError('min')">
+                                Must be positive
+                            </mat-error>
+                            <mat-icon matSuffix>speed</mat-icon>
+                        </mat-form-field>
+                    </div>
+                </form>
+            </ng-container>
+
+            <div *ngIf="!subscription.isActive" class="completed-message">
+                <mat-icon class="completed-icon">check_circle</mat-icon>
+                <span>Counter value updated successfully</span>
+            </div>
+        </mat-card-content>
+
+        <mat-card-actions *ngIf="subscription.isActive && updateForms[i]" align="end" class="button-group py-4">
+            <button mat-stroked-button type="button" class="btn btn-outline-secondary"
+                (click)="updateForms[i].reset()">Reset</button>
+            <button mat-raised-button type="button" class="btn btn-primary" (click)="onSubmit(i)"
+                [disabled]="updateForms[i].invalid || submitting">
+                <span *ngIf="!submitting">Submit</span>
+                <mat-spinner *ngIf="submitting" diameter="20"></mat-spinner>
+            </button>
+        </mat-card-actions>
+    </mat-card>
+</div>

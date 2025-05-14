@@ -1,0 +1,27 @@
+<div class="user-management-container">
+    <div class="service-selector d-flex justify-content-center">
+        <button mat-raised-button *ngFor="let btn of serviceButtons" [class.selected]="currentServiceFilter === btn.id"
+            (click)="selectService(btn.id)">
+            <mat-icon>{{btn.icon}}</mat-icon>
+            {{btn.name}}
+        </button>
+    </div>
+    <app-reusable-crud [config]="config" [isLoading]="loading" [rowActionsTemplate]="rowActions" [showSearch]="true"
+        [searchTerm]="searchTerm" (searchTermChange)="onSearch($event)" (edit)="onEdit($event)"
+        (delete)="onDelete($event)" (refresh)="onRefresh()" (pageChange)="onPageChange($event)" (add)="onAdd()"
+        (sortChange)="onSortChange($event)">
+        
+
+        <ng-template #rowActions let-item>
+            <button mat-icon-button class="config" (click)="onConfig(item)">
+                <mat-icon color="warn">build</mat-icon>
+            </button>
+            <button mat-icon-button class="edit" (click)="onEdit(item); $event.stopPropagation()">
+                <mat-icon color="primary">edit</mat-icon>
+            </button>
+            <button mat-icon-button class="delete" (click)="onDelete(item); $event.stopPropagation()">
+                <mat-icon color="warn">delete</mat-icon>
+            </button>
+        </ng-template>
+    </app-reusable-crud>
+</div>

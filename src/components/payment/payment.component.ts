@@ -113,8 +113,6 @@ export class PaymentComponent implements OnInit {
 
     this.paymentForm = this.fb.group({
       credit: ['', [Validators.required, Validators.min(0.01)]],
-      paymentMethod: ['cash', Validators.required],
-      notes: [''],
     });
   }
 
@@ -302,6 +300,8 @@ export class PaymentComponent implements OnInit {
         const blob = new Blob([response.data], {
           type: response.data.type,
         });
+        const url = window.URL.createObjectURL(blob);
+        window.open(url, '_blank');
         saveAs(blob, `Receipt_${receiptData.transactionId}.pdf`);
         this.snackBar.open('Receipt downloaded successfully', 'Close', {
           duration: 3000,

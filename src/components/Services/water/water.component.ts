@@ -16,19 +16,8 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import {
-  MatCardActions,
-  MatCardContent,
-  MatCardTitle,
-  MatCard,
-} from '@angular/material/card';
-import {
-  MatError,
-  MatFormField,
-  MatFormFieldModule,
-} from '@angular/material/form-field';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIcon } from '@angular/material/icon';
-import { MatList, MatListItem } from '@angular/material/list';
 import { MatSelectModule } from '@angular/material/select';
 import { combineLatest, firstValueFrom } from 'rxjs';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
@@ -41,16 +30,9 @@ import { ConfirmComponent } from '../../../dialogs/confirm/confirm.component';
     FormsModule,
     ReactiveFormsModule,
     CommonModule,
-    MatCardActions,
+
     MatIcon,
-    MatError,
-    MatFormField,
     MatFormFieldModule,
-    MatCardContent,
-    MatList,
-    MatCardTitle,
-    MatListItem,
-    MatCard,
     MatSelectModule,
     MatSlideToggleModule,
   ],
@@ -84,6 +66,7 @@ export class WaterComponent {
       startDate: [0],
       endDate: [0],
       price: [0],
+      quantity: [0],
       discount: [0, [Validators.min(0), Validators.max(100)]],
       isActive: [true],
       tenantId: [0],
@@ -250,6 +233,7 @@ export class WaterComponent {
       discount: 0,
       startDate: currentDate,
       endDate,
+      quantity: 0,
       isActive: true,
       tenantId: this.tenantId,
       price: 0,

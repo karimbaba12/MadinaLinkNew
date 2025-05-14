@@ -5,7 +5,8 @@
         </h2>
 
         <form [formGroup]="subscriptionForm" (ngSubmit)="submit()" class="subscription-form">
-            <div class="form-grid">
+            <div class="form-grid  ">
+
                 <div class="form-group">
                     <label for="subServiceId">Subservice</label>
                     <select id="subServiceId" formControlName="subServiceId" class="form-control">
@@ -15,12 +16,18 @@
                         </option>
                     </select>
                 </div>
-        
+
                 <div class="form-group">
                     <label for="discount">Discount (%)</label>
-                    <input type="number" id="discount" formControlName="discount" min="0" max="100" class="form-control" />
+                    <input type="number" id="discount" formControlName="discount" min="0" max="100"
+                        class="form-control" />
                 </div>
-        
+                <div class="form-group">
+                    <label for="quantity">Qantity</label>
+                    <input type="number" id="quantity" formControlName="quantity" min="0" max="100"
+                        class="form-control" />
+                </div>
+
                 <div class="form-group price-display">
                     <div class="calculated-price">
                         <span class="price-label">Calculated Price:</span>
@@ -30,7 +37,7 @@
                         </span>
                     </div>
                 </div>
-        
+
                 <div class="form-group toggle-group">
                     <label for="isActive">Status</label>
                     <mat-slide-toggle formControlName="isActive" id="isActive" color="primary">
@@ -38,35 +45,35 @@
                     </mat-slide-toggle>
                 </div>
             </div>
-        
+
             <div class="action-buttons">
-                <button type="submit" class="btn btn-primary action-btn" [disabled]="isLoading || subscriptionForm.invalid"
-                    [class.loading]="isLoading">
+                <button type="submit" class="btn btn-primary action-btn"
+                    [disabled]="isLoading || subscriptionForm.invalid" [class.loading]="isLoading">
                     <span *ngIf="!isLoading">
                         {{ selectedSubscriptionId ? 'Update Subscription' : 'Create Subscription' }}
                     </span>
                     <span *ngIf="isLoading" class="spinner"></span>
                 </button>
-        
+
                 <div class="secondary-actions">
                     <button *ngIf="selectedSubscriptionId" type="button" class="btn btn-danger action-btn"
                         (click)="confirmDelete()" [disabled]="isLoading">
                         Delete Subscription
                     </button>
-        
+
                     <button type="button" class="btn btn-outline-secondary action-btn" (click)="resetForm()"
                         [disabled]="isLoading">
                         {{ selectedSubscriptionId ? 'Cancel' : 'Reset Form' }}
                     </button>
                 </div>
             </div>
-        
+
             <div *ngIf="errorMessage" class="alert alert-danger error-message">
                 <mat-icon>error_outline</mat-icon>
                 <span>{{ errorMessage }}</span>
             </div>
         </form>
-        
+
         <div class="subscription-list" *ngIf="hasSubscriptions">
             <div class="list-header">Your Electricity Subscriptions</div>
             <ul class="subscription-items">
@@ -87,7 +94,7 @@
                 </li>
             </ul>
         </div>
-        
-        
-        </div>
-        </div>
+
+
+    </div>
+</div>

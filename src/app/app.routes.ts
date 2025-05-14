@@ -9,7 +9,8 @@ import { AddTenantComponent } from '../components/Tenancy/add-tenant/add-tenant.
 import { UpdateTenantComponent } from '../components/Tenancy/update-tenant/update-tenant.component';
 import { SubserviceManagementComponent } from '../components/SubServices/subservice-management/subservice-management.component';
 import { PaymentComponent } from '../components/payment/payment.component';
-
+import { AllUsersWithServiceComponent } from '../components/all-users-with-service/all-users-with-service.component';
+import { CounterComponent } from '../components/counter/counter.component';
 export const routes: Routes = [
   {
     path: 'login',
@@ -48,23 +49,16 @@ export const routes: Routes = [
         path: 'PaymentManagement',
         component: PaymentComponent,
       },
+      {
+        path: 'UserService',
+        component: AllUsersWithServiceComponent,
+      },
+      {
+        path: 'counter',
+        component: CounterComponent,
+      },
     ],
   },
-  //       {
-  //         path: 'CrudOperation',
-  //         component: CrudOperationComponent,
-  //       },
-  //       {
-  //         path: 'electricity',
-  //         component: electricityCrudComponent,
-  //       },
-  //       {
-  //         path: 'crudByRole',
-  //         component: CrudbyRoleComponent,
-  //       },
-  //     ],
-  //   },
-
   { path: '', redirectTo: '/admin/dashboard', pathMatch: 'full' },
 
   { path: '**', redirectTo: '/admin/dashboard' },
