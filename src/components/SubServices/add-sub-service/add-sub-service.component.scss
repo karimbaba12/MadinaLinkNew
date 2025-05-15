@@ -236,3 +236,50 @@
     padding: 0.5rem 1rem;
   }
 }
+
+.currency-input-container {
+  position: relative;
+  width: 100%;
+}
+
+.currency-symbol {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: 500;
+  color: #4a5568;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.price-input {
+  padding-left: 32px !important; /* Adjust based on your symbol width */
+  font-weight: 500;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+  height: 42px;
+  width: 100%;
+}
+
+.price-input:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  outline: none;
+}
+
+/* Validation states */
+.price-input.ng-invalid.ng-touched {
+  border-color: #e53e3e;
+}
+
+.price-input.ng-invalid.ng-touched:focus {
+  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
+}
+
+/* Optional: Animation for focus state */
+.price-input:focus + .currency-symbol {
+  color: #3498db;
+  transition: color 0.3s ease;
+}

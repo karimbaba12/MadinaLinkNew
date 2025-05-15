@@ -50,7 +50,7 @@ export const routes: Routes = [
         component: PaymentComponent,
       },
       {
-        path: 'UserService',
+        path: 'Service',
         component: AllUsersWithServiceComponent,
       },
       {

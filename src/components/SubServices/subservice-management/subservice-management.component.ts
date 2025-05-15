@@ -71,7 +71,6 @@ interface DisplaySubServiceDto extends SubServiceDto {
     MatOption,
     MatError,
     MatProgressSpinner,
-
   ],
   templateUrl: './subservice-management.component.html',
   styleUrls: ['./subservice-management.component.scss'],
@@ -91,28 +90,30 @@ export class SubserviceManagementComponent implements OnInit {
   deleteItemName = '';
 
   config: CrudTableConfig<DisplaySubServiceDto> = {
-    title: 'Sub Services Management',
+    title: 'Features Management',
     columns: [
       {
         name: 'serviceName',
         header: 'Service',
-        sortable: true,
       },
       {
         name: 'subscriptionTypeName',
         header: 'Subscription Type',
-        sortable: true,
       },
 
-      { name: 'subServiceCode', header: 'Code', sortable: true },
-      { name: 'subServiceName', header: 'Name', sortable: true },
+      { name: 'subServiceCode', header: 'Code' },
+      { name: 'subServiceName', header: 'Name' },
       {
         name: 'price',
         header: 'Price ($)',
-        sortable: true,
       },
     ],
     dataSource: [],
+    pageSizeOptions: [10],
+    defaultPageSize: 10,
+    pageSize: 10,
+    totalItems: 0,
+    numeric: 10,
   };
 
   constructor(

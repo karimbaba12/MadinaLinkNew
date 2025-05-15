@@ -2412,6 +2412,11 @@ export interface ISubscriptionClient {
      */
     usersByService(serviceId: number): Observable<ApiResponse_1OfOfIEnumerable_1OfOfUserDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
     /**
+     * @param body (optional) 
+     * @return OK
+     */
+    getPreviousSubscription(body?: SubscriptionDto | undefined): Observable<ApiResponse_1OfOfSubscriptionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null>;
+    /**
      * @return OK
      */
     getAll(): Observable<ApiResponse_1OfOfIEnumerable_1OfOfSubscriptionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
@@ -2666,6 +2671,63 @@ export class SubscriptionClient implements ISubscriptionClient {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
             result200 = ApiResponse_1OfOfIEnumerable_1OfOfUserDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    getPreviousSubscription(body?: SubscriptionDto | undefined, httpContext?: HttpContext): Observable<ApiResponse_1OfOfSubscriptionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null> {
+        let url_ = this.baseUrl + "/api/Subscription/GetPreviousSubscription";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            context: httpContext,
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetPreviousSubscription(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetPreviousSubscription(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ApiResponse_1OfOfSubscriptionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ApiResponse_1OfOfSubscriptionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null>;
+        }));
+    }
+
+    protected processGetPreviousSubscription(response: HttpResponseBase): Observable<ApiResponse_1OfOfSubscriptionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ApiResponse_1OfOfSubscriptionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null.fromJS(resultData200);
             return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
@@ -7048,78 +7110,6 @@ export interface ITokenDto {
     tenantId?: number;
 }
 
-export class SubscriptionPaymentDto implements ISubscriptionPaymentDto {
-    subscriptionId?: number;
-    subServiceId?: number;
-    userId?: number;
-    startDate?: number;
-    endDate?: number;
-    price?: number;
-    quantity?: number;
-    discount?: number;
-    isActive?: boolean;
-    tenantId?: number;
-
-    constructor(data?: ISubscriptionPaymentDto) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.subscriptionId = _data["subscriptionId"];
-            this.subServiceId = _data["subServiceId"];
-            this.userId = _data["userId"];
-            this.startDate = _data["startDate"];
-            this.endDate = _data["endDate"];
-            this.price = _data["price"];
-            this.quantity = _data["quantity"];
-            this.discount = _data["discount"];
-            this.isActive = _data["isActive"];
-            this.tenantId = _data["tenantId"];
-        }
-    }
-
-    static fromJS(data: any): SubscriptionPaymentDto {
-        data = typeof data === 'object' ? data : {};
-        let result = new SubscriptionPaymentDto();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["subscriptionId"] = this.subscriptionId;
-        data["subServiceId"] = this.subServiceId;
-        data["userId"] = this.userId;
-        data["startDate"] = this.startDate;
-        data["endDate"] = this.endDate;
-        data["price"] = this.price;
-        data["quantity"] = this.quantity;
-        data["discount"] = this.discount;
-        data["isActive"] = this.isActive;
-        data["tenantId"] = this.tenantId;
-        return data;
-    }
-}
-
-export interface ISubscriptionPaymentDto {
-    subscriptionId?: number;
-    subServiceId?: number;
-    userId?: number;
-    startDate?: number;
-    endDate?: number;
-    price?: number;
-    quantity?: number;
-    discount?: number;
-    isActive?: boolean;
-    tenantId?: number;
-}
-
 export class TransactionPaymentDto implements ITransactionPaymentDto {
     userId?: number;
     name?: string | undefined;
@@ -7133,7 +7123,7 @@ export class TransactionPaymentDto implements ITransactionPaymentDto {
     transactionId?: number;
     credit?: number;
     debit?: number;
-    subscriptions?: SubscriptionPaymentDto[] | undefined;
+    subscriptions?: SubscriptionDto[] | undefined;
 
     constructor(data?: ITransactionPaymentDto) {
         if (data) {
@@ -7161,7 +7151,7 @@ export class TransactionPaymentDto implements ITransactionPaymentDto {
             if (Array.isArray(_data["subscriptions"])) {
                 this.subscriptions = [] as any;
                 for (let item of _data["subscriptions"])
-                    this.subscriptions!.push(SubscriptionPaymentDto.fromJS(item));
+                    this.subscriptions!.push(SubscriptionDto.fromJS(item));
             }
         }
     }
@@ -7209,7 +7199,7 @@ export interface ITransactionPaymentDto {
     transactionId?: number;
     credit?: number;
     debit?: number;
-    subscriptions?: SubscriptionPaymentDto[] | undefined;
+    subscriptions?: SubscriptionDto[] | undefined;
 }
 
 export class TransactionDto implements ITransactionDto {

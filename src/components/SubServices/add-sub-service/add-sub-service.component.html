@@ -68,7 +68,7 @@
                     <div class="col-md-6 form-group">
                         <label class="form-label required">Sub-Service Code</label>
                         <input type="text" class="form-control" formControlName="subServiceCode"
-                            placeholder="e.g. SRV-001" maxlength="20" required>
+                            placeholder="e.g. OS 100" maxlength="20" required>
                         <div *ngIf="subServiceForm.get('subServiceCode')?.invalid && 
                                     (subServiceForm.get('subServiceCode')?.dirty || subServiceForm.get('subServiceCode')?.touched)"
                             class="error-message">
@@ -88,7 +88,7 @@
                     <div class="col-md-6 form-group">
                         <label class="form-label required">Sub-Service Name</label>
                         <input type="text" class="form-control" formControlName="subServiceName"
-                            placeholder="e.g. Premium Support" maxlength="100" required>
+                            placeholder="e.g. open speed 100gb" maxlength="100" required>
                         <div *ngIf="subServiceForm.get('subServiceName')?.invalid && 
                                     (subServiceForm.get('subServiceName')?.dirty || subServiceForm.get('subServiceName')?.touched)"
                             class="error-message">
@@ -103,21 +103,21 @@
                 </div>
             </div>
 
-            <!-- Pricing and Quantity Section -->
+
             <div class="form-section">
                 <h3 class="section-title">
                     <i class="bi bi-cash"></i> Pricing
                 </h3>
-                <div class="col-12 form-group">
+                <div class="col-md-6 form-group">
                     <label class="form-label required">Price</label>
-                    <div class="input-group">
-                        <span class="input-group-text">$</span>
-                        <input type="number" class="form-control" formControlName="price" min="0" max="1000000"
-                            step="0.1" required>
+                    <div class="currency-input-container">
+                        <span class="currency-symbol">$</span>
+                        <input type="number" class="form-control price-input" formControlName="price" min="0"
+                            max="1000000" step="0.01" placeholder="0.00" required>
                     </div>
                     <div *ngIf="subServiceForm.get('price')?.invalid && 
-                                    (subServiceForm.get('price')?.dirty || subServiceForm.get('price')?.touched)"
-                        class="error-message">
+                                            (subServiceForm.get('price')?.dirty || subServiceForm.get('price')?.touched)"
+                        class="error-message mt-1">
                         <div *ngIf="subServiceForm.get('price')?.errors?.['required']">
                             <i class="bi bi-exclamation-circle"></i> Price is required
                         </div>
@@ -129,8 +129,8 @@
                         </div>
                     </div>
                 </div>
-
             </div>
+
         </form>
     </div>
 

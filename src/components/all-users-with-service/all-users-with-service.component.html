@@ -7,7 +7,7 @@
         </button>
     </div>
     <app-reusable-crud [config]="config" [isLoading]="loading" [rowActionsTemplate]="rowActions" [showSearch]="true"
-        [searchTerm]="searchTerm" (searchTermChange)="onSearch($event)" (edit)="onEdit($event)"
+        [searchTerm]="searchTerm"  (edit)="onEdit($event)"
         (delete)="onDelete($event)" (refresh)="onRefresh()" (pageChange)="onPageChange($event)" (add)="onAdd()"
         (sortChange)="onSortChange($event)">
         

@@ -8,7 +8,7 @@ import {
 import { MatNavList, MatListItem } from '@angular/material/list';
 import { CommonModule, LocationStrategy, Location } from '@angular/common';
 import { NavigationItem } from '../../data/menu/Navigation';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { NavigationService } from '../../../Services/navigation/navigation.service';
 @Component({
@@ -32,10 +32,15 @@ export class SidebarComponent {
   @Input() sidebarOpened: boolean = true;
   @Input() menus: NavigationItem[] = [];
 
-  private location = inject(Location);
+  // private location = inject(Location);
   private locationStrategy = inject(LocationStrategy);
-  private navigationService = inject(NavigationService);
+  // private navigationService = inject(NavigationService);
 
+  constructor(
+    private location: Location,
+    private router: Router,
+    private navigationService: NavigationService
+  ) {}
   accountList = [
     { icon: 'ti ti-user', title: 'My Account' },
     { icon: 'ti ti-settings', title: 'Settings' },
@@ -74,9 +79,10 @@ export class SidebarComponent {
       this.menus = menu;
     });
   }
-
-  // Optional: Call this during initialization if needed
-  constructor() {
-    this.loadMenus();
+  isGroupActive(menu: NavigationItem): boolean {
+    if (!menu.children) return false;
+    return menu.children.some((child) =>
+      this.router.isActive(child.url || '', false)
+    );
   }
 }

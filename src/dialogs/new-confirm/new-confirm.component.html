@@ -1,0 +1,41 @@
+<h2 mat-dialog-title>
+    <span *ngIf="data.isConfirmation && !data.isBulkPayment">Confirm Payment</span>
+    <span *ngIf="data.isConfirmation && data.isBulkPayment">Confirm Bulk Payment</span>
+    <span *If="data.isSuccess">Payment Successful</span>
+</h2>
+
+<mat-dialog-content>
+    <div *ngIf="data.isConfirmation && !data.isBulkPayment" class="confirmation-content">
+        <p>Are you sure you want to confirm payment of <strong>{{ data.amount | currency }}</strong> via
+            <strong>{{ data.paymentMethod }}</strong> for <strong>{{ data.user.name }}</strong>?
+        </p>
+        <p>New balance will be: <strong>{{ data.balance | currency }}</strong></p>
+
+        <mat-checkbox [(ngModel)]="generateReceipt">Generate receipt</mat-checkbox>
+    </div>
+
+    <div *ngIf="data.isConfirmation && data.isBulkPayment" class="confirmation-content">
+        <p>Are you sure you want to confirm payments for <strong>{{ data.users.length }}</strong> users?</p>
+        <p>Total amount: <strong>{{ data.amount | currency }}</strong></p>
+        <p>Payment method: <strong>{{ data.paymentMethod }}</strong></p>
+
+        <mat-checkbox [(ngModel)]="generateReceipt">Generate receipts for all users</mat-checkbox>
+
+        <mat-progress-bar *ngIf="isProcessing" mode="indeterminate"></mat-progress-bar>
+    </div>
+
+    <div *ngIf="data.isSuccess" class="success-content">
+        <mat-icon class="success-icon">check_circle</mat-icon>
+        <p>Payment of <strong>{{ data.amount | currency }}</strong> was successfully processed.</p>
+        <p *ngIf="data.transactionId">Transaction ID: <strong>{{ data.transactionId }}</strong></p>
+        <p>New balance: <strong>{{ data.balance | currency }}</strong></p>
+    </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+    <button mat-button *ngIf="data.isConfirmation && !isProcessing" (click)="cancel()">Cancel</button>
+    <button mat-flat-button color="primary" (click)="confirm()" [disabled]="isProcessing" cdkFocusInitial>
+        {{ data.isConfirmation ? 'Confirm' : 'OK' }}
+        <mat-spinner *ngIf="isProcessing" diameter="20"></mat-spinner>
+    </button>
+</mat-dialog-actions>

@@ -82,6 +82,11 @@ export class AllUsersWithServiceComponent {
       { name: 'status', header: 'Status', sortable: true },
     ],
     dataSource: [],
+    pageSizeOptions: [10],
+    defaultPageSize: 10,
+    pageSize: 10,
+    totalItems: 0,
+    numeric: 10,
   };
 
   constructor(

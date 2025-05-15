@@ -4,6 +4,7 @@ export interface NavigationItem {
   icon?: string;
   link?: string;
   url?: string;
+  color?: string;
   breadcrumbs?: boolean;
   children?: Navigation[];
   type: 'item' | 'group' | 'collapse';

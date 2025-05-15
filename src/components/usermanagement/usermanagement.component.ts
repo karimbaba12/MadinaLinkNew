@@ -78,6 +78,11 @@ export class UsermanagementComponent implements OnInit {
       },
     ],
     dataSource: [],
+    pageSizeOptions: [10],
+    defaultPageSize: 10,
+    pageSize: 10,
+    totalItems: 0,
+    numeric: 10,
   };
 
   constructor(

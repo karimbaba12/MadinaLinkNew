@@ -6,6 +6,7 @@ import {
   TemplateRef,
   ViewChild,
   OnInit,
+  SimpleChanges,
 } from '@angular/core';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSort, Sort } from '@angular/material/sort';
@@ -43,7 +44,6 @@ import { MatInputModule } from '@angular/material/input';
   selector: 'app-reusable-crud',
   imports: [
     CommonModule,
-    MatToolbar,
     MatIcon,
     MatSpinner,
     MatTable,
@@ -68,54 +68,74 @@ import { MatInputModule } from '@angular/material/input';
   styleUrl: './reusable-crud.component.scss',
 })
 export class ReusableCrudComponent<T> implements OnInit {
-  searchControl = new FormControl('');
-  @Input() searchTerm: string = ''; // Add this input
-  @Output() searchTermChange = new EventEmitter<string>(); // Add this output
-  @Output() rowClick = new EventEmitter<T>();
   @Input() config!: CrudTableConfig<T>;
   @Input() isLoading = false;
   @Input() showSearch = true;
   @Input() searchPlaceholder = 'Search...';
   @Input() minSearchLength = 3;
-
   @Input() rowActionsTemplate?: TemplateRef<any>;
   @Input() columnTemplates: { [key: string]: TemplateRef<any> } = {};
-
+  @Input() showRowPointer = true;
+  @Input() searchTerm: string = '';
   @Output() add = new EventEmitter<void>();
   @Output() edit = new EventEmitter<T>();
   @Output() delete = new EventEmitter<T>();
   @Output() refresh = new EventEmitter<void>();
   @Output() pageChange = new EventEmitter<PageEvent>();
   @Output() sortChange = new EventEmitter<Sort>();
+  @Output() rowClick = new EventEmitter<T>();
+  @Output() search = new EventEmitter<string>();
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
-  @Input() showFilter: boolean = true;
-  @Output() filterChange = new EventEmitter<string>();
-  @Output() search = new EventEmitter<string>();
-  applyFilter(filterValue: string) {
-    this.filterChange.emit(filterValue);
+
+  searchControl = new FormControl('');
+
+  ngOnInit(): void {
+    this.setupSearch();
+    this.validateConfig();
   }
 
-  ngOnInit() {
-    this.validateConfig();
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['config']) {
+      this.validateConfig();
+    }
+  }
+
+  private setupSearch(): void {
     this.searchControl.valueChanges
       .pipe(debounceTime(300), distinctUntilChanged())
       .subscribe((term) => {
-        if (term !== null) {
-          this.searchTerm = term;
-          this.searchTermChange.emit(term);
+        if ((term && term.length >= this.minSearchLength) || term === '') {
+          this.search.emit(term || '');
         }
       });
-    if (this.showSearch) {
-      this.searchControl.valueChanges
-        .pipe(debounceTime(300), distinctUntilChanged())
-        .subscribe((term) => {
-          if ((term && term.length >= this.minSearchLength) || term === '') {
-            this.search.emit(term);
-          }
-        });
+  }
+
+  clearSearch(): void {
+    this.searchControl.setValue('');
+  }
+
+  private validateConfig(): void {
+    if (!this.config) {
+      console.error('Config is required for ReusableCrudComponent');
+      this.config = {
+        title: 'Data Table',
+        columns: [],
+        dataSource: [],
+        pageSizeOptions: [10],
+        defaultPageSize: 10,
+        pageSize: 10,
+        totalItems: 0,
+        numeric: 10,
+      };
     }
+
+    this.config.columns ??= [];
+    this.config.dataSource ??= [];
+    this.config.pageSize ??= 10;
+    this.config.pageSizeOptions ??= [5, 10, 25, 100];
+    this.config.totalItems ??= this.config.dataSource.length;
   }
 
   get displayedColumns(): string[] {
@@ -123,81 +143,32 @@ export class ReusableCrudComponent<T> implements OnInit {
     if (this.rowActionsTemplate) {
       cols.push('actions');
     }
-    // console.log('Displayed columns:', cols);
     return cols;
   }
 
-  getColumnId(column: ColumnConfig): string {
-    // Return a guaranteed non-empty string
-    if (column.id && typeof column.id === 'string') return column.id;
-    if (column.name && typeof column.name === 'string') return column.name;
-    if (column.header && typeof column.header === 'string')
-      return column.header;
-    // Fallback to random string if all else fails
-    return `col-${Math.random().toString(36).substr(2, 5)}`;
-  }
-  private validateConfig(): void {
-    if (!this.config) {
-      console.error('Config is required for ReusableCrudComponent');
-      this.config = {
-        title: 'Error: No Config',
-        columns: [],
-        dataSource: [],
-      };
-      return;
-    }
+  getCellValue(row: any, column: ColumnConfig): any {
+    const value = column.propertyPath
+      ? this.getNestedProperty(row, column.propertyPath)
+      : row[column.name];
 
-    if (!Array.isArray(this.config.columns)) {
-      console.error('Columns must be an array');
-      this.config.columns = [];
-    }
-
-    if (!Array.isArray(this.config.dataSource)) {
-      console.error('DataSource must be an array');
-      this.config.dataSource = [];
-    }
-  }
-
-  getCellValue(row: any, column: any): any {
-    const value = row[column.name];
     return column.transform ? column.transform(value) : value;
   }
 
-  private formatValue(value: any): string | number | boolean {
-    if (value === undefined || value === null) {
-      return '';
-    }
-
-    if (typeof value === 'boolean') {
-      return value ? 'Yes' : 'No';
-    }
-
-    if (value instanceof Date) {
-      try {
-        return value.toLocaleDateString();
-      } catch (e) {
-        console.error('Error formatting date:', e);
-        return '';
-      }
-    }
-
-    return value;
+  private getNestedProperty(obj: any, path: string): any {
+    return path.split('.').reduce((o, p) => o?.[p], obj);
   }
-  onRowClick(row: T) {
-    this.rowClick.emit(row);
+
+  onRowClick(row: T): void {
+    if (this.showRowPointer) {
+      this.rowClick.emit(row);
+    }
   }
-  onAddClick(): void {
-    console.log('Add triggered in reusable component');
-    this.add.emit(); // Let parent handle logic (if needed)
-    // OR: Open a generic form here
-  }
+
   onSortChange(sort: Sort): void {
-    console.log('Sort changed:', sort);
     this.sortChange.emit(sort);
   }
 
   handlePageChange(event: PageEvent): void {
-    console.log('Page changed:', event);
     this.pageChange.emit(event);
   }
 }

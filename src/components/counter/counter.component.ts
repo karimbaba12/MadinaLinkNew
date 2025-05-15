@@ -3,6 +3,7 @@ import {
   FormGroup,
   FormBuilder,
   Validators,
+  FormControl,
   ReactiveFormsModule,
 } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -12,57 +13,50 @@ import {
   UsersClient,
   SubServiceClient,
 } from '../../../Services/api/api-client.service';
-import {
-  MatCard,
-  MatCardActions,
-  MatCardContent,
-  MatCardHeader,
-  MatCardSubtitle,
-  MatCardTitle,
-} from '@angular/material/card';
-import {
-  MatError,
-  MatFormField,
-  MatFormFieldModule,
-  MatLabel,
-} from '@angular/material/form-field';
+import { DateFormatService } from '../../../Services/dateFormate/date-format.service';
+import { CommonModule, DecimalPipe } from '@angular/common';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { MatFormField, MatLabel, MatError, MatFormFieldControl, MatFormFieldModule } from '@angular/material/form-field';
 import { MatIcon } from '@angular/material/icon';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import { CommonModule } from '@angular/common';
+import { MatTableModule } from '@angular/material/table';
+import { forkJoin } from 'rxjs';
 import { MatInputModule } from '@angular/material/input';
-import { DateFormatService } from '../../../Services/dateFormate/date-format.service';
 
 @Component({
-  selector: 'app-counter',
   imports: [
-    MatCardActions,
     MatFormField,
     MatLabel,
     MatIcon,
-    MatProgressSpinner,
-    MatError,
-    MatCardContent,
-    MatCard,
-    MatCardHeader,
-    MatCardTitle,
-    MatCardSubtitle,
     ReactiveFormsModule,
+    MatError,
+    MatProgressSpinner,
+    MatTableModule,
     CommonModule,
+    MatFormField,
     MatFormFieldModule,
     MatInputModule,
   ],
+  selector: 'app-counter',
   templateUrl: './counter.component.html',
-  styleUrl: './counter.component.scss',
+  styleUrls: ['./counter.component.scss'],
+  providers: [DecimalPipe],
 })
 export class CounterComponent implements OnInit {
   loading = true;
   submitting = false;
   subscriptions: SubscriptionDto[] = [];
-  displayedColumns: string[] = ['user', 'currentValue', 'newValue', 'actions'];
-  updateForms: FormGroup[] = [];
-  usernames: Map<number, string> = new Map();
-  subServiceName: Map<number, string> = new Map();
-  DateFormatted: Map<number, string> = new Map();
+  filteredSubscriptions: SubscriptionDto[] = [];
+  updateForm: FormGroup;
+
+  // Data maps
+  usernames = new Map<number, string>();
+  subServiceNames = new Map<number, string>();
+  endDates = new Map<number, string>();
+  previousValues = new Map<number, number>();
+
+  // Form controls
+  searchControl = new FormControl('');
 
   constructor(
     private subscriptionClient: SubscriptionClient,
@@ -70,122 +64,263 @@ export class CounterComponent implements OnInit {
     private fb: FormBuilder,
     private userClient: UsersClient,
     private subServiceClient: SubServiceClient,
-    private dateformatter: DateFormatService
-  ) {}
+    private dateFormatter: DateFormatService,
+    private decimalPipe: DecimalPipe
+  ) {
+    this.updateForm = this.fb.group({});
+  }
 
   ngOnInit(): void {
     this.loadSubscriptions();
+    this.setupSearch();
   }
 
-  loadSubscriptions(): void {
+  private setupSearch(): void {
+    this.searchControl.valueChanges
+      .pipe(debounceTime(300), distinctUntilChanged())
+      .subscribe((searchTerm) => this.filterSubscriptions(searchTerm || ''));
+  }
+
+  private filterSubscriptions(searchTerm: string): void {
+    this.filteredSubscriptions = searchTerm
+      ? this.subscriptions.filter((sub) => {
+          const username =
+            this.usernames.get(sub.userId ?? 0)?.toLowerCase() || '';
+          const serviceName =
+            this.subServiceNames.get(sub.subServiceId ?? 0)?.toLowerCase() ||
+            '';
+          return (
+            username.includes(searchTerm.toLowerCase()) ||
+            serviceName.includes(searchTerm.toLowerCase())
+          );
+        })
+      : [...this.subscriptions];
+  }
+
+  private loadSubscriptions(): void {
     this.loading = true;
     this.subscriptionClient.getUserToAddCount().subscribe({
       next: (response) => {
         this.subscriptions = response.data || [];
-        this.createForms();
-        this.fetchUsernames();
-        this.fetchSubServiceName();
-        this.DateFormatting();
+        this.filteredSubscriptions = [...this.subscriptions];
+        this.initializeComponentData();
         this.loading = false;
       },
       error: (err) => {
-        this.snackBar.open('Failed to load subscriptions', 'Close', {
-          duration: 3000,
-        });
+        this.showError('Failed to load subscriptions');
         this.loading = false;
       },
     });
   }
 
-  createForms(): void {
-    this.updateForms = this.subscriptions.map((sub) =>
-      this.fb.group({
-        subscriptionId: [sub.subscriptionId],
-        newQuantity: ['', [Validators.required, Validators.min(0)]],
-        note: [''],
-      })
-    );
+  private initializeComponentData(): void {
+    this.createFormControls();
+    this.fetchAdditionalData();
   }
 
-  onSubmit(index: number): void {
-    const form = this.updateForms[index];
-    if (form.invalid) return;
+  private createFormControls(): void {
+    const formControls: Record<string, any> = {};
+
+    this.subscriptions.forEach((sub) => {
+      const id = sub.subscriptionId?.toString() || '';
+      formControls[`${id}_quantity`] = [
+        '',
+        [Validators.required, Validators.min(0)],
+      ];
+      formControls[`${id}_note`] = [''];
+    });
+
+    this.updateForm = this.fb.group(formControls);
+  }
+
+  private fetchAdditionalData(): void {
+    this.subscriptions.forEach((sub) => {
+      this.fetchUsername(sub);
+      this.fetchServiceName(sub);
+      this.formatEndDate(sub);
+      this.fetchPreviousValue(sub);
+    });
+  }
+
+  private fetchUsername(sub: SubscriptionDto): void {
+    if (!sub.userId) return;
+
+    this.userClient.getById(sub.userId).subscribe({
+      next: (result) => {
+        this.usernames.set(
+          sub.userId ?? 0,
+          result?.data?.name?.toUpperCase() || `User ${sub.userId}`
+        );
+      },
+      error: () => {
+        this.usernames.set(sub.userId ?? 0, `User ${sub.userId}`);
+      },
+    });
+  }
+
+  private fetchServiceName(sub: SubscriptionDto): void {
+    if (!sub.subServiceId) return;
+
+    this.subServiceClient.getById(sub.subServiceId).subscribe({
+      next: (result) => {
+        this.subServiceNames.set(
+          sub.subServiceId ?? 0,
+          result?.data?.subServiceName?.toUpperCase() ||
+            `Service ${sub.subServiceId}`
+        );
+      },
+      error: () => {
+        this.subServiceNames.set(
+          sub.subServiceId ?? 0,
+          `Service ${sub.subServiceId}`
+        );
+      },
+    });
+  }
+
+  private formatEndDate(sub: SubscriptionDto): void {
+    if (sub.subscriptionId && sub.endDate) {
+      this.endDates.set(
+        sub.subscriptionId,
+        this.dateFormatter.unixToDateString(sub.endDate)
+      );
+    }
+  }
+
+  private fetchPreviousValue(sub: SubscriptionDto): void {
+    if (!sub.subscriptionId) return;
+
+    this.subscriptionClient.getPreviousSubscription(sub).subscribe({
+      next: (prevSub) => {
+        if (prevSub.data?.quantity) {
+          this.previousValues.set(
+            sub.subscriptionId ?? 0,
+            prevSub.data.quantity
+          );
+        }
+      },
+      error: () => {
+        console.warn(
+          `Could not fetch previous value for subscription ${sub.subscriptionId}`
+        );
+      },
+    });
+  }
+
+  // onSubmit(): void {
+  //   if (this.updateForm.invalid || this.submitting) return;
+
+  //   this.submitting = true;
+  //   const updates = this.prepareUpdates();
+
+  //   if (updates.length === 0) {
+  //     this.showNotification('No changes detected');
+  //     this.submitting = false;
+  //     return;
+  //   }
+
+  //   this.subscriptionClient.updateCounter(updates).subscribe({
+  //     next: () => {
+  //       this.showSuccess(`${updates.length} counters updated successfully`);
+  //       this.loadSubscriptions();
+  //     },
+  //     error: (err) => {
+  //       this.showError('Update failed: ' + err.message);
+  //     },
+  //   });
+  // }
+  onSubmit(): void {
+    if (this.updateForm.invalid || this.submitting) return;
 
     this.submitting = true;
-    const subscription = this.subscriptions[index];
-    const updatingData = new SubscriptionDto();
-    updatingData.quantity = form.value.newQuantity;
+    const updates = this.prepareUpdates();
 
-    const updateData = {
-      ...subscription,
-      quantity: form.value.newQuantity,
-      init: subscription.init,
-      toJSON: subscription.toJSON,
-    };
+    if (updates.length === 0) {
+      this.showNotification('No changes detected');
+      this.submitting = false;
+      return;
+    }
 
-    this.subscriptionClient.updateCounter(updateData).subscribe({
+    // Handle batch updates if your API supports it
+    // Or update one by one
+    this.processUpdates(updates);
+  }
+
+  private processUpdates(updates: SubscriptionDto[]): void {
+    const updateObservables = updates.map((update) =>
+      this.subscriptionClient.updateCounter(update)
+    );
+
+    // Using forkJoin to handle multiple updates
+    forkJoin(updateObservables).subscribe({
       next: () => {
-        console.log(updateData);
-        this.snackBar.open('Counter updated successfully', 'Close', {
-          duration: 3000,
-        });
-        this.subscriptions[index].isActive = false;
-        this.submitting = false;
+        this.showSuccess(`${updates.length} counters updated successfully`);
+        this.loadSubscriptions();
       },
       error: (err) => {
-        this.snackBar.open('Update failed: ' + err.message, 'Close', {
-          duration: 3000,
-        });
+        this.showError('Update failed: ' + err.message);
+      },
+      complete: () => {
         this.submitting = false;
       },
     });
   }
-
-  fetchSubServiceName(): void {
-    this.subscriptions.forEach((subscription) => {
-      this.subServiceClient.getById(subscription.subServiceId).subscribe({
-        next: (result) => {
-          const subServiceName =
-            result?.data?.subServiceName?.toUpperCase() ||
-            `User ${subscription.subServiceId}`;
-          this.subServiceName.set(
-            subscription.subServiceId ?? 0,
-            subServiceName
-          );
-        },
-        error: () => {
-          this.subServiceName.set(
-            subscription.subServiceId ?? 0,
-            `User ${subscription.subServiceId}`
-          );
-        },
+  private prepareUpdates(): SubscriptionDto[] {
+    return this.filteredSubscriptions
+      .filter(
+        (sub) => this.updateForm.get(`${sub.subscriptionId}_quantity`)?.dirty
+      )
+      .map((sub) => {
+        const update = new SubscriptionDto();
+        Object.assign(update, sub);
+        update.quantity = this.updateForm.get(
+          `${sub.subscriptionId}_quantity`
+        )?.value;
+        return update;
       });
-    });
   }
 
-  fetchUsernames(): void {
-    this.subscriptions.forEach((subscription) => {
-      this.userClient.getById(subscription.userId).subscribe({
-        next: (result) => {
-          const username =
-            result?.data?.name?.toUpperCase() || `User ${subscription.userId}`;
-          this.usernames.set(subscription.userId ?? 0, username);
-        },
-        error: () => {
-          this.usernames.set(
-            subscription.userId ?? 0,
-            `User ${subscription.userId}`
-          );
-        },
-      });
-    });
+  // Helper methods
+  get completedCount(): number {
+    return this.subscriptions.filter((s) => !s.isActive).length;
   }
-  DateFormatting(): void {
-    this.subscriptions.forEach((subscription) => {
-      const formattedDate = this.dateformatter.unixToDateString(
-        subscription.endDate ?? 0
-      );
-      this.DateFormatted.set(subscription.subscriptionId ?? 0, formattedDate);
-    });
+
+  trackById(index: number, item: SubscriptionDto): number {
+    return item.subscriptionId ?? index;
+  }
+
+  formatNumber(value: number | undefined): string {
+    return this.decimalPipe.transform(value, '1.0-0') || '0';
+  }
+
+  focusNextInput(event: Event, nextIndex: number): void {
+    event.preventDefault();
+    const inputs = document.querySelectorAll<HTMLInputElement>(
+      'input[type="number"]'
+    );
+    if (inputs[nextIndex]) inputs[nextIndex].focus();
+  }
+
+  focusPrevInput(event: Event, prevIndex: number): void {
+    event.preventDefault();
+    const inputs = document.querySelectorAll<HTMLInputElement>(
+      'input[type="number"]'
+    );
+    if (inputs[prevIndex]) inputs[prevIndex].focus();
+  }
+
+  // Notification methods
+  private showSuccess(message: string): void {
+    this.snackBar.open(message, 'Close', { duration: 3000 });
+    this.submitting = false;
+  }
+
+  private showError(message: string): void {
+    this.snackBar.open(message, 'Close', { duration: 3000 });
+    this.submitting = false;
+  }
+
+  private showNotification(message: string): void {
+    this.snackBar.open(message, 'Close', { duration: 3000 });
   }
 }
