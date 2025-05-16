@@ -45,6 +45,7 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
 import { saveAs } from 'file-saver';
 import { NewConfirmComponent } from '../../dialogs/new-confirm/new-confirm.component';
+import { BrowserModule } from '@angular/platform-browser';
 
 interface User {
   userId: number;
@@ -148,12 +149,33 @@ export class PaymentComponent implements OnInit {
     this.isFetchingUsersToPay = true;
     this.userClient.getUserToPay().subscribe({
       next: (response: any) => {
-        this.usersToPay = response?.data || [];
-        this.usersToPay.forEach((user) => {
-          this.loadUserBalance(user);
+        let users = response?.data || [];
+        const balanceObservables = users.map((user: User) =>
+          this.transactionClient.getBalanceByID(user.userId).pipe(
+            map((balanceResponse: any) => ({
+              ...user,
+              balance: (balanceResponse?.data as number) || 0,
+            })),
+            catchError(() =>
+              of({
+                ...user,
+                balance: 0,
+              })
+            )
+          )
+        );
+        forkJoin(balanceObservables).subscribe((usersWithBalance) => {
+          this.usersToPay = (usersWithBalance as User[]).filter(
+            (u) => (u.balance || 0) > 0
+          );
+          this.usersToPay.forEach((user) => {
+            if (!user.amountDue) {
+              user.amountDue = user.balance;
+            }
+          });
+          this.calculateTotalAmountDue();
+          this.isFetchingUsersToPay = false;
         });
-        this.calculateTotalAmountDue();
-        this.isFetchingUsersToPay = false;
       },
       error: (error) => {
         console.error('Error loading users to pay:', error);
@@ -279,7 +301,7 @@ export class PaymentComponent implements OnInit {
     this.paymentForm.patchValue({
       amount: user.amountDue || user.balance || 0,
     });
-    this.loadSubServiceNames();
+    // this.loadSubServiceNames();
   }
 
   updateUserAmount(user: User, amount: number): void {
@@ -288,34 +310,34 @@ export class PaymentComponent implements OnInit {
     this.calculateTotalAmountDue();
   }
 
-  loadSubServiceNames(): void {
-    if (!this.selectedUser?.subscriptions) return;
+  // loadSubServiceNames(): void {
+  //   if (!this.selectedUser?.subscriptions) return;
 
-    const subServiceIds = [
-      ...new Set(
-        this.selectedUser.subscriptions.map((sub) => sub.subServiceId)
-      ),
-    ];
+  //   const subServiceIds = [
+  //     ...new Set(
+  //       this.selectedUser.subscriptions.map((sub) => sub.subServiceId)
+  //     ),
+  //   ];
 
-    subServiceIds.forEach((id) => {
-      if (id && !this.subServiceNames[id]) {
-        this.subServiceClient.getById(id).subscribe({
-          next: (response) => {
-            this.subServiceNames[id] =
-              response.data?.subServiceName || 'Unknown';
-          },
-          error: (error) => {
-            console.error('Error loading service name:', error);
-            this.subServiceNames[id] = 'Unknown';
-          },
-        });
-      }
-    });
-  }
+  //   subServiceIds.forEach((id) => {
+  //     if (id && !this.subServiceNames[id]) {
+  //       this.subServiceClient.getById(id).subscribe({
+  //         next: (response) => {
+  //           this.subServiceNames[id] =
+  //             response.data?.subServiceName || 'Unknown';
+  //         },
+  //         error: (error) => {
+  //           console.error('Error loading service name:', error);
+  //           this.subServiceNames[id] = 'Unknown';
+  //         },
+  //       });
+  //     }
+  //   });
+  // }
 
-  getSubServiceName(subServiceId: number): string {
-    return this.subServiceNames[subServiceId] || 'Loading...';
-  }
+  // getSubServiceName(subServiceId: number): string {
+  //   return this.subServiceNames[subServiceId] || 'Loading...';
+  // }
 
   getFormattedDate(timestamp: number): string {
     return (
@@ -419,7 +441,6 @@ export class PaymentComponent implements OnInit {
     if (!this.selectedUser) return;
 
     const receiptData = new TransactionPaymentDto();
-
     receiptData.transactionId = transaction.transactionId;
     receiptData.userId = this.selectedUser.userId;
     receiptData.name = this.selectedUser.name;
@@ -427,7 +448,8 @@ export class PaymentComponent implements OnInit {
     receiptData.email = this.selectedUser.email || '';
     receiptData.createdAt = Math.floor(Date.now() / 1000);
     receiptData.tenantId = this.selectedUser.tenantId;
-    receiptData.username = this.selectedUser.username;
+    receiptData.username =
+      this.selectedUser.username || `user_${receiptData.userId}`;
     receiptData.roleId = this.selectedUser.roleId;
     receiptData.isActive = this.selectedUser.isActive;
 
@@ -478,12 +500,8 @@ export class PaymentComponent implements OnInit {
     });
   }
 
-  async processBulkPayment(
-    generateReceipt: boolean = false,
-    users?: User[]
-  ): Promise<void> {
+  async processBulkPayment(generateReceipt: boolean = false): Promise<void> {
     this.isProcessingPayment = true;
-    const timestamp = Math.floor(Date.now() / 1000);
 
     try {
       // Process payments first
@@ -493,16 +511,19 @@ export class PaymentComponent implements OnInit {
           credit: user.amountDue || 0,
           debit: 0,
           tenantId: user.tenantId,
-          createdAt: timestamp,
+          createdAt: Math.floor(Date.now() / 1000),
         });
         return this.transactionClient.add(paymentData).toPromise();
       });
 
-      await Promise.all(paymentPromises);
+      const paymentResults = await Promise.all(paymentPromises);
+      const transactions = paymentResults
+        .map((res) => res?.data)
+        .filter(Boolean);
 
       // Generate receipts if requested
-      if (generateReceipt && users) {
-        await this.generateBulkReceipts(users, timestamp);
+      if (generateReceipt) {
+        await this.generateBulkReceipts(this.selectedUsers, transactions);
       }
 
       this.snackBar.open(
@@ -514,59 +535,121 @@ export class PaymentComponent implements OnInit {
       this.selectedUsers = [];
       this.loadUsersToPay();
     } catch (error) {
-      this.snackBar.open('Some payments failed: ' + 'Unknown error', 'Close', {
-        duration: 5000,
-        panelClass: 'error-snackbar',
-      });
+      console.error('Bulk payment processing failed:', error);
+      let errorMessage = 'Unknown error';
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        'error' in error &&
+        typeof (error as any).error === 'object' &&
+        (error as any).error !== null &&
+        'message' in (error as any).error
+      ) {
+        errorMessage = (error as any).error.message;
+      }
+      this.snackBar.open(
+        'Payment processing failed: ' + errorMessage,
+        'Close',
+        { duration: 5000, panelClass: 'error-snackbar' }
+      );
     } finally {
       this.isProcessingPayment = false;
     }
   }
 
-  async generateBulkReceipts(users: User[], timestamp: number): Promise<void> {
-    const receiptPromises = users.map((user) => {
-      const receiptData = new TransactionPaymentDto();
-      receiptData.transactionId = timestamp;
-      receiptData.userId = user.userId;
-      receiptData.name = user.name;
-      receiptData.phoneNumber = user.phoneNumber;
-      receiptData.email = user.email || '';
-      receiptData.createdAt = timestamp;
-      receiptData.tenantId = user.tenantId;
-      receiptData.credit = user.amountDue || 0;
-      receiptData.debit = 0;
-      receiptData.subscriptions = user.subscriptions || [];
-
-      return this.transactionClient
-        .generateReceipt(receiptData)
-        .toPromise()
-        .then((response: FileResponse | undefined) => {
-          if (response) {
-            const blob = new Blob([response.data], {
-              type: response.data.type,
-            });
-            saveAs(blob, `Receipt_${user.name}_${timestamp}.pdf`);
-            return user.name;
-          }
-          throw new Error('Response is undefined');
-        });
-    });
-
-    try {
-      const results = await Promise.all(receiptPromises);
-      this.snackBar.open(
-        `Generated ${results.length} receipts successfully`,
-        'Close',
-        { duration: 5000, panelClass: 'success-snackbar' }
-      );
-    } catch (error) {
-      this.snackBar.open('Some receipts failed to generate', 'Close', {
+  async generateBulkReceipts(
+    users: User[],
+    transactions: any[]
+  ): Promise<void> {
+    // Validate inputs
+    if (!users || !transactions || users.length !== transactions.length) {
+      this.snackBar.open('Users and transactions data mismatch', 'Close', {
         duration: 5000,
         panelClass: 'error-snackbar',
       });
+      return;
+    }
+
+    this.isProcessingPayment = true;
+    const results: { success: boolean; name: string; error?: string }[] = [];
+
+    for (let i = 0; i < users.length; i++) {
+      const user = users[i];
+      try {
+        const receiptData = new TransactionPaymentDto();
+        receiptData.transactionId = transactions[i].transactionId;
+        receiptData.username = user.username;
+        receiptData.userId = user.userId;
+        receiptData.name = user.name;
+        receiptData.phoneNumber = user.phoneNumber;
+        receiptData.email = user.email || '';
+        receiptData.createdAt = Math.floor(Date.now() / 1000);
+        receiptData.tenantId = user.tenantId;
+        receiptData.credit = user.amountDue || 0;
+        receiptData.debit = 0;
+        receiptData.subscriptions = user.subscriptions || [];
+
+        // Add small delay between requests (100ms)
+        if (i > 0) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+        }
+
+        const response = await this.transactionClient
+          .generateReceipt(receiptData)
+          .toPromise();
+
+        if (response) {
+          const blob = new Blob([response.data], { type: response.data.type });
+          const url = window.URL.createObjectURL(blob);
+
+          // Open PDF in new window
+          window.open(url, '_blank');
+
+          // Also provide download option
+          saveAs(
+            blob,
+            `Receipt_${user.userId}_${receiptData.transactionId}.pdf`
+          );
+
+          results.push({ success: true, name: user.name });
+        } else {
+          throw new Error('Empty response from server');
+        }
+      } catch (error) {
+        console.error(
+          `Failed to generate receipt for user ${user.userId}:`,
+          error
+        );
+        results.push({
+          success: false,
+          name: user.name,
+        });
+      }
+    }
+
+    this.isProcessingPayment = false;
+
+    // Show summary of results
+    const successful = results.filter((r) => r.success).length;
+    const failed = results.filter((r) => !r.success);
+
+    if (failed.length > 0) {
+      const failedNames = failed
+        .map((f) => `${f.name} (${f.error})`)
+        .join(', ');
+      this.snackBar.open(
+        `Generated ${successful} receipts, failed for: ${failedNames}`,
+        'Close',
+        { duration: 10000, panelClass: 'warning-snackbar' }
+      );
+    } else {
+      this.snackBar.open(
+        `Successfully generated ${successful} receipts`,
+        'Close',
+        { duration: 5000, panelClass: 'success-snackbar' }
+      );
     }
   }
-
   // Update confirmBulkPayment to handle the new flow
   confirmBulkPayment(): void {
     if (this.selectedUsers.length === 0) {
@@ -590,7 +673,7 @@ export class PaymentComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(async (result) => {
       if (result?.confirmed) {
-        await this.processBulkPayment(result.generateReceipt, result.bulkUsers);
+        await this.processBulkPayment(result.generateReceipt);
       }
     });
   }

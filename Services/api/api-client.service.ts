@@ -7110,20 +7110,20 @@ export interface ITokenDto {
     tenantId?: number;
 }
 
-export class TransactionPaymentDto implements ITransactionPaymentDto {
-    userId?: number;
-    name?: string | undefined;
-    phoneNumber?: number;
-    email?: string | undefined;
-    createdAt?: number;
-    tenantId?: number;
-    username?: string | undefined;
-    roleId?: number;
-    isActive?: boolean;
-    transactionId?: number;
-    credit?: number;
-    debit?: number;
-    subscriptions?: SubscriptionDto[] | undefined;
+    export class TransactionPaymentDto implements ITransactionPaymentDto {
+        userId?: number;
+        name?: string | undefined;
+        phoneNumber?: number;
+        email?: string | undefined;
+        createdAt?: number;
+        tenantId?: number;
+        username?: string | undefined;
+        roleId?: number;
+        isActive?: boolean;
+        transactionId?: number;
+        credit?: number;
+        debit?: number;
+        subscriptions?: SubscriptionDto[] | undefined;
 
     constructor(data?: ITransactionPaymentDto) {
         if (data) {
