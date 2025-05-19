@@ -27,7 +27,7 @@ export const authInterceptor: HttpInterceptorFn = (
       if (exp && Date.now() >= exp * 1000) {
         localStorage.removeItem('auth_token');
         router.navigate(['/login']);
-        return of(); // Cancel the request
+        return of();
       }
 
       modifiedReq = req.clone({
@@ -38,7 +38,7 @@ export const authInterceptor: HttpInterceptorFn = (
     } catch (e) {
       localStorage.removeItem('auth_token');
       router.navigate(['/login']);
-      return of(); // Cancel the request
+      return of();
     }
   }
 

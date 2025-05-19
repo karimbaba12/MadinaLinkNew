@@ -41,12 +41,12 @@ export class SidebarComponent {
     private router: Router,
     private navigationService: NavigationService
   ) {}
-  accountList = [
-    { icon: 'ti ti-user', title: 'My Account' },
-    { icon: 'ti ti-settings', title: 'Settings' },
-    { icon: 'ti ti-lock', title: 'Lock Screen' },
-    { icon: 'ti ti-power', title: 'Logout' },
-  ];
+  // accountList = [
+  //   { icon: 'ti ti-user', title: 'My Account' },
+  //   { icon: 'ti ti-settings', title: 'Settings' },
+  //   { icon: 'ti ti-lock', title: 'Lock Screen' },
+  //   { icon: 'ti ti-power', title: 'Logout' },
+  // ];
 
   fireOutClick() {
     let current_url = this.location.path();

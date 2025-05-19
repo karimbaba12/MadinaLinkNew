@@ -11,7 +11,7 @@
         <div class="dashboard-controls">
             <mat-form-field appearance="outline" class="search-field" style="color: white !important;">
                 <mat-label>Search subscribers</mat-label>
-                <input matInput [formControl]="searchControl" >
+                <input matInput [formControl]="searchControl">
                 <mat-icon matSuffix>search</mat-icon>
             </mat-form-field>
 
@@ -25,6 +25,12 @@
                     <mat-icon class="stat-icon">check_circle</mat-icon>
                     <div class="stat-value">{{completedCount}}</div>
                     <div class="stat-label">Completed</div>
+                </div>
+                <div class="stat-card download-card" (click)="downloadSheet()">
+                    <mat-icon class="stat-icon">picture_as_pdf</mat-icon>
+                    <div class="stat-value">Download PDF</div>
+                    <div class="stat-label">All Counters</div>
+
                 </div>
             </div>
         </div>
@@ -114,11 +120,14 @@
             </table>
 
             <div class="table-actions">
-                <button mat-raised-button class="save-button" color="primary" type="submit" [disabled]="updateForm.invalid || submitting">
+                <button mat-raised-button class="save-button" color="primary" type="submit"
+                    [disabled]="updateForm.invalid || submitting">
                     <mat-icon>save</mat-icon>
                     <span *ngIf="!submitting">Save All Changes</span>
-                    <mat-spinner *ngIf="submitting" diameter="20"></mat-spinner>
-                </button>
+                    <mat-spinner *ngIf="submitting" diameter="20"></mat-spinner> </button>
+                <!-- <button mat-raised-button color="accent" (click)="downloadSheet()" [disabled]="loading">
+                        <mat-icon>picture_as_pdf</mat-icon>
+                        Download PDF Report           </button> -->
             </div>
         </form>
     </div>

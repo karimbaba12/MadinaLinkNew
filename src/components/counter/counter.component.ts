@@ -12,11 +12,19 @@ import {
   SubscriptionClient,
   UsersClient,
   SubServiceClient,
+  CountersClient,
+  FileResponse,
 } from '../../../Services/api/api-client.service';
 import { DateFormatService } from '../../../Services/dateFormate/date-format.service';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { MatFormField, MatLabel, MatError, MatFormFieldControl, MatFormFieldModule } from '@angular/material/form-field';
+import {
+  MatFormField,
+  MatLabel,
+  MatError,
+  MatFormFieldControl,
+  MatFormFieldModule,
+} from '@angular/material/form-field';
 import { MatIcon } from '@angular/material/icon';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatTableModule } from '@angular/material/table';
@@ -65,7 +73,8 @@ export class CounterComponent implements OnInit {
     private userClient: UsersClient,
     private subServiceClient: SubServiceClient,
     private dateFormatter: DateFormatService,
-    private decimalPipe: DecimalPipe
+    private decimalPipe: DecimalPipe,
+    private counterClient: CountersClient
   ) {
     this.updateForm = this.fb.group({});
   }
@@ -139,6 +148,40 @@ export class CounterComponent implements OnInit {
       this.fetchServiceName(sub);
       this.formatEndDate(sub);
       this.fetchPreviousValue(sub);
+    });
+  }
+  downloadSheet(): void {
+    this.loading = true;
+    this.counterClient.sheet().subscribe({
+      next: (fileResponse: FileResponse) => {
+        this.loading = false;
+
+        // Create blob from the response data
+        const blob = new Blob([fileResponse.data], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(blob);
+
+        // Create download link
+        const a = document.createElement('a');
+        a.href = url;
+
+        // Use the filename from the response if available, or fallback
+        a.download =
+          fileResponse.fileName ||
+          `counter-report-${new Date().toISOString().slice(0, 10)}.pdf`;
+
+        document.body.appendChild(a);
+        a.click();
+
+        // Clean up
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        this.showSuccess('PDF report downloaded successfully');
+      },
+      error: (err) => {
+        this.loading = false;
+        this.showError('Failed to download PDF report: ' + err.message);
+      },
     });
   }
 

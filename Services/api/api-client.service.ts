@@ -481,6 +481,14 @@ export interface ICountersClient {
     /**
      * @return OK
      */
+    sheet(): Observable<FileResponse>;
+    /**
+     * @return OK
+     */
+    receipt(transactionId: number): Observable<FileResponse>;
+    /**
+     * @return OK
+     */
     getAll(): Observable<ApiResponse_1OfOfIEnumerable_1OfOfCounterDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
     /**
      * @param id (optional) 
@@ -520,6 +528,153 @@ export class CountersClient implements ICountersClient {
     constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
         this.http = http;
         this.baseUrl = baseUrl ?? "";
+    }
+
+    /**
+     * @return OK
+     */
+    sheet(httpContext?: HttpContext): Observable<FileResponse> {
+        let url_ = this.baseUrl + "/api/Counters/sheet";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            context: httpContext,
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processSheet(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processSheet(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<FileResponse>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<FileResponse>;
+        }));
+    }
+
+    protected processSheet(response: HttpResponseBase): Observable<FileResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            let fileNameMatch = contentDisposition ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(contentDisposition) : undefined;
+            let fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[3] || fileNameMatch[2] : undefined;
+            if (fileName) {
+                fileName = decodeURIComponent(fileName);
+            } else {
+                fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+                fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            }
+            return _observableOf({ fileName: fileName, data: responseBlob as any, status: status, headers: _headers });
+        } else if (status === 404) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result404: any = null;
+            let resultData404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result404 = resultData404 !== undefined ? resultData404 : <any>null;
+    
+            return throwException("Not Found", status, _responseText, _headers, result404);
+            }));
+        } else if (status === 500) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result500 = resultData500 !== undefined ? resultData500 : <any>null;
+    
+            return throwException("Internal Server Error", status, _responseText, _headers, result500);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    receipt(transactionId: number, httpContext?: HttpContext): Observable<FileResponse> {
+        let url_ = this.baseUrl + "/api/Counters/receipt/{transactionId}";
+        if (transactionId === undefined || transactionId === null)
+            throw new Error("The parameter 'transactionId' must be defined.");
+        url_ = url_.replace("{transactionId}", encodeURIComponent("" + transactionId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            context: httpContext,
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processReceipt(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processReceipt(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<FileResponse>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<FileResponse>;
+        }));
+    }
+
+    protected processReceipt(response: HttpResponseBase): Observable<FileResponse> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200 || status === 206) {
+            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
+            let fileNameMatch = contentDisposition ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(contentDisposition) : undefined;
+            let fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[3] || fileNameMatch[2] : undefined;
+            if (fileName) {
+                fileName = decodeURIComponent(fileName);
+            } else {
+                fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+                fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+            }
+            return _observableOf({ fileName: fileName, data: responseBlob as any, status: status, headers: _headers });
+        } else if (status === 404) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result404: any = null;
+            let resultData404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result404 = resultData404 !== undefined ? resultData404 : <any>null;
+    
+            return throwException("Not Found", status, _responseText, _headers, result404);
+            }));
+        } else if (status === 500) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+                result500 = resultData500 !== undefined ? resultData500 : <any>null;
+    
+            return throwException("Internal Server Error", status, _responseText, _headers, result500);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
     }
 
     /**
@@ -5177,10 +5332,31 @@ export interface ITransactionClient {
      */
     getBalanceByID(id?: number | undefined): Observable<ApiResponse_1OfOfDecimalAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
     /**
+     * @return OK
+     */
+    getMonthlyTransactionNumber(): Observable<ApiResponse_1OfOfInt32AndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+    /**
+     * @return OK
+     */
+    getDailyTransactionCount(): Observable<ApiResponse_1OfOfInt32AndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+    /**
+     * @return OK
+     */
+    getMonthlyDebit(): Observable<ApiResponse_1OfOfDecimalAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+    /**
      * @param body (optional) 
      * @return OK
      */
     generateReceipt(body?: TransactionPaymentDto | undefined): Observable<FileResponse>;
+    /**
+     * @param daysAgo (optional) 
+     * @return OK
+     */
+    getDailyTransaction(daysAgo?: number | undefined): Observable<ApiResponse_1OfOfIEnumerable_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+    /**
+     * @return OK
+     */
+    getDailyDebit(): Observable<ApiResponse_1OfOfDecimalAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
     /**
      * @return OK
      */
@@ -5283,6 +5459,162 @@ export class TransactionClient implements ITransactionClient {
     }
 
     /**
+     * @return OK
+     */
+    getMonthlyTransactionNumber(httpContext?: HttpContext): Observable<ApiResponse_1OfOfInt32AndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e> {
+        let url_ = this.baseUrl + "/api/Transaction/GetMonthlyTransactionNumber";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            context: httpContext,
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetMonthlyTransactionNumber(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetMonthlyTransactionNumber(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ApiResponse_1OfOfInt32AndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ApiResponse_1OfOfInt32AndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+        }));
+    }
+
+    protected processGetMonthlyTransactionNumber(response: HttpResponseBase): Observable<ApiResponse_1OfOfInt32AndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ApiResponse_1OfOfInt32AndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    getDailyTransactionCount(httpContext?: HttpContext): Observable<ApiResponse_1OfOfInt32AndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e> {
+        let url_ = this.baseUrl + "/api/Transaction/GetDailyTransactionCount";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            context: httpContext,
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetDailyTransactionCount(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetDailyTransactionCount(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ApiResponse_1OfOfInt32AndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ApiResponse_1OfOfInt32AndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+        }));
+    }
+
+    protected processGetDailyTransactionCount(response: HttpResponseBase): Observable<ApiResponse_1OfOfInt32AndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ApiResponse_1OfOfInt32AndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    getMonthlyDebit(httpContext?: HttpContext): Observable<ApiResponse_1OfOfDecimalAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e> {
+        let url_ = this.baseUrl + "/api/Transaction/GetMonthlyDebit";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            context: httpContext,
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetMonthlyDebit(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetMonthlyDebit(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ApiResponse_1OfOfDecimalAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ApiResponse_1OfOfDecimalAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+        }));
+    }
+
+    protected processGetMonthlyDebit(response: HttpResponseBase): Observable<ApiResponse_1OfOfDecimalAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ApiResponse_1OfOfDecimalAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
      * @param body (optional) 
      * @return OK
      */
@@ -5342,6 +5674,115 @@ export class TransactionClient implements ITransactionClient {
                 result500 = resultData500 !== undefined ? resultData500 : <any>null;
     
             return throwException("Internal Server Error", status, _responseText, _headers, result500);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param daysAgo (optional) 
+     * @return OK
+     */
+    getDailyTransaction(daysAgo?: number | undefined, httpContext?: HttpContext): Observable<ApiResponse_1OfOfIEnumerable_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e> {
+        let url_ = this.baseUrl + "/api/Transaction/GetDailyTransaction?";
+        if (daysAgo === null)
+            throw new Error("The parameter 'daysAgo' cannot be null.");
+        else if (daysAgo !== undefined)
+            url_ += "daysAgo=" + encodeURIComponent("" + daysAgo) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            context: httpContext,
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetDailyTransaction(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetDailyTransaction(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ApiResponse_1OfOfIEnumerable_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ApiResponse_1OfOfIEnumerable_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+        }));
+    }
+
+    protected processGetDailyTransaction(response: HttpResponseBase): Observable<ApiResponse_1OfOfIEnumerable_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ApiResponse_1OfOfIEnumerable_1OfOfTransactionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    getDailyDebit(httpContext?: HttpContext): Observable<ApiResponse_1OfOfDecimalAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e> {
+        let url_ = this.baseUrl + "/api/Transaction/GetDailyDebit";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            context: httpContext,
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetDailyDebit(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetDailyDebit(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ApiResponse_1OfOfDecimalAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ApiResponse_1OfOfDecimalAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+        }));
+    }
+
+    protected processGetDailyDebit(response: HttpResponseBase): Observable<ApiResponse_1OfOfDecimalAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ApiResponse_1OfOfDecimalAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e.fromJS(resultData200);
+            return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
@@ -7110,20 +7551,92 @@ export interface ITokenDto {
     tenantId?: number;
 }
 
-    export class TransactionPaymentDto implements ITransactionPaymentDto {
-        userId?: number;
-        name?: string | undefined;
-        phoneNumber?: number;
-        email?: string | undefined;
-        createdAt?: number;
-        tenantId?: number;
-        username?: string | undefined;
-        roleId?: number;
-        isActive?: boolean;
-        transactionId?: number;
-        credit?: number;
-        debit?: number;
-        subscriptions?: SubscriptionDto[] | undefined;
+export class SubscriptionPaymentDto implements ISubscriptionPaymentDto {
+    subscriptionId?: number;
+    subServiceId?: number;
+    userId?: number;
+    startDate?: number;
+    endDate?: number;
+    price?: number;
+    quantity?: number;
+    discount?: number;
+    isActive?: boolean;
+    tenantId?: number;
+
+    constructor(data?: ISubscriptionPaymentDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.subscriptionId = _data["subscriptionId"];
+            this.subServiceId = _data["subServiceId"];
+            this.userId = _data["userId"];
+            this.startDate = _data["startDate"];
+            this.endDate = _data["endDate"];
+            this.price = _data["price"];
+            this.quantity = _data["quantity"];
+            this.discount = _data["discount"];
+            this.isActive = _data["isActive"];
+            this.tenantId = _data["tenantId"];
+        }
+    }
+
+    static fromJS(data: any): SubscriptionPaymentDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new SubscriptionPaymentDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["subscriptionId"] = this.subscriptionId;
+        data["subServiceId"] = this.subServiceId;
+        data["userId"] = this.userId;
+        data["startDate"] = this.startDate;
+        data["endDate"] = this.endDate;
+        data["price"] = this.price;
+        data["quantity"] = this.quantity;
+        data["discount"] = this.discount;
+        data["isActive"] = this.isActive;
+        data["tenantId"] = this.tenantId;
+        return data;
+    }
+}
+
+export interface ISubscriptionPaymentDto {
+    subscriptionId?: number;
+    subServiceId?: number;
+    userId?: number;
+    startDate?: number;
+    endDate?: number;
+    price?: number;
+    quantity?: number;
+    discount?: number;
+    isActive?: boolean;
+    tenantId?: number;
+}
+
+export class TransactionPaymentDto implements ITransactionPaymentDto {
+    userId?: number;
+    name?: string | undefined;
+    phoneNumber?: number;
+    email?: string | undefined;
+    createdAt?: number;
+    tenantId?: number;
+    username?: string | undefined;
+    roleId?: number;
+    isActive?: boolean;
+    transactionId?: number;
+    credit?: number;
+    debit?: number;
+    subscriptions?: SubscriptionPaymentDto[] | undefined;
 
     constructor(data?: ITransactionPaymentDto) {
         if (data) {
@@ -7151,7 +7664,7 @@ export interface ITokenDto {
             if (Array.isArray(_data["subscriptions"])) {
                 this.subscriptions = [] as any;
                 for (let item of _data["subscriptions"])
-                    this.subscriptions!.push(SubscriptionDto.fromJS(item));
+                    this.subscriptions!.push(SubscriptionPaymentDto.fromJS(item));
             }
         }
     }
@@ -7199,7 +7712,7 @@ export interface ITransactionPaymentDto {
     transactionId?: number;
     credit?: number;
     debit?: number;
-    subscriptions?: SubscriptionDto[] | undefined;
+    subscriptions?: SubscriptionPaymentDto[] | undefined;
 }
 
 export class TransactionDto implements ITransactionDto {
@@ -7209,6 +7722,7 @@ export class TransactionDto implements ITransactionDto {
     debit?: number;
     createdAt?: number;
     tenantId?: number;
+    subscriptionId?: number | undefined;
 
     constructor(data?: ITransactionDto) {
         if (data) {
@@ -7227,6 +7741,7 @@ export class TransactionDto implements ITransactionDto {
             this.debit = _data["debit"];
             this.createdAt = _data["createdAt"];
             this.tenantId = _data["tenantId"];
+            this.subscriptionId = _data["subscriptionId"];
         }
     }
 
@@ -7245,6 +7760,7 @@ export class TransactionDto implements ITransactionDto {
         data["debit"] = this.debit;
         data["createdAt"] = this.createdAt;
         data["tenantId"] = this.tenantId;
+        data["subscriptionId"] = this.subscriptionId;
         return data;
     }
 }
@@ -7256,6 +7772,7 @@ export interface ITransactionDto {
     debit?: number;
     createdAt?: number;
     tenantId?: number;
+    subscriptionId?: number | undefined;
 }
 
 export class UserDto implements IUserDto {
@@ -9051,6 +9568,58 @@ export class ApiResponse_1OfOfDecimalAndCoreLibAnd_0AndCulture_neutralAndPublicK
 }
 
 export interface IApiResponse_1OfOfDecimalAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e {
+    success?: boolean;
+    data?: number;
+    statusCode?: number;
+    message?: string | undefined;
+    errorMessage?: string | undefined;
+}
+
+export class ApiResponse_1OfOfInt32AndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e implements IApiResponse_1OfOfInt32AndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e {
+    success?: boolean;
+    data?: number;
+    statusCode?: number;
+    message?: string | undefined;
+    errorMessage?: string | undefined;
+
+    constructor(data?: IApiResponse_1OfOfInt32AndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.success = _data["success"];
+            this.data = _data["data"];
+            this.statusCode = _data["statusCode"];
+            this.message = _data["message"];
+            this.errorMessage = _data["errorMessage"];
+        }
+    }
+
+    static fromJS(data: any): ApiResponse_1OfOfInt32AndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e {
+        data = typeof data === 'object' ? data : {};
+        let result = new ApiResponse_1OfOfInt32AndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["success"] = this.success;
+        data["data"] = this.data;
+        data["statusCode"] = this.statusCode;
+        data["message"] = this.message;
+        data["errorMessage"] = this.errorMessage;
+        return data;
+    }
+}
+
+export interface IApiResponse_1OfOfInt32AndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e {
     success?: boolean;
     data?: number;
     statusCode?: number;

@@ -28,7 +28,6 @@
         <mat-icon class="success-icon">check_circle</mat-icon>
         <p>Payment of <strong>{{ data.amount | currency }}</strong> was successfully processed.</p>
         <p *ngIf="data.transactionId">Transaction ID: <strong>{{ data.transactionId }}</strong></p>
-        <p>New balance: <strong>{{ data.balance | currency }}</strong></p>
     </div>
 </mat-dialog-content>
 

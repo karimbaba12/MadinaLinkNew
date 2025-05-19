@@ -11,55 +11,54 @@ import { SubserviceManagementComponent } from '../components/SubServices/subserv
 import { PaymentComponent } from '../components/payment/payment.component';
 import { AllUsersWithServiceComponent } from '../components/all-users-with-service/all-users-with-service.component';
 import { CounterComponent } from '../components/counter/counter.component';
+import { TransactionHistoryComponentComponent } from '../components/transaction-history-component/transaction-history-component.component';
+import { UnauthorizedComponent } from '../Pages/Auth/unauthorized/unauthorized.component';
 export const routes: Routes = [
+  {
+    path: '',
+    redirectTo: 'login',
+    pathMatch: 'full',
+  },
   {
     path: 'login',
     component: LoginComponent,
+  },
+  {
+    path: 'unauthorized',
+    component: UnauthorizedComponent,
   },
   {
     path: 'admin',
     component: AdminComponent,
     canActivate: [AuthGuard],
     children: [
-      {
-        path: 'dashboard',
-        component: DashboardComponent,
-      },
-      {
-        path: 'electricity',
-        component: ElectricityComponent,
-      },
-      {
-        path: 'userManagement',
-        component: UsermanagementComponent,
-      },
-      {
-        path: 'addTenant',
-        component: AddTenantComponent,
-      },
-      {
-        path: 'updateTenant',
-        component: UpdateTenantComponent,
-      },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard', component: DashboardComponent },
+      { path: 'electricity', component: ElectricityComponent },
+      { path: 'userManagement', component: UsermanagementComponent },
+      { path: 'addTenant', component: AddTenantComponent },
+      { path: 'updateTenant', component: UpdateTenantComponent },
       {
         path: 'SubServiceManagement',
         component: SubserviceManagementComponent,
       },
+      { path: 'PaymentManagement', component: PaymentComponent },
+      { path: 'Service', component: AllUsersWithServiceComponent },
+      { path: 'counter', component: CounterComponent },
+      { path: 'transactions', component: TransactionHistoryComponentComponent },
       {
-        path: 'PaymentManagement',
-        component: PaymentComponent,
+        path: '**',
+        redirectTo: 'admin/dashboard',
       },
       {
-        path: 'Service',
-        component: AllUsersWithServiceComponent,
-      },
-      {
-        path: 'counter',
-        component: CounterComponent,
+        path: '',
+        redirectTo: 'admin/dashboard',
+        pathMatch: 'full',
       },
     ],
   },
-  { path: '', redirectTo: '/admin/dashboard', pathMatch: 'full' },
-
-  { path: '**', redirectTo: '/admin/dashboard' },
+  {
+    path: '**',
+    redirectTo: 'login',
+  },
 ];

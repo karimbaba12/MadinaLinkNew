@@ -367,7 +367,19 @@ $white: #ffffff;
   margin-bottom: 24px;
   @include box-shadow(2);
 }
-
+.download-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+      background-color: rgba(0, 0, 0, 0.04);
+      transform: translateY(-2px);
+  }
+  
+  &:active {
+      transform: translateY(0);
+  }
+}
 .header-content {
   margin-bottom: 20px;
 
@@ -697,3 +709,16 @@ $white: #ffffff;
     justify-content: space-between;
   }
 }
+
+
+// .table-actions {
+//   display: flex;
+//   gap: 1rem;
+//   margin-top: 1rem;
+  
+//   button {
+//     display: flex;
+//     align-items: center;
+//     gap: 0.5rem;
+//   }
+// }

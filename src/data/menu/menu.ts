@@ -1,5 +1,4 @@
 import { Navigation } from './Navigation';
-
 export const UserMenus: Navigation[] = [
   {
     id: 'user-group',
@@ -110,6 +109,14 @@ export const AdminMenus: Navigation[] = [
         title: 'Payments',
         icon: 'payment',
         url: 'PaymentManagement',
+        type: 'item',
+        color: 'text-green-400',
+      },
+      {
+        id: 'transaction',
+        title: 'Transactions',
+        icon: 'list_alt',
+        url: 'transactions',
         type: 'item',
         color: 'text-green-400',
       },

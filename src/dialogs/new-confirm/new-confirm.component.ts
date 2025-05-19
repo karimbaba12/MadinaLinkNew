@@ -45,7 +45,6 @@ export class NewConfirmComponent {
     if (this.data.isConfirmation) {
       if (this.data.isBulkPayment && this.generateReceipt) {
         this.isProcessing = true;
-        // Return immediately and let parent handle the PDF generation
         this.dialogRef.close({
           confirmed: true,
           generateReceipt: true,

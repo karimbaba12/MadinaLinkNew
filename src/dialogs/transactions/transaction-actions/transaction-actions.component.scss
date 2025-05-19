@@ -1,0 +1,46 @@
+:host {
+    display: flex;
+    gap: 8px;
+  }
+  button {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+.edit,
+.delete {
+  transition: transform 0.2s ease, opacity 0.2s ease;
+
+  &:hover {
+    transform: scale(1.1);
+    opacity: 0.9;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.delete {
+  margin-left: 8px;
+}
+.delete {
+    border-color: transparent;
+    color: red;
+    background: transparent;
+  }
+
+  
+  .edit {
+    border-color: transparent;
+    color: blue;
+    background-color: transparent;
+  }
+  .config {
+    border-color: transparent;
+    color: rgb(39, 90, 36);
+    background: transparent;
+  }

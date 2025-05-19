@@ -26,8 +26,23 @@
                     </div>
                 </div>
 
-                <div class="payment-summary">
+                <!-- Search Bar -->
+                <div class="search-container">
+                    <form [formGroup]="searchForm">
+                        <mat-form-field appearance="outline" class="search-field w-100">
+                            <mat-label>Search customers</mat-label>
+                            <input matInput formControlName="searchTerm" (input)="searchUsers()"
+                                placeholder="Search by name, email or phone">
+                            <mat-icon matSuffix>search</mat-icon>
+                            <button matSuffix mat-icon-button *ngIf="searchForm.get('searchTerm')?.value"
+                                (click)="clearSearch()">
+                                <mat-icon>close</mat-icon>
+                            </button>
+                        </mat-form-field>
+                    </form>
+                </div>
 
+                <div class="payment-summary">
                     <div class="summary-card selected-count">
                         <mat-icon>group</mat-icon>
                         <div class="summary-content">
@@ -46,8 +61,6 @@
 
                 <div class="users-table-container" *ngIf="!isFetchingUsersToPay; else loading">
                     <div class="table-actions">
-
-
                         <button mat-flat-button color="primary"
                             [disabled]="selectedUsers.length === 0 || isProcessingPayment"
                             (click)="confirmBulkPayment()">
@@ -57,63 +70,77 @@
                         </button>
                     </div>
 
-                    <mat-table [dataSource]="usersToPay" matSort class="mat-elevation-z1">
-                        <!-- Select Column -->
-                        <ng-container matColumnDef="select">
-                            <mat-header-cell *matHeaderCellDef></mat-header-cell>
-                            <mat-cell *matCellDef="let user">
-                                <mat-checkbox [checked]="isUserSelected(user)" (change)="toggleUserSelection(user)">
-                                </mat-checkbox>
-                            </mat-cell>
-                        </ng-container>
+                    <div class="table-wrapper">
+                        <mat-table [dataSource]="filteredUsers" matSort class="mat-elevation-z1">
+                            <!-- Select Column -->
+                            <ng-container matColumnDef="select">
+                                <mat-header-cell *matHeaderCellDef>
+                                    <mat-checkbox [checked]="selectAllChecked" (change)="toggleSelectAll()">
+                                    </mat-checkbox>
+                                </mat-header-cell>
+                                <mat-cell *matCellDef="let user">
+                                    <mat-checkbox [checked]="isUserSelected(user)" (change)="toggleUserSelection(user)">
+                                    </mat-checkbox>
+                                </mat-cell>
+                            </ng-container>
 
-                        <!-- Name Column -->
-                        <ng-container matColumnDef="name">
-                            <mat-header-cell *matHeaderCellDef mat-sort-header>Customer</mat-header-cell>
-                            <mat-cell *matCellDef="let user">
-                                <div class="user-info">
-                                    <span class="user-name">{{ user.name }}</span>
-                                    <span class="user-email">{{ user.email }}</span>
-                                </div>
-                            </mat-cell>
-                        </ng-container>
+                            <!-- Name Column -->
+                            <ng-container matColumnDef="name">
+                                <mat-header-cell *matHeaderCellDef mat-sort-header>Customer</mat-header-cell>
+                                <mat-cell *matCellDef="let user">
+                                    <div class="user-info">
+                                        <span class="user-name">{{ user.name }}</span>
+                                        <span class="user-email">{{ user.email }}</span>
+                                    </div>
+                                </mat-cell>
+                            </ng-container>
 
-                        <!-- Amount Due Column -->
-                        <ng-container matColumnDef="amountDue">
-                            <mat-header-cell *matHeaderCellDef mat-sort-header>Amount Due</mat-header-cell>
-                            <mat-cell *matCellDef="let user">
-                                <span class="amount-due">{{ user.amountDue | currency }}</span>
-                            </mat-cell>
-                        </ng-container>
+                            <!-- Amount Due Column -->
+                            <ng-container matColumnDef="amountDue">
+                                <mat-header-cell *matHeaderCellDef mat-sort-header>Amount Due</mat-header-cell>
+                                <mat-cell *matCellDef="let user">
+                                    <span class="amount-due">{{ user.amountDue | currency }}</span>
+                                </mat-cell>
+                            </ng-container>
 
-                        <!-- Balance Column -->
-                        <ng-container matColumnDef="balance">
-                            <mat-header-cell *matHeaderCellDef mat-sort-header>Balance</mat-header-cell>
-                            <mat-cell *matCellDef="let user">
-                                <span class="balance" [class.negative]="(user.balance || 0) < 0">
-                                    {{ user.balance | currency }}
-                                </span>
-                            </mat-cell>
-                        </ng-container>
+                            <!-- Balance Column -->
+                            <ng-container matColumnDef="balance">
+                                <mat-header-cell *matHeaderCellDef mat-sort-header>Balance</mat-header-cell>
+                                <mat-cell *matCellDef="let user">
+                                    <span class="balance" [class.negative]="(user.balance || 0) < 0">
+                                        {{ user.balance | currency }}
+                                    </span>
+                                </mat-cell>
+                            </ng-container>
 
-                        <!-- Actions Column -->
-                        <ng-container matColumnDef="actions">
-                            <mat-header-cell *matHeaderCellDef>Actions</mat-header-cell>
-                            <mat-cell *matCellDef="let user">
-                                <button mat-icon-button color="primary" matTooltip="Process individual payment"
-                                    (click)="selectUser(user)">
-                                    <mat-icon>payment</mat-icon>
-                                </button>
-                            </mat-cell>
-                        </ng-container>
+                            <!-- Actions Column -->
+                            <ng-container matColumnDef="actions">
+                                <mat-header-cell *matHeaderCellDef>Actions</mat-header-cell>
+                                <mat-cell *matCellDef="let user">
+                                    <button mat-icon-button color="primary" matTooltip="View details and pay"
+                                        (click)="selectUser(user)">
+                                        <mat-icon>payment</mat-icon>
+                                    </button>
+                                </mat-cell>
+                            </ng-container>
 
-                        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-                        <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
-                    </mat-table>
+                            <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+                            <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+                        </mat-table>
 
-                    <div class="no-results" *ngIf="usersToPay.length === 0">
+                        <mat-paginator [length]="filteredUsers.length" [pageSize]="pageSize"
+                            [pageSizeOptions]="pageSizeOptions" showFirstLastButtons aria-label="Select page of users">
+                        </mat-paginator>
+                    </div>
+
+                    <div class="no-results" *ngIf="filteredUsers.length === 0 && !isSearching">
                         <mat-icon>sentiment_very_satisfied</mat-icon>
                         <p>No pending payments found</p>
+                    </div>
+
+                    <div class="no-results" *ngIf="filteredUsers.length === 0 && isSearching">
+                        <mat-icon>search_off</mat-icon>
+                        <p>No users found matching your search</p>
                     </div>
                 </div>
 
@@ -125,290 +152,144 @@
                 </ng-template>
             </section>
 
-            <!-- Individual Payment Section -->
-            <section class="individual-payment-section" *ngIf="selectedUser">
+            <!-- In your payment.component.html -->
+            <section class="user-cards-section" *ngIf="selectedUser">
                 <div class="section-header">
                     <div class="section-title">
                         <mat-icon class="section-icon">person</mat-icon>
                         <h2>Payment for {{ selectedUser.name }}</h2>
-                        <!-- <span class="user-id">ID: {{ selectedUser.userId }}</span> -->
                     </div>
                     <button mat-icon-button (click)="resetForm()" matTooltip="Close" class="close-button">
                         <mat-icon>close</mat-icon>
                     </button>
                 </div>
 
-                <div class="user-details-container">
-                    <!-- Left Column - User Info and Subscriptions -->
-                    <div class="left-column">
-                        <!-- Customer Details Card -->
-                        <mat-card class="detail-card">
-                            <mat-card-header class="detail-card-header">
-                                <mat-icon class="card-icon ">account_circle</mat-icon>
-                                <mat-card-title>Customer Details</mat-card-title>
-                            </mat-card-header>
-                            <!-- <mat-divider style="background-color: gray !important;"></mat-divider> -->
-                            <mat-card-content>
-                                <div class="detail-grid">
-                                    <div class="detail-item">
-                                        <div class="detail-label">
-                                            <mat-icon>person</mat-icon>
-                                            <span>Name</span>
-                                        </div>
-                                        <div class="detail-value">{{ selectedUser.name }}</div>
+                <div class="user-details-grid">
+                    <!-- Customer Details Card -->
+                    <mat-card class="user-card">
+                        <mat-card-header>
+                            <mat-card-title>
+                                <mat-icon>account_circle</mat-icon>
+                                Customer Details
+                            </mat-card-title>
+                        </mat-card-header>
+                        <mat-card-content>
+                            <div class="detail-item">
+                                <mat-icon>person</mat-icon>
+                                <span>{{ selectedUser.name }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <mat-icon>phone</mat-icon>
+                                <span>{{ selectedUser.phoneNumber }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <mat-icon>email</mat-icon>
+                                <span>{{ selectedUser.email || 'Not provided' }}</span>
+                            </div>
+                            <div class="detail-item balance">
+                                <mat-icon>account_balance_wallet</mat-icon>
+                                <span [class.negative]="(selectedUser.balance || 0) < 0">
+                                    Balance: {{ selectedUser.balance | currency }}
+                                </span>
+                            </div>
+                        </mat-card-content>
+                    </mat-card>
+
+                    <!-- Subscriptions Card -->
+                    <mat-card class="subscriptions-card" *ngIf="selectedUser.subscriptions?.length">
+                        <mat-card-header>
+                            <mat-card-title>
+                                <mat-icon>subscriptions</mat-icon>
+                                Subscriptions ({{ selectedUser.subscriptions.length }})
+                            </mat-card-title>
+                        </mat-card-header>
+                        <mat-card-content>
+                            <div class="subscription-list">
+                                <div class="subscription-item"
+                                    *ngFor="let sub of selectedUser.subscriptions; let i = index">
+                                    <div class="subscription-header">
+                                        <mat-icon>widgets</mat-icon>
+                                        <h3>{{ subServiceNames[sub.subServiceId ?? 0] }}</h3>
                                     </div>
-                                    <div class="detail-item">
-                                        <div class="detail-label">
-                                            <mat-icon>phone</mat-icon>
-                                            <span>Phone</span>
+                                    <div class="subscription-details">
+                                        <div class="detail">
+                                            <span class="label">Price:</span>
+                                            <span class="value">{{ sub.price | currency }}</span>
                                         </div>
-                                        <div class="detail-value">{{ selectedUser.phoneNumber }}</div>
-                                    </div>
-                                    <div class="detail-item">
-                                        <div class="detail-label">
-                                            <mat-icon>email</mat-icon>
-                                            <span>Email</span>
+                                        <div class="detail">
+                                            <span class="label">Quantity:</span>
+                                            <span class="value">{{ sub.quantity }}</span>
                                         </div>
-                                        <div class="detail-value">{{ selectedUser.email || 'Not provided' }}</div>
-                                    </div>
-                                    <div class="detail-item balance-item">
-                                        <div class="detail-label">
-                                            <mat-icon>account_balance_wallet</mat-icon>
-                                            <span>Current Balance</span>
-                                        </div>
-                                        <div class="detail-value"
-                                            [class.negative-balance]="(selectedUser.balance || 0) < 0">
-                                            {{ selectedUser.balance | currency }}
-                                        </div>
-                                    </div>
-                                </div>
-                            </mat-card-content>
-                        </mat-card>
-
-                        <!-- Subscriptions Card -->
-                        <mat-card class="subscriptions-card" *ngIf="selectedUser.subscriptions?.length">
-                            <mat-card-header class="subscriptions-card-header">
-                                <mat-icon class="card-icon">subscriptions</mat-icon>
-                                <mat-card-title>Active Subscriptions</mat-card-title>
-                                <span class="subscriptions-count">{{ selectedUser.subscriptions.length }} active</span>
-                            </mat-card-header>
-                            <mat-divider></mat-divider>
-                            <mat-card-content>
-                                <mat-table [dataSource]="selectedUser.subscriptions" class="subscriptions-table">
-                                    <!-- Service Name Column -->
-                                    <ng-container matColumnDef="serviceName">
-                                        <mat-header-cell *matHeaderCellDef>Service</mat-header-cell>
-                                        <mat-cell *matCellDef="let sub">
-                                            <div class="service-name">
-                                                <mat-icon class="service-icon">widgets</mat-icon>
-                                                <!-- {{ getSubServiceName(sub.subServiceId) }} -->
-                                            </div>
-                                        </mat-cell>
-                                    </ng-container>
-
-                                    <!-- Quantity Column -->
-                                    <ng-container matColumnDef="quantity">
-                                        <mat-header-cell *matHeaderCellDef>Qty</mat-header-cell>
-                                        <mat-cell *matCellDef="let sub">
-                                            <span class="quantity-badge">{{ sub.quantity }}</span>
-                                        </mat-cell>
-                                    </ng-container>
-
-                                    <!-- Period Column -->
-                                    <ng-container matColumnDef="period">
-                                        <mat-header-cell *matHeaderCellDef>Period</mat-header-cell>
-                                        <mat-cell *matCellDef="let sub">
-                                            <div class="period-dates">
-                                                <div class="date">{{ getFormattedDate(sub.startDate) }}</div>
-                                                <mat-icon class="date-arrow">arrow_right_alt</mat-icon>
-                                                <div class="date">{{ getFormattedDate(sub.endDate) }}</div>
-                                            </div>
-                                        </mat-cell>
-                                    </ng-container>
-
-                                    <!-- Price Column -->
-                                    <ng-container matColumnDef="price">
-                                        <mat-header-cell *matHeaderCellDef>Amount</mat-header-cell>
-                                        <mat-cell *matCellDef="let sub">
-                                            <span class="subscription-price">{{ sub.price | currency }}</span>
-                                        </mat-cell>
-                                    </ng-container>
-
-                                    <mat-header-row *matHeaderRowDef="displayedSubscriptionColumns"
-                                        class="subscriptions-header-row"></mat-header-row>
-                                    <mat-row *matRowDef="let row; columns: displayedSubscriptionColumns;"
-                                        class="subscriptions-row"></mat-row>
-                                </mat-table>
-                            </mat-card-content>
-                        </mat-card>
-                    </div>
-
-                    <!-- Right Column - Payment Form -->
-                    <div class="right-column">
-                        <mat-card class="payment-form-card">
-                            <mat-card-header class="payment-form-header">
-                                <mat-icon class="card-icon">payment</mat-icon>
-                                <mat-card-title>Payment Processing</mat-card-title>
-                            </mat-card-header>
-                            <!-- <mat-divider></mat-divider> -->
-                            <mat-card-content>
-                                <form [formGroup]="paymentForm" class="payment-form">
-                                    <!-- Amount Field -->
-                                    <div class="form-row">
-                                        <mat-form-field appearance="outline" class="full-width">
-                                            <mat-label>Payment Amount</mat-label>
-                                            <input matInput type="number" formControlName="amount" step="0.01"
-                                                min="0.01">
-                                            <span matPrefix>$&nbsp;</span>
-                                            <mat-icon matSuffix>attach_money</mat-icon>
-                                            <mat-hint *ngIf="selectedUser?.balance" class="balance-hint">
-                                                Available balance: {{ selectedUser.balance | currency }}
-                                            </mat-hint>
-                                            <mat-error *ngIf="paymentForm.get('amount')?.invalid">
-                                                Please enter a valid amount (minimum $0.01)
-                                            </mat-error>
-                                        </mat-form-field>
-                                    </div>
-
-                                    <!-- Payment Method Field -->
-                                    <div class="form-row">
-                                        <mat-form-field appearance="outline" class="full-width">
-                                            <mat-label>Payment Method</mat-label>
-                                            <mat-select formControlName="paymentMethod">
-                                                <mat-option value="cash">
-                                                    <div class="payment-option">
-                                                        <mat-icon>attach_money</mat-icon>
-                                                        <span>Cash</span>
-                                                    </div>
-                                                </mat-option>
-                                                <mat-option value="credit_card">
-                                                    <div class="payment-option">
-                                                        <mat-icon>credit_card</mat-icon>
-                                                        <span>Credit Card</span>
-                                                    </div>
-                                                </mat-option>
-                                                <mat-option value="bank_transfer">
-                                                    <div class="payment-option">
-                                                        <mat-icon>account_balance</mat-icon>
-                                                        <span>Bank Transfer</span>
-                                                    </div>
-                                                </mat-option>
-                                                <mat-option value="mobile_payment">
-                                                    <div class="payment-option">
-                                                        <mat-icon>smartphone</mat-icon>
-                                                        <span>Mobile Payment</span>
-                                                    </div>
-                                                </mat-option>
-                                            </mat-select>
-                                        </mat-form-field>
-                                    </div>
-
-                                    <!-- Notes Field -->
-                                    <div class="form-row">
-                                        <mat-form-field appearance="outline" class="full-width">
-                                            <mat-label>Notes (Optional)</mat-label>
-                                            <textarea matInput formControlName="notes" rows="3"
-                                                placeholder="Add any payment notes..."></textarea>
-                                            <mat-icon matSuffix>notes</mat-icon>
-                                        </mat-form-field>
-                                    </div>
-
-                                    <!-- Payment Summary -->
-                                    <div class="payment-summary">
-                                        <div class="summary-item">
-                                            <span class="summary-label">Amount to Pay</span>
-                                            <span
-                                                class="summary-value">{{ paymentForm.value.amount || 0 | currency }}</span>
-                                        </div>
-                                        <div class="summary-item">
-                                            <span class="summary-label">Payment Method</span>
-                                            <span
-                                                class="summary-value">{{ paymentForm.value.paymentMethod | titlecase }}</span>
-                                        </div>
-                                        <mat-divider></mat-divider>
-                                        <div class="summary-item new-balance">
-                                            <span class="summary-label">New Balance</span>
-                                            <span class="summary-value">
-                                                {{ (selectedUser.balance || 0) - (paymentForm.value.amount || 0) | currency }}
+                                        <div class="detail">
+                                            <span class="label">Period:</span>
+                                            <span class="value">
+                                                {{ getFormattedDate(sub.startDate ??0) }} -
+                                                {{ getFormattedDate(sub.endDate ?? 0) }}
                                             </span>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+                        </mat-card-content>
+                    </mat-card>
 
-                                    <!-- Form Actions -->
-                                    <div class="form-actions">
-                                        <button mat-stroked-button color="warn" type="button" (click)="resetForm()"
-                                            class="action-button">
-                                            <mat-icon>cancel</mat-icon>
-                                            Cancel
-                                        </button>
-                                        <button mat-flat-button color="primary" type="button"
-                                            [disabled]="paymentForm.invalid || isProcessingPayment"
-                                            (click)="confirmPayment()" class="action-button submit-button">
-                                            <mat-icon>send</mat-icon>
-                                            Process Payment
-                                            <mat-spinner *ngIf="isProcessingPayment" diameter="20"></mat-spinner>
-                                        </button>
+                    <!-- Payment Form Card -->
+                    <mat-card class="payment-form-card">
+                        <mat-card-header>
+                            <mat-card-title>
+                                <mat-icon>payment</mat-icon>
+                                Payment Details
+                            </mat-card-title>
+                        </mat-card-header>
+                        <mat-card-content>
+                            <form [formGroup]="paymentForm" class="payment-form">
+                                <mat-form-field appearance="outline" class="full-width">
+                                    <mat-label>Amount</mat-label>
+                                    <input matInput type="number" formControlName="amount" step="0.01" min="0.01">
+                                    <span matPrefix class="px-2">$&nbsp;</span>
+                                    <mat-error *ngIf="paymentForm.get('amount')?.invalid">
+                                        Please enter a valid amount
+                                    </mat-error>
+                                </mat-form-field>
+
+                                <mat-form-field appearance="outline" class="full-width">
+                                    <mat-label>Payment Method</mat-label>
+                                    <mat-select formControlName="paymentMethod">
+                                        <mat-option value="cash">Cash</mat-option>
+                                        <mat-option value="credit_card">Credit Card</mat-option>
+                                        <mat-option value="bank_transfer">Bank Transfer</mat-option>
+                                    </mat-select>
+                                </mat-form-field>
+
+                                <mat-form-field appearance="outline" class="full-width">
+                                    <mat-label>Notes</mat-label>
+                                    <textarea matInput formControlName="notes" rows="3"></textarea>
+                                </mat-form-field>
+
+                                <div class="payment-summary">
+                                    <div class="summary-item">
+                                        <span>New Balance:</span>
+                                        <span class="balance">
+                                            {{ (selectedUser.balance || 0) - (paymentForm.value.amount || 0) | currency }}
+                                        </span>
                                     </div>
-                                </form>
-                            </mat-card-content>
-                        </mat-card>
-                    </div>
+                                </div>
+
+                                <div class="form-actions">
+                                    <button mat-stroked-button color="warn" (click)="resetForm()">
+                                        Cancel
+                                    </button>
+                                    <button mat-flat-button color="primary"
+                                        [disabled]="paymentForm.invalid || isProcessingPayment"
+                                        (click)="confirmPayment()">
+                                        Process Payment
+                                        <mat-spinner *ngIf="isProcessingPayment" diameter="20"></mat-spinner>
+                                    </button>
+                                </div>
+                            </form>
+                        </mat-card-content>
+                    </mat-card>
                 </div>
-            </section>
-
-
-            <!-- Updated search section in template -->
-            <section class="user-search-section" *ngIf="!selectedUser">
-                <div class="section-header">
-                    <div class="section-title">
-                        <mat-icon class="section-icon">search</mat-icon>
-                        <h2>Customer Search</h2>
-                    </div>
-                </div>
-                <mat-card class="search-card">
-                    <mat-card-content>
-                        <form [formGroup]="searchForm">
-                            <mat-form-field appearance="outline" class="w-100">
-                                <mat-label>Search by name, email or phone</mat-label>
-                                <input matInput formControlName="searchTerm"
-                                    placeholder="Type at least 2 characters...">
-                                <mat-icon matSuffix>search</mat-icon>
-                                <mat-hint>Minimum 2 characters required</mat-hint>
-                            </mat-form-field>
-                        </form>
-
-                        <div class="search-results" *ngIf="searchForm.get('searchTerm')?.value">
-                            <div *ngIf="isLoading" class="loading-indicator">
-                                <!-- <mat-spinner diameter="24"></mat-spinner> -->
-                                <span>Searching...</span>
-                            </div>
-
-                            <div *ngIf="!(users$ | async)?.length && !isLoading" class="no-results">
-                                <mat-icon>search_off</mat-icon>
-                                <p>No customers found matching your search</p>
-                            </div>
-
-                            <div class="search-results-grid">
-                                <mat-card *ngFor="let user of users$ | async" (click)="selectUser(user)"
-                                    class="search-result-card">
-                                    <mat-card-header>
-                                        <mat-card-title>{{ user.name }}</mat-card-title>
-                                        <mat-card-subtitle>
-                                            <span>{{ user.email }}</span>
-                                            <span>{{ user.phoneNumber }}</span>
-                                        </mat-card-subtitle>
-                                    </mat-card-header>
-                                    <mat-card-content>
-                                        <div class="user-balance">
-                                            <mat-icon>account_balance_wallet</mat-icon>
-                                            <span>Balance: {{ user.balance | currency }}</span>
-                                        </div>
-                                    </mat-card-content>
-                                </mat-card>
-                            </div>
-                        </div>
-                    </mat-card-content>
-                </mat-card>
             </section>
         </mat-card-content>
     </mat-card>

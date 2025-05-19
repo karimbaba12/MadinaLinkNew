@@ -1,0 +1,11 @@
+<button mat-icon-button class="edit" matTooltip="Edit transaction" [disabled]="isDeleteDisabled"
+    (click)="onEdit.emit(transaction)">
+    <mat-icon>edit</mat-icon>
+</button>
+<button mat-icon-button class="delete" matTooltip="Delete transaction"
+    (click)="onDelete.emit(transaction.transactionId)" [disabled]="isDeleteDisabled">
+    <mat-icon>delete</mat-icon>
+</button>
+<button mat-icon-button class="config" matTooltip="Print transaction" (click)="onPrint.emit(transaction.transactionId)">
+    <mat-icon>print</mat-icon>
+</button>

@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import {
   FormGroup,
   FormBuilder,
   Validators,
   ReactiveFormsModule,
   FormsModule,
+  FormControl,
 } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import {
@@ -26,6 +27,7 @@ import {
   SubServiceClient,
   TransactionPaymentDto,
   FileResponse,
+  SubServiceDto,
 } from '../../../Services/api/api-client.service';
 import { CommonModule, DatePipe } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
@@ -33,7 +35,6 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTableModule } from '@angular/material/table';
-import { MatListModule } from '@angular/material/list';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
@@ -41,11 +42,11 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatPaginatorModule } from '@angular/material/paginator';
-import { MatSortModule } from '@angular/material/sort';
+import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
+import { MatSortModule, MatSort } from '@angular/material/sort';
 import { saveAs } from 'file-saver';
 import { NewConfirmComponent } from '../../dialogs/new-confirm/new-confirm.component';
-import { BrowserModule } from '@angular/platform-browser';
+import { MatDivider, MatListModule } from '@angular/material/list';
 
 interface User {
   userId: number;
@@ -63,6 +64,7 @@ interface User {
   subscriptions: SubscriptionDto[];
   amountDue?: number;
   balance?: number;
+  subServiceNames?: string[];
 }
 
 @Component({
@@ -92,15 +94,21 @@ interface User {
   providers: [DatePipe],
 })
 export class PaymentComponent implements OnInit {
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild(MatSort) sort!: MatSort;
+
   paymentForm: FormGroup;
   searchForm: FormGroup;
   users$: Observable<User[]> | undefined;
   usersToPay: User[] = [];
+  filteredUsers: User[] = [];
   selectedUser: User | null = null;
   isLoading = false;
   isProcessingPayment = false;
   isFetchingUsersToPay = false;
+  isSearching = false;
   subServiceNames: { [key: number]: string } = {};
+
   displayedColumns: string[] = [
     'select',
     'name',
@@ -118,6 +126,8 @@ export class PaymentComponent implements OnInit {
   selectAllChecked = false;
   totalAmountDue = 0;
   selectedAmount = 0;
+  pageSize = 10;
+  pageSizeOptions = [5, 10, 25, 100];
 
   constructor(
     private fb: FormBuilder,
@@ -136,42 +146,57 @@ export class PaymentComponent implements OnInit {
     });
 
     this.searchForm = this.fb.group({
-      searchTerm: ['', Validators.required],
+      searchTerm: [''],
     });
   }
 
   ngOnInit(): void {
     this.loadUsersToPay();
-    this.setupUserSearch();
   }
 
   loadUsersToPay(): void {
+    console.log('Loading users to pay...');
     this.isFetchingUsersToPay = true;
     this.userClient.getUserToPay().subscribe({
       next: (response: any) => {
+        console.log('Users to pay response:', response);
         let users = response?.data || [];
+        console.log('Raw users data:', users);
+
         const balanceObservables = users.map((user: User) =>
           this.transactionClient.getBalanceByID(user.userId).pipe(
-            map((balanceResponse: any) => ({
-              ...user,
-              balance: (balanceResponse?.data as number) || 0,
-            })),
-            catchError(() =>
-              of({
+            map((balanceResponse: any) => {
+              console.log(`Balance for user ${user.userId}:`, balanceResponse);
+              return {
+                ...user,
+                balance: (balanceResponse?.data as number) || 0,
+              };
+            }),
+            catchError((error) => {
+              console.error(
+                `Error getting balance for user ${user.userId}:`,
+                error
+              );
+              return of({
                 ...user,
                 balance: 0,
-              })
-            )
+              });
+            })
           )
         );
+
         forkJoin(balanceObservables).subscribe((usersWithBalance) => {
           this.usersToPay = (usersWithBalance as User[]).filter(
             (u) => (u.balance || 0) > 0
           );
+          console.log('Filtered users with balance:', this.usersToPay);
+
+          this.filteredUsers = [...this.usersToPay];
           this.usersToPay.forEach((user) => {
             if (!user.amountDue) {
               user.amountDue = user.balance;
             }
+            this.loadUserSubscriptions(user);
           });
           this.calculateTotalAmountDue();
           this.isFetchingUsersToPay = false;
@@ -180,6 +205,7 @@ export class PaymentComponent implements OnInit {
       error: (error) => {
         console.error('Error loading users to pay:', error);
         this.usersToPay = [];
+        this.filteredUsers = [];
         this.isFetchingUsersToPay = false;
         this.snackBar.open('Failed to load pending payments', 'Close', {
           duration: 3000,
@@ -189,22 +215,41 @@ export class PaymentComponent implements OnInit {
     });
   }
 
-  loadUserBalance(user: User): void {
-    this.transactionClient.getBalanceByID(user.userId).subscribe({
+  loadUserSubscriptions(user: User): void {
+    if (!user?.userId) {
+      console.warn('Invalid user passed to loadUserSubscriptions');
+      return;
+    }
+
+    console.log(`Fetching subscriptions for user ${user.userId}`);
+
+    this.subscriptionClient.getUserSubscription(user.userId).subscribe({
       next: (response: any) => {
-        user.balance = response?.data || 0;
-        // Auto-set amount due to balance if not already set
-        if (!user.amountDue) {
-          user.amountDue = user.balance;
-        }
+        const subscriptions = (response?.data as SubscriptionDto[]) || [];
+        console.log(`Subscriptions for user ${user.userId}:`, subscriptions);
+        user.subscriptions = subscriptions;
+        this.selectedUser = user;
+        this.loadSubServiceNames();
       },
       error: (error) => {
-        console.error('Error loading user balance:', error);
-        user.balance = 0;
+        console.error(
+          `Failed to fetch subscriptions for user ${user.userId}`,
+          error
+        );
+        user.subscriptions = [];
       },
     });
   }
 
+  selectUser(user: User): void {
+    console.log('Selected user:', user);
+    console.log('User subscriptions:', user.subscriptions);
+    console.log('User subServiceNames:', user.subServiceNames);
+    this.selectedUser = user;
+    this.paymentForm.patchValue({
+      amount: user.amountDue || user.balance || 0,
+    });
+  }
   calculateTotalAmountDue(): void {
     this.totalAmountDue = this.usersToPay.reduce(
       (sum, user) => sum + (user.amountDue || 0),
@@ -296,49 +341,59 @@ export class PaymentComponent implements OnInit {
     this.calculateTotalAmountDue();
   }
 
-  selectUser(user: User): void {
-    this.selectedUser = user;
-    this.paymentForm.patchValue({
-      amount: user.amountDue || user.balance || 0,
-    });
-    // this.loadSubServiceNames();
-  }
-
   updateUserAmount(user: User, amount: number): void {
     if (amount < 0) amount = 0;
     user.amountDue = amount;
     this.calculateTotalAmountDue();
   }
 
-  // loadSubServiceNames(): void {
-  //   if (!this.selectedUser?.subscriptions) return;
+ loadSubServiceNames(): void {
+  if (!this.selectedUser) return;
 
-  //   const subServiceIds = [
-  //     ...new Set(
-  //       this.selectedUser.subscriptions.map((sub) => sub.subServiceId)
-  //     ),
-  //   ];
+  // Initialize subscriptions if undefined
+  if (!this.selectedUser.subscriptions) {
+    this.selectedUser.subscriptions = [];
+    return;
+  }
 
-  //   subServiceIds.forEach((id) => {
-  //     if (id && !this.subServiceNames[id]) {
-  //       this.subServiceClient.getById(id).subscribe({
-  //         next: (response) => {
-  //           this.subServiceNames[id] =
-  //             response.data?.subServiceName || 'Unknown';
-  //         },
-  //         error: (error) => {
-  //           console.error('Error loading service name:', error);
-  //           this.subServiceNames[id] = 'Unknown';
-  //         },
-  //       });
-  //     }
-  //   });
-  // }
+  const uniqueServiceIds = [
+    ...new Set(
+      this.selectedUser.subscriptions
+        .map(sub => sub.subServiceId)
+        .filter((id): id is number => id !== undefined && id !== null)
+    )
+  ];
 
-  // getSubServiceName(subServiceId: number): string {
-  //   return this.subServiceNames[subServiceId] || 'Loading...';
-  // }
+  forkJoin(
+    uniqueServiceIds.map(id => 
+      this.subServiceClient.getById(id).pipe(
+        map(response => ({
+          id,
+          name: response.data?.subServiceName || `Unknown (${id})`
+        })),
+        catchError(() => of({
+          id,
+          name: `Service ${id}`
+        }))
+      )
+    )
+  ).subscribe(results => {
+    // Update service names map
+    results.forEach(result => {
+      this.subServiceNames[result.id] = result.name;
+    });
 
+    // Properly map subscriptions with NSwag-compatible objects
+    if (this.selectedUser?.subscriptions) {
+      this.selectedUser.subscriptions = this.selectedUser.subscriptions.map(sub => {
+        const newSub = new SubscriptionDto(); // Proper instantiation
+        Object.assign(newSub, sub); // Copy all properties
+        (newSub as any).serviceName = this.subServiceNames[sub.subServiceId!] || 'Unknown';
+        return newSub;
+      });
+    }
+  });
+}
   getFormattedDate(timestamp: number): string {
     return (
       this.datePipe.transform(new Date(timestamp * 1000), 'mediumDate') || ''
@@ -413,6 +468,21 @@ export class PaymentComponent implements OnInit {
       },
     });
   }
+  loadUserBalance(user: User): void {
+    this.transactionClient.getBalanceByID(user.userId).subscribe({
+      next: (response: any) => {
+        user.balance = response?.data || 0;
+        // Auto-set amount due to balance if not already set
+        if (!user.amountDue) {
+          user.amountDue = user.balance;
+        }
+      },
+      error: (error) => {
+        console.error('Error loading user balance:', error);
+        user.balance = 0;
+      },
+    });
+  }
 
   showPaymentSuccess(transaction: any, generateReceipt: boolean): void {
     const dialogRef = this.dialog.open(NewConfirmComponent, {
@@ -453,7 +523,7 @@ export class PaymentComponent implements OnInit {
     receiptData.roleId = this.selectedUser.roleId;
     receiptData.isActive = this.selectedUser.isActive;
 
-    receiptData.credit = this.paymentForm.value.credit;
+    receiptData.credit = this.paymentForm.value.amount;
     receiptData.debit = 0;
 
     receiptData.subscriptions =
@@ -475,6 +545,8 @@ export class PaymentComponent implements OnInit {
     this.transactionClient.generateReceipt(receiptData).subscribe({
       next: (response: FileResponse) => {
         const blob = new Blob([response.data], { type: response.data.type });
+        const url = window.URL.createObjectURL(blob);
+        window.open(url, '_blank');
         saveAs(blob, `Receipt_${receiptData.transactionId}.pdf`);
         this.snackBar.open('Receipt downloaded successfully', 'Close', {
           duration: 3000,
@@ -504,7 +576,6 @@ export class PaymentComponent implements OnInit {
     this.isProcessingPayment = true;
 
     try {
-      // Process payments first
       const paymentPromises = this.selectedUsers.map((user) => {
         const paymentData = new TransactionDto({
           userId: user.userId,
@@ -650,7 +721,6 @@ export class PaymentComponent implements OnInit {
       );
     }
   }
-  // Update confirmBulkPayment to handle the new flow
   confirmBulkPayment(): void {
     if (this.selectedUsers.length === 0) {
       this.snackBar.open('Please select at least one user', 'Close', {
@@ -676,5 +746,27 @@ export class PaymentComponent implements OnInit {
         await this.processBulkPayment(result.generateReceipt);
       }
     });
+  }
+  searchUsers(): void {
+    const searchTerm = this.searchForm.get('searchTerm')?.value?.toLowerCase();
+    if (!searchTerm) {
+      this.filteredUsers = [...this.usersToPay];
+      this.isSearching = false;
+      return;
+    }
+
+    this.isSearching = true;
+    this.filteredUsers = this.usersToPay.filter(
+      (user) =>
+        user.name.toLowerCase().includes(searchTerm) ||
+        (user.email && user.email.toLowerCase().includes(searchTerm)) ||
+        (user.phoneNumber && user.phoneNumber.toString().includes(searchTerm))
+    );
+  }
+
+  clearSearch(): void {
+    this.searchForm.get('searchTerm')?.setValue('');
+    this.filteredUsers = [...this.usersToPay];
+    this.isSearching = false;
   }
 }
