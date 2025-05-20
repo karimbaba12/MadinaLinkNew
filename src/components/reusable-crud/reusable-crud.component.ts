@@ -37,7 +37,7 @@ import {
   ColumnConfig,
 } from '../../data/menu/reusableCrudData';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { debounceTime, distinctUntilChanged } from 'rxjs';
+import { debounceTime, distinctUntilChanged, Subscription, tap } from 'rxjs';
 import { MatInputModule } from '@angular/material/input';
 
 @Component({
@@ -76,7 +76,6 @@ export class ReusableCrudComponent<T> implements OnInit {
   @Input() rowActionsTemplate?: TemplateRef<any>;
   @Input() columnTemplates: { [key: string]: TemplateRef<any> } = {};
   @Input() showRowPointer = true;
-  @Input() searchTerm: string = '';
   @Output() add = new EventEmitter<void>();
   @Output() edit = new EventEmitter<T>();
   @Output() delete = new EventEmitter<T>();
@@ -85,15 +84,24 @@ export class ReusableCrudComponent<T> implements OnInit {
   @Output() sortChange = new EventEmitter<Sort>();
   @Output() rowClick = new EventEmitter<T>();
   @Output() search = new EventEmitter<string>();
-
+  @Input() set searchTerm(value: string) {
+    if (value !== this.searchControl.value) {
+      this.searchControl.setValue(value, { emitEvent: false });
+    }
+  }
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
-
+  private searchSubscription?: Subscription;
+  isSearching = false;
   searchControl = new FormControl('');
 
   ngOnInit(): void {
     this.setupSearch();
     this.validateConfig();
+  }
+
+  ngOnDestroy(): void {
+    this.searchSubscription?.unsubscribe();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -103,8 +111,13 @@ export class ReusableCrudComponent<T> implements OnInit {
   }
 
   private setupSearch(): void {
-    this.searchControl.valueChanges
-      .pipe(debounceTime(300), distinctUntilChanged())
+    this.searchSubscription = this.searchControl.valueChanges
+      .pipe(
+        tap(() => (this.isSearching = true)),
+        debounceTime(300),
+        distinctUntilChanged(),
+        tap(() => (this.isSearching = false))
+      )
       .subscribe((term) => {
         if ((term && term.length >= this.minSearchLength) || term === '') {
           this.search.emit(term || '');
@@ -114,6 +127,7 @@ export class ReusableCrudComponent<T> implements OnInit {
 
   clearSearch(): void {
     this.searchControl.setValue('');
+    this.search.emit('');
   }
 
   private validateConfig(): void {

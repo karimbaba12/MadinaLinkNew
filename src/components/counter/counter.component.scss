@@ -370,14 +370,14 @@ $white: #ffffff;
 .download-card {
   cursor: pointer;
   transition: all 0.3s ease;
-  
+
   &:hover {
-      background-color: rgba(0, 0, 0, 0.04);
-      transform: translateY(-2px);
+    background-color: rgba(0, 0, 0, 0.04);
+    transform: translateY(-2px);
   }
-  
+
   &:active {
-      transform: translateY(0);
+    transform: translateY(0);
   }
 }
 .header-content {
@@ -496,8 +496,8 @@ $white: #ffffff;
   border-collapse: collapse;
 
   th {
-    background: lighten($primary-color, 45%);
-    color: darken($primary-color, 10%);
+    // background: lighten($primary-color, 45%);
+    // color: darken($primary-color, 10%);
     font-weight: 600;
     font-size: 14px;
     text-align: left;
@@ -519,7 +519,7 @@ $white: #ffffff;
     }
 
     &.changed-row {
-      background: lighten($success-color, 50%);
+      // background: lighten($success-color, 50%);
     }
   }
 
@@ -568,8 +568,8 @@ $white: #ffffff;
     }
 
     &.current {
-      background: lighten($primary-color, 45%);
-      color: darken($primary-color, 15%);
+      // background: lighten($primary-color, 45%);
+      // color: darken($primary-color, 15%);
     }
   }
 
@@ -637,7 +637,7 @@ $white: #ffffff;
     }
 
     &:hover:not(:disabled) {
-      background: darken($primary-color, 10%);
+      // background: darken($primary-color, 10%);
     }
   }
 }
@@ -710,15 +710,19 @@ $white: #ffffff;
   }
 }
 
-
 // .table-actions {
 //   display: flex;
 //   gap: 1rem;
 //   margin-top: 1rem;
-  
+
 //   button {
 //     display: flex;
 //     align-items: center;
 //     gap: 0.5rem;
 //   }
 // }
+
+.changed-row {
+  background-color: rgba(255, 235, 59, 0.2); /* Light yellow background */
+  transition: background-color 0.3s ease;
+}

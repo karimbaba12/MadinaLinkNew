@@ -30,7 +30,7 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatTableModule } from '@angular/material/table';
 import { forkJoin } from 'rxjs';
 import { MatInputModule } from '@angular/material/input';
-
+import { ChangeDetectorRef } from '@angular/core';
 @Component({
   imports: [
     MatFormField,
@@ -56,12 +56,12 @@ export class CounterComponent implements OnInit {
   subscriptions: SubscriptionDto[] = [];
   filteredSubscriptions: SubscriptionDto[] = [];
   updateForm: FormGroup;
-
+  modifiedSubscriptions = new Set<number>();
+  originalValues = new Map<number, number>();
   // Data maps
   usernames = new Map<number, string>();
   subServiceNames = new Map<number, string>();
   endDates = new Map<number, string>();
-  previousValues = new Map<number, number>();
 
   // Form controls
   searchControl = new FormControl('');
@@ -74,7 +74,8 @@ export class CounterComponent implements OnInit {
     private subServiceClient: SubServiceClient,
     private dateFormatter: DateFormatService,
     private decimalPipe: DecimalPipe,
-    private counterClient: CountersClient
+    private counterClient: CountersClient,
+    private cdr: ChangeDetectorRef
   ) {
     this.updateForm = this.fb.group({});
   }
@@ -82,6 +83,9 @@ export class CounterComponent implements OnInit {
   ngOnInit(): void {
     this.loadSubscriptions();
     this.setupSearch();
+    this.updateForm.statusChanges.subscribe((status) => {
+      console.log('Form status:', status);
+    });
   }
 
   private setupSearch(): void {
@@ -89,7 +93,9 @@ export class CounterComponent implements OnInit {
       .pipe(debounceTime(300), distinctUntilChanged())
       .subscribe((searchTerm) => this.filterSubscriptions(searchTerm || ''));
   }
-
+  get isFormDirty(): boolean {
+    return this.modifiedSubscriptions.size > 0;
+  }
   private filterSubscriptions(searchTerm: string): void {
     this.filteredSubscriptions = searchTerm
       ? this.subscriptions.filter((sub) => {
@@ -112,6 +118,12 @@ export class CounterComponent implements OnInit {
       next: (response) => {
         this.subscriptions = response.data || [];
         this.filteredSubscriptions = [...this.subscriptions];
+
+        // Store original values
+        this.subscriptions.forEach((sub) => {
+          this.originalValues.set(sub.subscriptionId!, sub.quantity || 0);
+        });
+
         this.initializeComponentData();
         this.loading = false;
       },
@@ -133,13 +145,18 @@ export class CounterComponent implements OnInit {
     this.subscriptions.forEach((sub) => {
       const id = sub.subscriptionId?.toString() || '';
       formControls[`${id}_quantity`] = [
-        '',
+        sub.quantity || '',
         [Validators.required, Validators.min(0)],
       ];
-      formControls[`${id}_note`] = [''];
+
+      // Initialize note field if needed
+      // formControls[`${id}_note`] = [sub.note || ''];
     });
 
     this.updateForm = this.fb.group(formControls);
+
+    // Setup value change detection after form creation
+    this.setupValueChangeDetection();
   }
 
   private fetchAdditionalData(): void {
@@ -147,8 +164,39 @@ export class CounterComponent implements OnInit {
       this.fetchUsername(sub);
       this.fetchServiceName(sub);
       this.formatEndDate(sub);
-      this.fetchPreviousValue(sub);
     });
+  }
+  private setupValueChangeDetection(): void {
+    this.subscriptions.forEach((sub) => {
+      const control = this.updateForm.get(`${sub.subscriptionId}_quantity`);
+      if (control) {
+        control.valueChanges
+          .pipe(distinctUntilChanged())
+          .subscribe((newValue) => {
+            const originalValue =
+              this.originalValues.get(sub.subscriptionId!) || 0;
+
+            if (newValue !== originalValue) {
+              this.modifiedSubscriptions.add(sub.subscriptionId!);
+            } else {
+              this.modifiedSubscriptions.delete(sub.subscriptionId!);
+            }
+
+            // Trigger change detection for button visibility
+            this.cdr.detectChanges();
+          });
+      }
+    });
+  }
+  resetForm(): void {
+    this.modifiedSubscriptions.clear();
+    this.subscriptions.forEach((sub) => {
+      const control = this.updateForm.get(`${sub.subscriptionId}_quantity`);
+      if (control) {
+        control.setValue(this.originalValues.get(sub.subscriptionId!) || '');
+      }
+    });
+    this.cdr.detectChanges();
   }
   downloadSheet(): void {
     this.loading = true;
@@ -230,48 +278,6 @@ export class CounterComponent implements OnInit {
     }
   }
 
-  private fetchPreviousValue(sub: SubscriptionDto): void {
-    if (!sub.subscriptionId) return;
-
-    this.subscriptionClient.getPreviousSubscription(sub).subscribe({
-      next: (prevSub) => {
-        if (prevSub.data?.quantity) {
-          this.previousValues.set(
-            sub.subscriptionId ?? 0,
-            prevSub.data.quantity
-          );
-        }
-      },
-      error: () => {
-        console.warn(
-          `Could not fetch previous value for subscription ${sub.subscriptionId}`
-        );
-      },
-    });
-  }
-
-  // onSubmit(): void {
-  //   if (this.updateForm.invalid || this.submitting) return;
-
-  //   this.submitting = true;
-  //   const updates = this.prepareUpdates();
-
-  //   if (updates.length === 0) {
-  //     this.showNotification('No changes detected');
-  //     this.submitting = false;
-  //     return;
-  //   }
-
-  //   this.subscriptionClient.updateCounter(updates).subscribe({
-  //     next: () => {
-  //       this.showSuccess(`${updates.length} counters updated successfully`);
-  //       this.loadSubscriptions();
-  //     },
-  //     error: (err) => {
-  //       this.showError('Update failed: ' + err.message);
-  //     },
-  //   });
-  // }
   onSubmit(): void {
     if (this.updateForm.invalid || this.submitting) return;
 
@@ -284,8 +290,6 @@ export class CounterComponent implements OnInit {
       return;
     }
 
-    // Handle batch updates if your API supports it
-    // Or update one by one
     this.processUpdates(updates);
   }
 
@@ -294,10 +298,10 @@ export class CounterComponent implements OnInit {
       this.subscriptionClient.updateCounter(update)
     );
 
-    // Using forkJoin to handle multiple updates
     forkJoin(updateObservables).subscribe({
       next: () => {
         this.showSuccess(`${updates.length} counters updated successfully`);
+        this.modifiedSubscriptions.clear();
         this.loadSubscriptions();
       },
       error: (err) => {
@@ -308,17 +312,17 @@ export class CounterComponent implements OnInit {
       },
     });
   }
+
   private prepareUpdates(): SubscriptionDto[] {
     return this.filteredSubscriptions
-      .filter(
-        (sub) => this.updateForm.get(`${sub.subscriptionId}_quantity`)?.dirty
-      )
+      .filter((sub) => this.modifiedSubscriptions.has(sub.subscriptionId!))
       .map((sub) => {
-        const update = new SubscriptionDto();
-        Object.assign(update, sub);
-        update.quantity = this.updateForm.get(
-          `${sub.subscriptionId}_quantity`
-        )?.value;
+        const update = new SubscriptionDto({
+          ...sub,
+          quantity: this.updateForm.get(`${sub.subscriptionId}_quantity`)
+            ?.value,
+          // note: this.updateForm.get(`${sub.subscriptionId}_note`)?.value,
+        });
         return update;
       });
   }

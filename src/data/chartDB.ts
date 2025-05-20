@@ -142,12 +142,16 @@ export class ChartDB {
     },
     series: [
       {
-        name: 'Income',
+        name: 'Electricity',
         data: [20, 70, 40, 70, 70, 90, 50, 55, 45, 60, 50, 65],
       },
       {
-        name: 'Expense',
+        name: 'Water',
         data: [10, 40, 20, 40, 50, 70, 80, 30, 15, 32, 90, 30],
+      },
+      {
+        name: 'Internet',
+        data: [30, 50, 70, 80, 90, 70, 80, 30, 15, 32, 90, 30],
       },
     ],
     xaxis: {
@@ -166,7 +170,7 @@ export class ChartDB {
         'Dec',
       ],
       axisBorder: {
-        show: false,
+        show: true,
       },
       axisTicks: {
         show: false,

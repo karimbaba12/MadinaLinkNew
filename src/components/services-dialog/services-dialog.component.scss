@@ -3,7 +3,11 @@
   justify-content: center;
   padding: 20px;
 }
-
+.container {
+  margin: 2vh;
+  width: 150vh;
+  overflow-x: hidden;
+}
 .service-tabs {
   display: flex;
   justify-content: center;

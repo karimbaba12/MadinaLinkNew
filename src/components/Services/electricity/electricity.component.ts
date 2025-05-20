@@ -69,8 +69,9 @@ export class ElectricityComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private subscriptionClient: SubscriptionClient,
     private subServiceClient: SubServiceClient,
+    private subscriptionClient: SubscriptionClient,
+
     private snackBar: MatSnackBar,
     private datePipe: DatePipe,
     private dialog: MatDialog
@@ -82,6 +83,7 @@ export class ElectricityComponent implements OnInit {
       endDate: [0],
       price: [0],
       quantity: [0],
+      previousQuantity: [0],
       discount: [0, [Validators.min(0), Validators.max(100)]],
       isActive: [true],
       tenantId: [0],
@@ -249,6 +251,7 @@ export class ElectricityComponent implements OnInit {
       startDate: currentDate,
       endDate,
       quantity: 0,
+      previousQuantity: 0,
       isActive: true,
       tenantId: this.tenantId,
       price: 0,

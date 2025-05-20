@@ -50,68 +50,68 @@
                 </mat-form-field>
             </div>
 
-            <div class="table-container" *ngIf="!isLoading; else loading">
-                <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
-                    <!-- Transaction ID Column -->
-                    <ng-container matColumnDef="transactionId">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
-                        <td mat-cell *matCellDef="let row">{{row.transactionId}}</td>
-                    </ng-container>
+                <div class="table-container" *ngIf="!isLoading; else loading">
+                    <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
+                        <!-- Transaction ID Column -->
+                        <ng-container matColumnDef="transactionId">
+                            <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
+                            <td mat-cell *matCellDef="let row">{{row.transactionId}}</td>
+                        </ng-container>
 
-                    <!-- User Column -->
-                    <ng-container matColumnDef="userName">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header>User</th>
-                        <td mat-cell *matCellDef="let row">
-                            <ng-container *ngIf="getUserName(row.userId) as userName; else loading">
-                                {{ userName }}
-                            </ng-container>
-                            <ng-template #loading>
-                                <mat-spinner diameter="20" class="inline-spinner"></mat-spinner>
-                            </ng-template>
-                        </td>
-                    </ng-container>
-                      
-
+                        <!-- User Column -->
+                    
+                                <ng-container matColumnDef="userName">
+                            <th mat-header-cell *matHeaderCellDef mat-sort-header>User</th>
+                            <td mat-cell *matCellDef="let row">
+                                {{ getUserName(row.userId) | async }}
+                            </td>
+                        </ng-container>
+                        <ng-template #loading>
+                            <mat-spinner diameter="20" class="inline-spinner"></mat-spinner>
+                        </ng-template>
+            
 
 
-                    <!-- Credit Column -->
-                    <ng-container matColumnDef="credit">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header>Credit</th>
-                        <td mat-cell *matCellDef="let row" [class.positive]="row.credit > 0">
-                            {{row.credit | currency}}
-                        </td>
-                    </ng-container>
 
-                    <!-- Debit Column -->
-                    <ng-container matColumnDef="debit">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header>Debit</th>
-                        <td mat-cell *matCellDef="let row" [class.negative]="row.debit > 0">
-                            {{row.debit | currency}}
-                        </td>
-                    </ng-container>
 
-                    <!-- Date Column -->
-                    <ng-container matColumnDef="createdAt">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header>Date</th>
-                        <td mat-cell *matCellDef="let row">{{formatDate(row.createdAt)}}</td>
-                    </ng-container>
+                        <!-- Credit Column -->
+                        <ng-container matColumnDef="credit">
+                            <th mat-header-cell *matHeaderCellDef mat-sort-header>Credit</th>
+                            <td mat-cell *matCellDef="let row" [class.positive]="row.credit > 0">
+                                {{row.credit | currency}}
+                            </td>
+                        </ng-container>
 
-                    <!-- Actions Column -->
-                    <ng-container matColumnDef="actions">
-                        <th mat-header-cell *matHeaderCellDef>Actions</th>
-                        <td mat-cell *matCellDef="let row">
-                            <app-transaction-actions [transaction]="row" (onEdit)="handleEdit($event)"
-                                (onDelete)="handleDelete($event)">
-                            </app-transaction-actions>
-                        </td>
-                    </ng-container>
+                        <!-- Debit Column -->
+                        <ng-container matColumnDef="debit">
+                            <th mat-header-cell *matHeaderCellDef mat-sort-header>Debit</th>
+                            <td mat-cell *matCellDef="let row" [class.negative]="row.debit > 0">
+                                {{row.debit | currency}}
+                            </td>
+                        </ng-container>
 
-                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-                </table>
+                        <!-- Date Column -->
+                        <ng-container matColumnDef="createdAt">
+                            <th mat-header-cell *matHeaderCellDef mat-sort-header>Date</th>
+                            <td mat-cell *matCellDef="let row">{{formatDate(row.createdAt)}}</td>
+                        </ng-container>
 
-                <mat-paginator [pageSizeOptions]="[10, 25, 50, 100]" showFirstLastButtons></mat-paginator>
-            </div>
+                        <!-- Actions Column -->
+                        <ng-container matColumnDef="actions">
+                            <th mat-header-cell *matHeaderCellDef>Actions</th>
+                            <td mat-cell *matCellDef="let row">
+                                <app-transaction-actions [transaction]="row" (onEdit)="handleEdit($event)"
+                                    (onDelete)="handleDelete($event)" >
+                                </app-transaction-actions>
+                            </td>
+                        </ng-container>
+
+                        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                    </table>
+
+                    <mat-paginator [pageSizeOptions]="[10, 25, 50, 100]" showFirstLastButtons></mat-paginator>
+                </div>
 
             <ng-template #loading>
                 <div class="loading-spinner">

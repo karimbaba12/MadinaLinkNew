@@ -1,10 +1,10 @@
 <div class="user-management-container">
     <app-reusable-crud [config]="config" [isLoading]="loading" [rowActionsTemplate]="rowActions" [showSearch]="true"
-        [searchTerm]="searchTerm"  (edit)="onEdit($event)" (delete)="onDelete($event)"
-        (refresh)="onRefresh()" (pageChange)="onPageChange($event)" (add)="onAdd()" (sortChange)="onSortChange($event) ">
+        [searchTerm]="searchTerm" (search)="onSearch($event)" (edit)="onEdit($event)" (delete)="onDelete($event)"
+        (refresh)="onRefresh()" (pageChange)="onPageChange($event)" (add)="onAdd()" (sortChange)="onSortChange($event)">
 
         <ng-template #rowActions let-item>
-            <button mat-icon-button class="config" (click)="onConfig(item)">
+            <button mat-icon-button class="config" (click)="onConfig(item); $event.stopPropagation()">
                 <mat-icon color="warn">build</mat-icon>
             </button>
             <button mat-icon-button class="edit" (click)="onEdit(item); $event.stopPropagation()">

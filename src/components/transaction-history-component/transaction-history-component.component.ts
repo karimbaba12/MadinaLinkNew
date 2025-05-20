@@ -13,11 +13,13 @@ import {
   MatTableDataSource,
 } from '@angular/material/table';
 import {
+  catchError,
   debounceTime,
   distinctUntilChanged,
   map,
   Observable,
   of,
+  shareReplay,
   startWith,
 } from 'rxjs';
 import {
@@ -101,7 +103,7 @@ export class TransactionHistoryComponentComponent {
   dailyProfit: number | undefined = undefined;
 
   // Users cache
-  usersCache: { [key: string]: UserDto } = {};
+  usersCache: { [key: string]: UserDto | undefined } = {};
 
   @ViewChild(MatPaginator)
   paginator!: MatPaginator;
@@ -173,6 +175,7 @@ export class TransactionHistoryComponentComponent {
     this.loadTransactions();
   }
   private processTransactions(transactions: TransactionDto[]): void {
+    console.log('Processing transactions:', transactions.length);
     this.dataSource = new MatTableDataSource(transactions);
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
@@ -185,33 +188,77 @@ export class TransactionHistoryComponentComponent {
       const userName = user
         ? `${user.username ?? user.name ?? ''}`.toLowerCase()
         : '';
+      console.debug(
+        `Filtering - userId: ${data.userId}, userName: ${userName}`
+      );
       return userName.includes(filter.toLowerCase());
     };
 
-    // Load users for all transactions
     const userIds = [
-      ...new Set(transactions.map((t) => t.userId).filter(Boolean)),
+      ...new Set(
+        transactions
+          .map((t) => t.userId)
+          .filter((id): id is number => id !== undefined)
+      ),
     ];
+    console.log('Unique userIds to load:', userIds);
+
     userIds.forEach((userId) => {
-      if (userId && !this.usersCache[userId]) {
+      if (!this.usersCache[userId]) {
+        console.log(`Loading user ${userId} from API`);
         this.userClient.getById(userId).subscribe({
-          next: (user) => {
-            this.usersCache[userId] = user;
-            if (this.searchControl.value) {
-              this.applyFilter();
+          next: (response) => {
+            if (response.data) {
+              // console.log(`User ${userId} loaded successfully`);
+              this.usersCache[userId] = response.data;
+              this.dataSource.data = [...this.dataSource.data];
+            } else {
+              console.warn(`User ${userId} data not found in response`);
+              this.usersCache[userId] = undefined;
             }
-            this.dataSource.data = [...this.dataSource.data];
           },
-          error: (err) => console.error('Error loading user', err),
+          error: (err) => {
+            console.error(`Error loading user ${userId}:`, err);
+            this.usersCache[userId] = undefined;
+          },
         });
+      } else {
+        console.debug(`User ${userId} already in cache`);
       }
     });
   }
-  getUserName(userId: number | undefined): string {
-    if (userId == null) return 'Unknown';
 
-    const cached = this.usersCache[userId];
-    return cached ? cached.username || cached.name || 'Unknown' : 'Loading...';
+  getUserName(userId: number | undefined): Observable<string> {
+    if (userId == null) {
+      console.debug('Null userId provided');
+      return of('Unknown');
+    }
+
+    const cachedUser = this.usersCache[userId];
+    if (cachedUser) {
+      // console.debug(`Using cached user ${userId}`);
+      return of(cachedUser.username || cachedUser.name || 'Unknown');
+    }
+
+    // console.log(`Fetching user ${userId} for username`);
+    return this.userClient.getById(userId).pipe(
+      map((response) => {
+        const user = response.data;
+        if (user) {
+          // console.log(`User ${userId} fetched successfully`);
+          this.usersCache[userId] = user;
+          return user.username || user.name || 'Unknown';
+        }
+        console.warn(`User ${userId} data not found`);
+        return 'Unknown';
+      }),
+      startWith('Loading...'),
+      catchError((err) => {
+        console.error(`Error fetching user ${userId}:`, err);
+        return of('Error loading user');
+      }),
+      shareReplay(1) // Cache the observable
+    );
   }
 
   handleEdit(transaction: TransactionDto): void {
@@ -287,9 +334,4 @@ export class TransactionHistoryComponentComponent {
   formatCurrency(amount: number): string {
     return amount.toFixed(2);
   }
-}
-function shareReplay(
-  arg0: number
-): import('rxjs').OperatorFunction<string, string> {
-  throw new Error('Function not implemented.');
 }

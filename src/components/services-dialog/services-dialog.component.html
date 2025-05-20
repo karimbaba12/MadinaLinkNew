@@ -1,9 +1,9 @@
-<mat-dialog-content class="mat-typography">
-    <div *ngIf="loading" class="loading-spinner">
-        <mat-spinner diameter="50"></mat-spinner>
-    </div>
+<div *ngIf="loading" class="loading-spinner">
+    <mat-spinner diameter="50"></mat-spinner>
+</div>
 
-    <!-- Tab buttons -->
+<div class="container">
+     <!-- Tab buttons -->
     <div class="service-tabs">
         <button mat-raised-button *ngFor="let service of services"
             [class.active]="activeServiceId === service.serviceId" (click)="setActiveService(service.serviceId ?? 0)">
@@ -29,8 +29,8 @@
 
         </ng-container>
     </div>
-</mat-dialog-content>
+    </div>
 
-<mat-dialog-actions align="end" class="end-actions">
-    <button mat-button mat-dialog-close>Close</button>
-</mat-dialog-actions>
+    <mat-dialog-actions align="end" class="end-actions">
+        <button mat-button mat-dialog-close>Close</button>
+    </mat-dialog-actions>

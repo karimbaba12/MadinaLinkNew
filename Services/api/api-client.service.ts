@@ -3997,6 +3997,389 @@ export class SubServiceClient implements ISubServiceClient {
     }
 }
 
+export interface ITaskClient {
+    /**
+     * @return OK
+     */
+    getAll(): Observable<ApiResponse_1OfOfIEnumerable_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+    /**
+     * @param id (optional) 
+     * @return OK
+     */
+    getById(id?: number | undefined): Observable<ApiResponse_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null>;
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    add(body?: TaskDto | undefined): Observable<ApiResponse_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null>;
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    update(body?: TaskDto | undefined): Observable<ApiResponse_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null>;
+    /**
+     * @param id (optional) 
+     * @return OK
+     */
+    deleteById(id?: number | undefined): Observable<ApiResponse_1OfOfBooleanAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    delete(body?: TaskDto | undefined): Observable<ApiResponse_1OfOfBooleanAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+}
+
+@Injectable({
+    providedIn: 'root'
+})
+export class TaskClient implements ITaskClient {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl ?? "";
+    }
+
+    /**
+     * @return OK
+     */
+    getAll(httpContext?: HttpContext): Observable<ApiResponse_1OfOfIEnumerable_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e> {
+        let url_ = this.baseUrl + "/api/Task/GetAll";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            context: httpContext,
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetAll(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetAll(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ApiResponse_1OfOfIEnumerable_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ApiResponse_1OfOfIEnumerable_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+        }));
+    }
+
+    protected processGetAll(response: HttpResponseBase): Observable<ApiResponse_1OfOfIEnumerable_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ApiResponse_1OfOfIEnumerable_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param id (optional) 
+     * @return OK
+     */
+    getById(id?: number | undefined, httpContext?: HttpContext): Observable<ApiResponse_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null> {
+        let url_ = this.baseUrl + "/api/Task/GetById?";
+        if (id === null)
+            throw new Error("The parameter 'id' cannot be null.");
+        else if (id !== undefined)
+            url_ += "id=" + encodeURIComponent("" + id) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            context: httpContext,
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetById(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetById(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ApiResponse_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ApiResponse_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null>;
+        }));
+    }
+
+    protected processGetById(response: HttpResponseBase): Observable<ApiResponse_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ApiResponse_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    add(body?: TaskDto | undefined, httpContext?: HttpContext): Observable<ApiResponse_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null> {
+        let url_ = this.baseUrl + "/api/Task/Add";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            context: httpContext,
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processAdd(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processAdd(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ApiResponse_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ApiResponse_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null>;
+        }));
+    }
+
+    protected processAdd(response: HttpResponseBase): Observable<ApiResponse_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ApiResponse_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    update(body?: TaskDto | undefined, httpContext?: HttpContext): Observable<ApiResponse_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null> {
+        let url_ = this.baseUrl + "/api/Task/Update";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            context: httpContext,
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("put", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processUpdate(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processUpdate(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ApiResponse_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ApiResponse_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null>;
+        }));
+    }
+
+    protected processUpdate(response: HttpResponseBase): Observable<ApiResponse_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ApiResponse_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param id (optional) 
+     * @return OK
+     */
+    deleteById(id?: number | undefined, httpContext?: HttpContext): Observable<ApiResponse_1OfOfBooleanAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e> {
+        let url_ = this.baseUrl + "/api/Task/DeleteById?";
+        if (id === null)
+            throw new Error("The parameter 'id' cannot be null.");
+        else if (id !== undefined)
+            url_ += "id=" + encodeURIComponent("" + id) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            context: httpContext,
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("delete", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processDeleteById(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processDeleteById(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ApiResponse_1OfOfBooleanAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ApiResponse_1OfOfBooleanAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+        }));
+    }
+
+    protected processDeleteById(response: HttpResponseBase): Observable<ApiResponse_1OfOfBooleanAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ApiResponse_1OfOfBooleanAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    delete(body?: TaskDto | undefined, httpContext?: HttpContext): Observable<ApiResponse_1OfOfBooleanAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e> {
+        let url_ = this.baseUrl + "/api/Task/Delete";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            context: httpContext,
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("delete", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processDelete(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processDelete(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ApiResponse_1OfOfBooleanAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ApiResponse_1OfOfBooleanAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+        }));
+    }
+
+    protected processDelete(response: HttpResponseBase): Observable<ApiResponse_1OfOfBooleanAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ApiResponse_1OfOfBooleanAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+}
+
 export interface ITenantClient {
     /**
      * @param body (optional) 
@@ -6132,6 +6515,11 @@ export class TransactionClient implements ITransactionClient {
 
 export interface IUsersClient {
     /**
+     * @param serviceId (optional) 
+     * @return OK
+     */
+    percentageUserPayment(serviceId?: number | undefined): Observable<ApiResponse_1OfOfActionResult_1OfOfUserPercentageByServiceAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreAnd_0AndCulture_neutralAndPublicKeyToken_adb9793829ddae60>;
+    /**
      * @param name (optional) 
      * @return OK
      */
@@ -6192,6 +6580,63 @@ export class UsersClient implements IUsersClient {
     constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
         this.http = http;
         this.baseUrl = baseUrl ?? "";
+    }
+
+    /**
+     * @param serviceId (optional) 
+     * @return OK
+     */
+    percentageUserPayment(serviceId?: number | undefined, httpContext?: HttpContext): Observable<ApiResponse_1OfOfActionResult_1OfOfUserPercentageByServiceAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreAnd_0AndCulture_neutralAndPublicKeyToken_adb9793829ddae60> {
+        let url_ = this.baseUrl + "/api/Users/PercentageUserPayment?";
+        if (serviceId === null)
+            throw new Error("The parameter 'serviceId' cannot be null.");
+        else if (serviceId !== undefined)
+            url_ += "serviceId=" + encodeURIComponent("" + serviceId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            context: httpContext,
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processPercentageUserPayment(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processPercentageUserPayment(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ApiResponse_1OfOfActionResult_1OfOfUserPercentageByServiceAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreAnd_0AndCulture_neutralAndPublicKeyToken_adb9793829ddae60>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ApiResponse_1OfOfActionResult_1OfOfUserPercentageByServiceAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreAnd_0AndCulture_neutralAndPublicKeyToken_adb9793829ddae60>;
+        }));
+    }
+
+    protected processPercentageUserPayment(response: HttpResponseBase): Observable<ApiResponse_1OfOfActionResult_1OfOfUserPercentageByServiceAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreAnd_0AndCulture_neutralAndPublicKeyToken_adb9793829ddae60> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ApiResponse_1OfOfActionResult_1OfOfUserPercentageByServiceAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreAnd_0AndCulture_neutralAndPublicKeyToken_adb9793829ddae60.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
     }
 
     /**
@@ -7258,6 +7703,7 @@ export class SubscriptionDto implements ISubscriptionDto {
     startDate?: number;
     endDate?: number;
     price?: number;
+    previousQuantity?: number;
     quantity?: number;
     discount?: number;
     isActive?: boolean;
@@ -7280,6 +7726,7 @@ export class SubscriptionDto implements ISubscriptionDto {
             this.startDate = _data["startDate"];
             this.endDate = _data["endDate"];
             this.price = _data["price"];
+            this.previousQuantity = _data["previousQuantity"];
             this.quantity = _data["quantity"];
             this.discount = _data["discount"];
             this.isActive = _data["isActive"];
@@ -7302,6 +7749,7 @@ export class SubscriptionDto implements ISubscriptionDto {
         data["startDate"] = this.startDate;
         data["endDate"] = this.endDate;
         data["price"] = this.price;
+        data["previousQuantity"] = this.previousQuantity;
         data["quantity"] = this.quantity;
         data["discount"] = this.discount;
         data["isActive"] = this.isActive;
@@ -7317,10 +7765,63 @@ export interface ISubscriptionDto {
     startDate?: number;
     endDate?: number;
     price?: number;
+    previousQuantity?: number;
     quantity?: number;
     discount?: number;
     isActive?: boolean;
     tenantId?: number;
+}
+
+export class TaskDto implements ITaskDto {
+    taskId?: number;
+    taskDescription?: string | undefined;
+    userId?: number;
+    tenantId?: number;
+    isCompleted?: boolean;
+
+    constructor(data?: ITaskDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.taskId = _data["taskId"];
+            this.taskDescription = _data["taskDescription"];
+            this.userId = _data["userId"];
+            this.tenantId = _data["tenantId"];
+            this.isCompleted = _data["isCompleted"];
+        }
+    }
+
+    static fromJS(data: any): TaskDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new TaskDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["taskId"] = this.taskId;
+        data["taskDescription"] = this.taskDescription;
+        data["userId"] = this.userId;
+        data["tenantId"] = this.tenantId;
+        data["isCompleted"] = this.isCompleted;
+        return data;
+    }
+}
+
+export interface ITaskDto {
+    taskId?: number;
+    taskDescription?: string | undefined;
+    userId?: number;
+    tenantId?: number;
+    isCompleted?: boolean;
 }
 
 export class TenantServiceDto implements ITenantServiceDto {
@@ -7851,6 +8352,54 @@ export interface IUserDto {
     address?: AddressDto;
 }
 
+export class UserPercentageByService implements IUserPercentageByService {
+    userHasPaidNumber?: number;
+    userHasntPaidNumber?: number;
+    percentageOfPaid?: number;
+    percentageOfNonPaid?: number;
+
+    constructor(data?: IUserPercentageByService) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.userHasPaidNumber = _data["userHasPaidNumber"];
+            this.userHasntPaidNumber = _data["userHasntPaidNumber"];
+            this.percentageOfPaid = _data["percentageOfPaid"];
+            this.percentageOfNonPaid = _data["percentageOfNonPaid"];
+        }
+    }
+
+    static fromJS(data: any): UserPercentageByService {
+        data = typeof data === 'object' ? data : {};
+        let result = new UserPercentageByService();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["userHasPaidNumber"] = this.userHasPaidNumber;
+        data["userHasntPaidNumber"] = this.userHasntPaidNumber;
+        data["percentageOfPaid"] = this.percentageOfPaid;
+        data["percentageOfNonPaid"] = this.percentageOfNonPaid;
+        return data;
+    }
+}
+
+export interface IUserPercentageByService {
+    userHasPaidNumber?: number;
+    userHasntPaidNumber?: number;
+    percentageOfPaid?: number;
+    percentageOfNonPaid?: number;
+}
+
 export class ApiResponse_1OfOfAddressDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null implements IApiResponse_1OfOfAddressDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null {
     success?: boolean;
     data?: AddressDto;
@@ -8371,6 +8920,58 @@ export interface IApiResponse_1OfOfSubscriptionDtoAndMLBLLAnd_0AndCulture_neutra
     errorMessage?: string | undefined;
 }
 
+export class ApiResponse_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null implements IApiResponse_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null {
+    success?: boolean;
+    data?: TaskDto;
+    statusCode?: number;
+    message?: string | undefined;
+    errorMessage?: string | undefined;
+
+    constructor(data?: IApiResponse_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.success = _data["success"];
+            this.data = _data["data"] ? TaskDto.fromJS(_data["data"]) : <any>undefined;
+            this.statusCode = _data["statusCode"];
+            this.message = _data["message"];
+            this.errorMessage = _data["errorMessage"];
+        }
+    }
+
+    static fromJS(data: any): ApiResponse_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null {
+        data = typeof data === 'object' ? data : {};
+        let result = new ApiResponse_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["success"] = this.success;
+        data["data"] = this.data ? this.data.toJSON() : <any>undefined;
+        data["statusCode"] = this.statusCode;
+        data["message"] = this.message;
+        data["errorMessage"] = this.errorMessage;
+        return data;
+    }
+}
+
+export interface IApiResponse_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null {
+    success?: boolean;
+    data?: TaskDto;
+    statusCode?: number;
+    message?: string | undefined;
+    errorMessage?: string | undefined;
+}
+
 export class ApiResponse_1OfOfTenantServiceDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null implements IApiResponse_1OfOfTenantServiceDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null {
     success?: boolean;
     data?: TenantServiceDto;
@@ -8626,6 +9227,58 @@ export class ApiResponse_1OfOfUserDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKey
 export interface IApiResponse_1OfOfUserDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null {
     success?: boolean;
     data?: UserDto;
+    statusCode?: number;
+    message?: string | undefined;
+    errorMessage?: string | undefined;
+}
+
+export class ApiResponse_1OfOfActionResult_1OfOfUserPercentageByServiceAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreAnd_0AndCulture_neutralAndPublicKeyToken_adb9793829ddae60 implements IApiResponse_1OfOfActionResult_1OfOfUserPercentageByServiceAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreAnd_0AndCulture_neutralAndPublicKeyToken_adb9793829ddae60 {
+    success?: boolean;
+    data?: ActionResult_1OfOfUserPercentageByServiceAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null;
+    statusCode?: number;
+    message?: string | undefined;
+    errorMessage?: string | undefined;
+
+    constructor(data?: IApiResponse_1OfOfActionResult_1OfOfUserPercentageByServiceAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreAnd_0AndCulture_neutralAndPublicKeyToken_adb9793829ddae60) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.success = _data["success"];
+            this.data = _data["data"] ? ActionResult_1OfOfUserPercentageByServiceAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null.fromJS(_data["data"]) : <any>undefined;
+            this.statusCode = _data["statusCode"];
+            this.message = _data["message"];
+            this.errorMessage = _data["errorMessage"];
+        }
+    }
+
+    static fromJS(data: any): ApiResponse_1OfOfActionResult_1OfOfUserPercentageByServiceAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreAnd_0AndCulture_neutralAndPublicKeyToken_adb9793829ddae60 {
+        data = typeof data === 'object' ? data : {};
+        let result = new ApiResponse_1OfOfActionResult_1OfOfUserPercentageByServiceAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreAnd_0AndCulture_neutralAndPublicKeyToken_adb9793829ddae60();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["success"] = this.success;
+        data["data"] = this.data ? this.data.toJSON() : <any>undefined;
+        data["statusCode"] = this.statusCode;
+        data["message"] = this.message;
+        data["errorMessage"] = this.errorMessage;
+        return data;
+    }
+}
+
+export interface IApiResponse_1OfOfActionResult_1OfOfUserPercentageByServiceAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreAnd_0AndCulture_neutralAndPublicKeyToken_adb9793829ddae60 {
+    success?: boolean;
+    data?: ActionResult_1OfOfUserPercentageByServiceAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null;
     statusCode?: number;
     message?: string | undefined;
     errorMessage?: string | undefined;
@@ -9223,6 +9876,66 @@ export interface IApiResponse_1OfOfIEnumerable_1OfOfSubscriptionDtoAndMLBLLAnd_0
     errorMessage?: string | undefined;
 }
 
+export class ApiResponse_1OfOfIEnumerable_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e implements IApiResponse_1OfOfIEnumerable_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e {
+    success?: boolean;
+    data?: TaskDto[] | undefined;
+    statusCode?: number;
+    message?: string | undefined;
+    errorMessage?: string | undefined;
+
+    constructor(data?: IApiResponse_1OfOfIEnumerable_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.success = _data["success"];
+            if (Array.isArray(_data["data"])) {
+                this.data = [] as any;
+                for (let item of _data["data"])
+                    this.data!.push(TaskDto.fromJS(item));
+            }
+            this.statusCode = _data["statusCode"];
+            this.message = _data["message"];
+            this.errorMessage = _data["errorMessage"];
+        }
+    }
+
+    static fromJS(data: any): ApiResponse_1OfOfIEnumerable_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e {
+        data = typeof data === 'object' ? data : {};
+        let result = new ApiResponse_1OfOfIEnumerable_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["success"] = this.success;
+        if (Array.isArray(this.data)) {
+            data["data"] = [];
+            for (let item of this.data)
+                data["data"].push(item.toJSON());
+        }
+        data["statusCode"] = this.statusCode;
+        data["message"] = this.message;
+        data["errorMessage"] = this.errorMessage;
+        return data;
+    }
+}
+
+export interface IApiResponse_1OfOfIEnumerable_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e {
+    success?: boolean;
+    data?: TaskDto[] | undefined;
+    statusCode?: number;
+    message?: string | undefined;
+    errorMessage?: string | undefined;
+}
+
 export class ApiResponse_1OfOfIEnumerable_1OfOfTenantServiceDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e implements IApiResponse_1OfOfIEnumerable_1OfOfTenantServiceDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e {
     success?: boolean;
     data?: TenantServiceDto[] | undefined;
@@ -9677,6 +10390,76 @@ export interface IApiResponse_1OfOfStringAndCoreLibAnd_0AndCulture_neutralAndPub
     statusCode?: number;
     message?: string | undefined;
     errorMessage?: string | undefined;
+}
+
+export class ActionResult implements IActionResult {
+
+    constructor(data?: IActionResult) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+    }
+
+    static fromJS(data: any): ActionResult {
+        data = typeof data === 'object' ? data : {};
+        let result = new ActionResult();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        return data;
+    }
+}
+
+export interface IActionResult {
+}
+
+export class ActionResult_1OfOfUserPercentageByServiceAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null implements IActionResult_1OfOfUserPercentageByServiceAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null {
+    result?: ActionResult;
+    value?: UserPercentageByService;
+
+    constructor(data?: IActionResult_1OfOfUserPercentageByServiceAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.result = _data["result"] ? ActionResult.fromJS(_data["result"]) : <any>undefined;
+            this.value = _data["value"] ? UserPercentageByService.fromJS(_data["value"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): ActionResult_1OfOfUserPercentageByServiceAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null {
+        data = typeof data === 'object' ? data : {};
+        let result = new ActionResult_1OfOfUserPercentageByServiceAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["result"] = this.result ? this.result.toJSON() : <any>undefined;
+        data["value"] = this.value ? this.value.toJSON() : <any>undefined;
+        return data;
+    }
+}
+
+export interface IActionResult_1OfOfUserPercentageByServiceAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null {
+    result?: ActionResult;
+    value?: UserPercentageByService;
 }
 
 export interface FileResponse {

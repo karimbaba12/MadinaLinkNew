@@ -43,7 +43,7 @@ export const AdminMenus: Navigation[] = [
     id: 'dashboard',
     title: 'Dashboard',
     icon: 'space_dashboard',
-    url: '/dashboard',
+    url: '/admin/dashboard',
     type: 'item',
     color: 'text-indigo-500',
   },

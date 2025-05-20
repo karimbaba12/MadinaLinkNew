@@ -1,16 +1,22 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { PageEvent } from '@angular/material/paginator';
 import { Sort } from '@angular/material/sort';
 import { FormsModule } from '@angular/forms';
 import {
+  catchError,
   debounceTime,
   distinctUntilChanged,
   filter,
+  finalize,
+  map,
+  Observable,
   of,
   Subject,
+  switchMap,
   takeUntil,
+  tap,
 } from 'rxjs';
 
 import {
@@ -52,6 +58,7 @@ interface TableUser {
   ],
 })
 export class UsermanagementComponent implements OnInit {
+  @ViewChild('rowActions') rowActionsTemplate!: TemplateRef<any>;
   searchTerm: string = '';
   pageSize = 10;
   pageIndex = 0;
@@ -62,6 +69,7 @@ export class UsermanagementComponent implements OnInit {
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
   tableData: TableUser[] = [];
+  filteredData: TableUser[] = [];
 
   config: CrudTableConfig<TableUser> = {
     title: 'User Management',
@@ -87,63 +95,117 @@ export class UsermanagementComponent implements OnInit {
 
   constructor(
     private usersClient: UsersClient,
+
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private authService: AuthService,
     private tenantServiceClient: TenantServiceClient
   ) {}
-
   ngOnInit() {
-    this.loadUsers();
-    this.searchSubject
-      .pipe(
-        takeUntil(this.destroy$),
-        debounceTime(500),
-        distinctUntilChanged(),
-        filter((term) => term.length === 0 || term.length >= 2)
-      )
-      .subscribe((term) => {
-        this.searchTerm = term;
-        this.pageIndex = 0;
-        this.loadUsers(term);
-      });
+    this.setupSearch();
+    this.loadInitialUsers();
   }
+
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
   }
-  onSearch(term: string): void {
-    this.searchSubject.next(term.trim());
-    this.searchTerm = term;
-    this.loadUsers(term);
+
+  private loadInitialUsers(): void {
+    this.loading = true;
+    this.usersClient
+      .getAll()
+      .pipe(
+        tap((response) => {
+          this.tableData = (response?.data || []).map((user) =>
+            this.mapToTableUser(user)
+          );
+          this.applyFiltersAndPagination();
+        }),
+        catchError((error) => {
+          this.snackBar.open('Failed to load users', 'Close', {
+            duration: 3000,
+          });
+          return of(undefined);
+        }),
+        finalize(() => (this.loading = false))
+      )
+      .subscribe();
   }
 
-  async loadUsers(searchTerm?: string) {
+  private setupSearch(): void {
+    this.searchSubject
+      .pipe(
+        takeUntil(this.destroy$),
+        debounceTime(300),
+        distinctUntilChanged(),
+        tap((term) => {
+          this.searchTerm = term;
+          this.pageIndex = 0;
+          this.applyFiltersAndPagination(term); // Just filter existing data
+        })
+      )
+      .subscribe();
+  }
+
+  onSearch(term: string): void {
+    this.searchSubject.next(term.trim());
+  }
+
+  loadUsers(searchTerm?: string): Observable<void> {
     this.loading = true;
-    this.usersClient.getAll().subscribe({
-      next: (response) => {
-        let users = response?.data || [];
 
-        // Client-side filtering if search term exists
-        if (searchTerm && searchTerm.length >= 1) {
-          const term = searchTerm.toLowerCase();
-          users = users.filter(
-            (user) =>
-              user.username?.toLowerCase().includes(term) ||
-              user.email?.toLowerCase().includes(term) ||
-              user.phoneNumber?.toString().includes(term)
-          );
-        }
+    return this.usersClient.getAll().pipe(
+      tap((response) => {
+        this.tableData = (response?.data || []).map((user) =>
+          this.mapToTableUser(user)
+        );
+        this.applyFiltersAndPagination(searchTerm);
+      }),
+      map(() => undefined), // Convert to Observable<void>
+      finalize(() => (this.loading = false))
+    );
+  }
 
-        this.tableData = users.map((user) => this.mapToTableUser(user));
-        this.config.dataSource = [...this.tableData];
-      },
-      error: (error) => {
-        this.snackBar.open('Failed to load users', 'Close', { duration: 3000 });
-      },
-      complete: () => {
-        this.loading = false;
-      },
+  private applyFiltersAndPagination(searchTerm?: string): void {
+    // Start with all data
+    let filtered = [...this.tableData];
+
+    // Apply search filter if term exists
+    if (searchTerm && searchTerm.length >= 1) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(
+        (user) =>
+          user.username?.toLowerCase().includes(term) ||
+          user.email?.toLowerCase().includes(term) ||
+          user.phoneNumber?.toString().includes(term)
+      );
+    }
+
+    // Apply sorting
+    filtered = this.sortData(filtered);
+
+    // Update the displayed data
+    this.config.dataSource = this.paginateData(filtered);
+    this.config.totalItems = filtered.length;
+  }
+
+  private paginateData(data: TableUser[]): TableUser[] {
+    const startIndex = this.pageIndex * this.pageSize;
+    return data.slice(startIndex, startIndex + this.pageSize);
+  }
+
+  private sortData(data: TableUser[]): TableUser[] {
+    return [...data].sort((a, b) => {
+      const valueA = a[this.sortField as keyof TableUser];
+      const valueB = b[this.sortField as keyof TableUser];
+
+      if (typeof valueA === 'string' && typeof valueB === 'string') {
+        return this.sortDirection === 'asc'
+          ? valueA.localeCompare(valueB)
+          : valueB.localeCompare(valueA);
+      }
+      return 0;
     });
   }
 
@@ -291,13 +353,15 @@ export class UsermanagementComponent implements OnInit {
   onPageChange(event: PageEvent) {
     this.pageIndex = event.pageIndex;
     this.pageSize = event.pageSize;
-    this.loadUsers(this.searchTerm);
+    // Just apply filters/pagination to existing data instead of fetching
+    this.applyFiltersAndPagination(this.searchTerm);
   }
 
   onSortChange(event: Sort) {
     this.sortField = event.active;
     this.sortDirection = event.direction;
-    this.loadUsers(this.searchTerm);
+    // Just apply filters/pagination to existing data instead of fetching
+    this.applyFiltersAndPagination(this.searchTerm);
   }
 
   onRefresh() {
