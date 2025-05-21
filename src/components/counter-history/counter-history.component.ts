@@ -1,14 +1,43 @@
-import { Component, OnInit } from '@angular/core';
+import { CommonModule, DecimalPipe } from '@angular/common';
+import { Component } from '@angular/core';
 import {
-  FormGroup,
-  FormBuilder,
-  Validators,
-  FormControl,
-  ReactiveFormsModule,
   AbstractControl,
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
   ValidationErrors,
+  Validators,
 } from '@angular/forms';
+import {
+  MatCard,
+  MatCardHeader,
+  MatCardContent,
+  MatCardTitle,
+  MatCardActions,
+} from '@angular/material/card';
+import {
+  MatFormField,
+  MatLabel,
+  MatFormFieldModule,
+  MatError,
+} from '@angular/material/form-field';
+import { MatIcon } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { MatSortModule } from '@angular/material/sort';
+import {
+  MatTableModule,
+  MatCellDef,
+  MatHeaderCellDef,
+  MatHeaderRow,
+  MatHeaderRowDef,
+  MatRowDef,
+} from '@angular/material/table';
+import { TransactionActionsComponent } from '../../dialogs/transactions/transaction-actions/transaction-actions.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { debounceTime, distinctUntilChanged, forkJoin } from 'rxjs';
 import {
   SubscriptionDto,
   SubscriptionClient,
@@ -18,23 +47,10 @@ import {
   FileResponse,
 } from '../../../Services/api/api-client.service';
 import { DateFormatService } from '../../../Services/dateFormate/date-format.service';
-import { CommonModule, DecimalPipe } from '@angular/common';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import {
-  MatFormField,
-  MatLabel,
-  MatError,
-  MatFormFieldControl,
-  MatFormFieldModule,
-} from '@angular/material/form-field';
-import { MatIcon } from '@angular/material/icon';
-import { MatProgressSpinner } from '@angular/material/progress-spinner';
-import { MatTableModule } from '@angular/material/table';
-import { forkJoin } from 'rxjs';
-import { MatInputModule } from '@angular/material/input';
-import { Route, Router } from '@angular/router';
+import { Router } from '@angular/router';
 
 @Component({
+  selector: 'app-counter-history',
   imports: [
     MatFormField,
     MatLabel,
@@ -48,12 +64,11 @@ import { Route, Router } from '@angular/router';
     MatFormFieldModule,
     MatInputModule,
   ],
-  selector: 'app-counter',
-  templateUrl: './counter.component.html',
-  styleUrls: ['./counter.component.scss'],
+  templateUrl: './counter-history.component.html',
+  styleUrl: './counter-history.component.scss',
   providers: [DecimalPipe],
 })
-export class CounterComponent implements OnInit {
+export class CounterHistoryComponent {
   loading = true;
   submitting = false;
   subscriptions: SubscriptionDto[] = [];
@@ -64,7 +79,6 @@ export class CounterComponent implements OnInit {
   usernames = new Map<number, string>();
   subServiceNames = new Map<number, string>();
   endDates = new Map<number, string>();
-  previousValues = new Map<number, number>();
 
   // Form controls
   searchControl = new FormControl('');
@@ -107,14 +121,15 @@ export class CounterComponent implements OnInit {
             serviceName.includes(searchTerm.toLowerCase())
           );
         })
-      : [...this.subscriptions];
+      : [...this.subscriptions].reverse();
   }
 
   private loadSubscriptions(): void {
     this.loading = true;
-    this.subscriptionClient.getUserToAddCount().subscribe({
+    this.subscriptionClient.getAll().subscribe({
       next: (response) => {
-        this.subscriptions = response.data || [];
+        // Reverse the array to show newest first
+        this.subscriptions = response.data?.reverse() || [];
         this.filteredSubscriptions = [...this.subscriptions];
         this.initializeComponentData();
         this.loading = false;
@@ -129,12 +144,6 @@ export class CounterComponent implements OnInit {
   private initializeComponentData(): void {
     this.createFormControls();
     this.fetchAdditionalData();
-
-    this.subscriptions.forEach((sub) => {
-      if (sub.subscriptionId) {
-        this.previousValues.set(sub.subscriptionId, sub.previousQuantity || 0);
-      }
-    });
   }
 
   private createFormControls(): void {
@@ -142,27 +151,17 @@ export class CounterComponent implements OnInit {
 
     this.subscriptions.forEach((sub) => {
       const id = sub.subscriptionId?.toString() || '';
-      formControls[`${id}_quantity`] = [
-        sub.quantity || '',
-        [
-          Validators.min(0),
-          (control: AbstractControl) =>
-            this.validateCounterValue(control, sub.previousQuantity ?? 0),
-        ],
+      formControls[`${id}_previous`] = [
+        sub.previousQuantity || 0,
+        [Validators.min(0), Validators.required],
       ];
-      formControls[`${id}_note`] = [''];
+      formControls[`${id}_current`] = [
+        sub.quantity || 0,
+        [Validators.min(0), Validators.required],
+      ];
     });
 
     this.updateForm = this.fb.group(formControls);
-  }
-
-  private validateCounterValue(
-    control: AbstractControl,
-    previousValue: number
-  ): ValidationErrors | null {
-    if (control.value === null || control.value === '') return null;
-    const newValue = Number(control.value);
-    return newValue > previousValue ? null : { minValue: true };
   }
 
   private fetchAdditionalData(): void {
@@ -170,41 +169,6 @@ export class CounterComponent implements OnInit {
       this.fetchUsername(sub);
       this.fetchServiceName(sub);
       this.formatEndDate(sub);
-      this.fetchPreviousValue(sub);
-    });
-  }
-  downloadSheet(): void {
-    this.loading = true;
-    this.counterClient.sheet().subscribe({
-      next: (fileResponse: FileResponse) => {
-        this.loading = false;
-
-        // Create blob from the response data
-        const blob = new Blob([fileResponse.data], { type: 'application/pdf' });
-        const url = window.URL.createObjectURL(blob);
-
-        // Create download link
-        const a = document.createElement('a');
-        a.href = url;
-
-        // Use the filename from the response if available, or fallback
-        a.download =
-          fileResponse.fileName ||
-          `counter-report-${new Date().toISOString().slice(0, 10)}.pdf`;
-
-        document.body.appendChild(a);
-        a.click();
-
-        // Clean up
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-
-        this.showSuccess('PDF report downloaded successfully');
-      },
-      error: (err) => {
-        this.loading = false;
-        this.showError('Failed to download PDF report: ' + err.message);
-      },
     });
   }
 
@@ -253,48 +217,6 @@ export class CounterComponent implements OnInit {
     }
   }
 
-  private fetchPreviousValue(sub: SubscriptionDto): void {
-    if (!sub.subscriptionId) return;
-
-    this.subscriptionClient.getPreviousSubscription(sub).subscribe({
-      next: (prevSub) => {
-        if (prevSub.data?.quantity) {
-          this.previousValues.set(
-            sub.subscriptionId ?? 0,
-            prevSub.data.quantity
-          );
-        }
-      },
-      error: () => {
-        console.warn(
-          `Could not fetch previous value for subscription ${sub.subscriptionId}`
-        );
-      },
-    });
-  }
-
-  // onSubmit(): void {
-  //   if (this.updateForm.invalid || this.submitting) return;
-
-  //   this.submitting = true;
-  //   const updates = this.prepareUpdates();
-
-  //   if (updates.length === 0) {
-  //     this.showNotification('No changes detected');
-  //     this.submitting = false;
-  //     return;
-  //   }
-
-  //   this.subscriptionClient.updateCounter(updates).subscribe({
-  //     next: () => {
-  //       this.showSuccess(`${updates.length} counters updated successfully`);
-  //       this.loadSubscriptions();
-  //     },
-  //     error: (err) => {
-  //       this.showError('Update failed: ' + err.message);
-  //     },
-  //   });
-  // }
   onSubmit(): void {
     if (this.updateForm.invalid || this.submitting) return;
 
@@ -307,17 +229,44 @@ export class CounterComponent implements OnInit {
       return;
     }
 
-    // Handle batch updates if your API supports it
-    // Or update one by one
     this.processUpdates(updates);
+  }
+
+  private prepareUpdates(): SubscriptionDto[] {
+    return this.filteredSubscriptions
+      .filter((sub) => {
+        const previousControl = this.updateForm.get(
+          `${sub.subscriptionId}_previous`
+        );
+        const currentControl = this.updateForm.get(
+          `${sub.subscriptionId}_current`
+        );
+
+        // Include if either field is dirty
+        return (
+          (previousControl?.dirty || currentControl?.dirty) &&
+          sub.subscriptionId !== undefined
+        );
+      })
+      .map((sub) => {
+        const update = new SubscriptionDto({
+          subscriptionId: sub.subscriptionId,
+          previousQuantity: Number(
+            this.updateForm.get(`${sub.subscriptionId}_previous`)?.value
+          ),
+          quantity: Number(
+            this.updateForm.get(`${sub.subscriptionId}_current`)?.value
+          ),
+        });
+        return update;
+      });
   }
 
   private processUpdates(updates: SubscriptionDto[]): void {
     const updateObservables = updates.map((update) =>
-      this.subscriptionClient.updateCounter(update)
+      this.subscriptionClient.updateCounterHistory(update)
     );
 
-    // Using forkJoin to handle multiple updates
     forkJoin(updateObservables).subscribe({
       next: () => {
         this.showSuccess(`${updates.length} counters updated successfully`);
@@ -331,22 +280,6 @@ export class CounterComponent implements OnInit {
       },
     });
   }
-  private prepareUpdates(): SubscriptionDto[] {
-    return this.filteredSubscriptions
-      .filter((sub) => {
-        const control = this.updateForm.get(`${sub.subscriptionId}_quantity`);
-        // Only include if changed AND has a value
-        return control?.dirty && control.value !== null && control.value !== '';
-      })
-      .map((sub) => {
-        const update = new SubscriptionDto();
-        Object.assign(update, sub);
-        update.quantity = Number(
-          this.updateForm.get(`${sub.subscriptionId}_quantity`)?.value
-        );
-        return update;
-      });
-  }
 
   // Helper methods
   get completedCount(): number {
@@ -359,22 +292,6 @@ export class CounterComponent implements OnInit {
 
   formatNumber(value: number | undefined): string {
     return this.decimalPipe.transform(value, '1.0-0') || '0';
-  }
-
-  focusNextInput(event: Event, nextIndex: number): void {
-    event.preventDefault();
-    const inputs = document.querySelectorAll<HTMLInputElement>(
-      'input[type="number"]'
-    );
-    if (inputs[nextIndex]) inputs[nextIndex].focus();
-  }
-
-  focusPrevInput(event: Event, prevIndex: number): void {
-    event.preventDefault();
-    const inputs = document.querySelectorAll<HTMLInputElement>(
-      'input[type="number"]'
-    );
-    if (inputs[prevIndex]) inputs[prevIndex].focus();
   }
 
   // Notification methods
@@ -391,8 +308,7 @@ export class CounterComponent implements OnInit {
   private showNotification(message: string): void {
     this.snackBar.open(message, 'Close', { duration: 3000 });
   }
-
-  goToHistory(): void {
-    this.router.navigate(['admin/counterHistory']);
+  goBack(): void {
+    this.router.navigate(['admin/counter']);
   }
 }

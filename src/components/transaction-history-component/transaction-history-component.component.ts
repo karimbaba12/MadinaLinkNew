@@ -52,6 +52,7 @@ import { TransactionEditDialogComponent } from '../../dialogs/transaction-edit-d
 import { DeleteTransactionComponent } from '../../dialogs/transactions/delete-transaction/delete-transaction.component';
 import { TransactionActionsComponent } from '../../dialogs/transactions/transaction-actions/transaction-actions.component';
 import { AuthService } from '../../../Services/Auth/auth.service';
+import { DateFormatService } from '../../../Services/dateFormate/date-format.service';
 @Component({
   selector: 'app-transaction-history-component',
   imports: [
@@ -116,7 +117,8 @@ export class TransactionHistoryComponentComponent {
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private authService: AuthService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private dateFormatter: DateFormatService
   ) {}
 
   ngOnInit(): void {
@@ -328,7 +330,7 @@ export class TransactionHistoryComponentComponent {
     });
   }
   formatDate(timestamp: number): string {
-    return new Date(timestamp).toLocaleString();
+    return this.dateFormatter.unixToDateString(timestamp);
   }
 
   formatCurrency(amount: number): string {

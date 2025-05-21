@@ -1,15 +1,19 @@
 <div class="counter-dashboard">
+    <button class="back-button" matTooltip="Go back"  (click)="goBack()">
+        <mat-icon>arrow_back_ios</mat-icon>
+    </button>
+      
     <header class="dashboard-header">
         <div class="header-content">
             <h1 class="dashboard-title">
                 <mat-icon class="title-icon">speed</mat-icon>
-                Electricity Counter Updates
+                Electricity Counter History
             </h1>
-            <p class="dashboard-subtitle">Manage and update counter values for all subscribers</p>
+            <p class="dashboard-subtitle">Manage and update counter history for all subscribers</p>
         </div>
 
         <div class="dashboard-controls">
-            <mat-form-field appearance="outline" class="search-field" style="color: white !important;">
+            <mat-form-field appearance="outline" class="search-field">
                 <mat-label>Search subscribers</mat-label>
                 <input matInput [formControl]="searchControl">
                 <mat-icon matSuffix>search</mat-icon>
@@ -20,23 +24,6 @@
                     <mat-icon class="stat-icon">groups</mat-icon>
                     <div class="stat-value">{{filteredSubscriptions.length}}</div>
                     <div class="stat-label">Active</div>
-                </div>
-                <!-- <div class="stat-card completed">
-                    <mat-icon class="stat-icon">check_circle</mat-icon>
-                    <div class="stat-value">{{completedCount}}</div>
-                    <div class="stat-label">Completed</div>
-                </div> -->
-                <div class="stat-card download-card" (click)="goToHistory()">
-                    <mat-icon class="stat-icon">history</mat-icon>
-                    <div class="stat-value">History</div>
-                    <!-- <div class="stat-label">All Counters</div> -->
-                
-                </div>
-                <div class="stat-card download-card" (click)="downloadSheet()">
-                    <mat-icon class="stat-icon">picture_as_pdf</mat-icon>
-                    <div class="stat-value">Download PDF</div>
-                    <div class="stat-label">All Counters</div>
-
                 </div>
             </div>
         </div>
@@ -64,9 +51,16 @@
                 <ng-container matColumnDef="previous">
                     <th mat-header-cell *matHeaderCellDef>Previous</th>
                     <td mat-cell *matCellDef="let sub">
-                        <div class="value-display previous" [class.new-subscription]="sub.previousQuantity === 0">
-                            {{formatNumber(sub.previousQuantity)}}
-                        </div>
+                        <mat-form-field appearance="outline" floatLabel="auto">
+                            <input matInput type="number" [formControlName]="sub.subscriptionId + '_previous'"
+                                placeholder="Previous value">
+                            <mat-error *ngIf="updateForm.get(sub.subscriptionId + '_previous')?.hasError('required')">
+                                Required
+                            </mat-error>
+                            <mat-error *ngIf="updateForm.get(sub.subscriptionId + '_previous')?.hasError('min')">
+                                Must be positive
+                            </mat-error>
+                        </mat-form-field>
                     </td>
                 </ng-container>
 
@@ -74,24 +68,13 @@
                 <ng-container matColumnDef="current">
                     <th mat-header-cell *matHeaderCellDef>Current</th>
                     <td mat-cell *matCellDef="let sub">
-                        <div class="value-display current">
-                            {{formatNumber(sub.quantity)}}
-                        </div>
-                    </td>
-                </ng-container>
-
-                <!-- New Value Column -->
-                <ng-container matColumnDef="new">
-                    <th mat-header-cell *matHeaderCellDef>New Reading</th>
-                    <td mat-cell *matCellDef="let sub; let i = index">
                         <mat-form-field appearance="outline" floatLabel="auto">
-                            <input matInput type="number" [formControlName]="sub.subscriptionId + '_quantity'"
-                                [attr.data-index]="i" (keydown.arrowdown)="focusNextInput($event, i+1)"
-                                (keydown.arrowup)="focusPrevInput($event, i-1)" placeholder="Enter new value">
-                            <mat-error *ngIf="updateForm.get(sub.subscriptionId + '_quantity')?.hasError('required')">
+                            <input matInput type="number" [formControlName]="sub.subscriptionId + '_current'"
+                                placeholder="Current value">
+                            <mat-error *ngIf="updateForm.get(sub.subscriptionId + '_current')?.hasError('required')">
                                 Required
                             </mat-error>
-                            <mat-error *ngIf="updateForm.get(sub.subscriptionId + '_quantity')?.hasError('min')">
+                            <mat-error *ngIf="updateForm.get(sub.subscriptionId + '_current')?.hasError('min')">
                                 Must be positive
                             </mat-error>
                         </mat-form-field>
@@ -99,7 +82,7 @@
                 </ng-container>
 
                 <!-- Note Column -->
-                <ng-container matColumnDef="note">
+                <!-- <ng-container matColumnDef="note">
                     <th mat-header-cell *matHeaderCellDef>Notes</th>
                     <td mat-cell *matCellDef="let sub">
                         <mat-form-field appearance="outline" floatLabel="always">
@@ -107,7 +90,7 @@
                                 placeholder="Add note (optional)">
                         </mat-form-field>
                     </td>
-                </ng-container>
+                </ng-container> -->
 
                 <!-- End Date Column -->
                 <ng-container matColumnDef="date">
@@ -120,9 +103,10 @@
                     </td>
                 </ng-container>
 
-                <tr mat-header-row *matHeaderRowDef="['user', 'previous', 'current', 'new', 'note', 'date']"></tr>
-                <tr mat-row *matRowDef="let row; columns: ['user', 'previous', 'current', 'new', 'note', 'date'];"
-                    [class.changed-row]="updateForm.get(row.subscriptionId + '_quantity')?.dirty"></tr>
+                <tr mat-header-row *matHeaderRowDef="['user', 'previous', 'current',  'date']"></tr>
+                <tr mat-row *matRowDef="let row; columns: ['user', 'previous', 'current', 'date'];"
+                    [class.changed-row]="updateForm.get(row.subscriptionId + '_previous')?.dirty || updateForm.get(row.subscriptionId + '_current')?.dirty">
+                </tr>
             </table>
 
             <div class="table-actions">
@@ -130,10 +114,8 @@
                     [disabled]="updateForm.invalid || submitting">
                     <mat-icon>save</mat-icon>
                     <span *ngIf="!submitting">Save All Changes</span>
-                    <mat-spinner *ngIf="submitting" diameter="20"></mat-spinner> </button>
-                <!-- <button mat-raised-button color="accent" (click)="downloadSheet()" [disabled]="loading">
-                        <mat-icon>picture_as_pdf</mat-icon>
-                        Download PDF Report           </button> -->
+                    <mat-spinner *ngIf="submitting" diameter="20"></mat-spinner>
+                </button>
             </div>
         </form>
     </div>

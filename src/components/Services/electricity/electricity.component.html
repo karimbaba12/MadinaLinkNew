@@ -79,11 +79,11 @@
             </div>
         </form>
 
-        <div class="subscription-list" *ngIf="hasSubscriptions">
-            <div class="list-header">Your Electricity Subscriptions</div>
+        <div class="subscription-list" *ngIf="hasActiveSubscriptions">
+            <div class="list-header">Your Active Electricity Subscriptions</div>
             <ul class="subscription-items">
-                <li *ngFor="let s of subscriptions" (click)="selectSubscriptionToEdit(s)" class="subscription-item"
-                    [class.selected]="selectedSubscriptionId === s.subscriptionId">
+                <li *ngFor="let s of activeSubscriptions" (click)="selectSubscriptionToEdit(s)"
+                    class="subscription-item" [class.selected]="selectedSubscriptionId === s.subscriptionId">
                     <div class="subscription-content">
                         <div class="subscription-title">
                             {{ getSubServiceName(s.subServiceId ?? 0) }}

@@ -1,4 +1,3 @@
-@import "../../../style/theme-palette-colors.scss";
 
 .able-user-group .avatar {
   width: 30px;
@@ -42,7 +41,7 @@
 
   .dot {
     border-radius: 50%;
-    background: map-get($yellow-theme, 500);
+    // background: map-get($yellow-theme, 500);
 
     &.primary {
       background: var(--primary-500);
@@ -69,7 +68,7 @@
   }
   
   .upgrade-button {
-    background: map-get($yellow-theme, 500) !important;
+    // background: map-get($yellow-theme, 500) !important;
   
     a {
       color: var(--accent-50) !important;

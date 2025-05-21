@@ -152,7 +152,8 @@ export class ElectricityComponent implements OnInit {
           s.userId === this.selectedUser.userId &&
           this.subServices.some(
             (sub) => sub.subServiceId === s.subServiceId && sub.serviceId === 1
-          )
+          ) &&
+          s.isActive === true
       );
     } catch (error) {
       console.error('Error loading subscriptions:', error);
@@ -160,15 +161,19 @@ export class ElectricityComponent implements OnInit {
   }
 
   selectSubscriptionToEdit(subscription: SubscriptionDto) {
-    this.selectedSubscriptionId = subscription.subscriptionId ?? null;
-    this.subscriptionForm.patchValue({
-      ...subscription,
-      price: this.calculatePrice(
-        subscription.subServiceId!,
-        subscription.discount!
-      ),
-    });
-    this.isEditing = true;
+    const isActive = subscription.isActive === true;
+
+    if (isActive) {
+      this.selectedSubscriptionId = subscription.subscriptionId ?? null;
+      this.subscriptionForm.patchValue({
+        ...subscription,
+        price: this.calculatePrice(
+          subscription.subServiceId!,
+          subscription.discount!
+        ),
+      });
+      this.isEditing = true;
+    }
   }
 
   async submit() {
@@ -266,14 +271,16 @@ export class ElectricityComponent implements OnInit {
     );
   }
 
-  get hasSubscriptions(): boolean {
-    return this.subscriptions.length > 0;
+  get hasActiveSubscriptions(): boolean {
+    return this.activeSubscriptions.length > 0;
   }
 
   getSubServiceName(subServiceId: number): string {
     return this.subServiceNames[subServiceId] || 'Unknown';
   }
-
+  get activeSubscriptions(): SubscriptionDto[] {
+    return this.subscriptions.filter((s) => s.isActive === true);
+  }
   get calculatedPrice(): number {
     const subServiceId = this.subscriptionForm.get('subServiceId')?.value;
     const discount = this.subscriptionForm.get('discount')?.value || 0;

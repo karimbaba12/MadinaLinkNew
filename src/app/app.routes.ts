@@ -13,6 +13,7 @@ import { AllUsersWithServiceComponent } from '../components/all-users-with-servi
 import { CounterComponent } from '../components/counter/counter.component';
 import { TransactionHistoryComponentComponent } from '../components/transaction-history-component/transaction-history-component.component';
 import { UnauthorizedComponent } from '../Pages/Auth/unauthorized/unauthorized.component';
+import { CounterHistoryComponent } from '../components/counter-history/counter-history.component';
 export const routes: Routes = [
   {
     path: '',
@@ -45,6 +46,7 @@ export const routes: Routes = [
       { path: 'PaymentManagement', component: PaymentComponent },
       { path: 'Service', component: AllUsersWithServiceComponent },
       { path: 'counter', component: CounterComponent },
+      { path: 'counterHistory', component: CounterHistoryComponent },
       { path: 'transactions', component: TransactionHistoryComponentComponent },
       {
         path: '**',

@@ -2559,6 +2559,11 @@ export interface ISubscriptionClient {
      */
     updateCounter(body?: SubscriptionDto | undefined): Observable<ApiResponse_1OfOfSubscriptionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null>;
     /**
+     * @param body (optional) 
+     * @return OK
+     */
+    updateCounterHistory(body?: SubscriptionDto | undefined): Observable<ApiResponse_1OfOfSubscriptionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null>;
+    /**
      * @return OK
      */
     getUserToAddCount(): Observable<ApiResponse_1OfOfIEnumerable_1OfOfSubscriptionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
@@ -2708,6 +2713,63 @@ export class SubscriptionClient implements ISubscriptionClient {
     }
 
     protected processUpdateCounter(response: HttpResponseBase): Observable<ApiResponse_1OfOfSubscriptionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ApiResponse_1OfOfSubscriptionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    updateCounterHistory(body?: SubscriptionDto | undefined, httpContext?: HttpContext): Observable<ApiResponse_1OfOfSubscriptionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null> {
+        let url_ = this.baseUrl + "/api/Subscription/UpdateCounterHistory";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            context: httpContext,
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("put", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processUpdateCounterHistory(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processUpdateCounterHistory(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ApiResponse_1OfOfSubscriptionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ApiResponse_1OfOfSubscriptionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null>;
+        }));
+    }
+
+    protected processUpdateCounterHistory(response: HttpResponseBase): Observable<ApiResponse_1OfOfSubscriptionDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_null> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :
