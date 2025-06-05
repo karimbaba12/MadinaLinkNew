@@ -224,9 +224,9 @@ export class ChartDB {
       height: 320,
       type: 'donut',
     },
-    series: [27, 23, 20, 17],
+    series: [23, 20, 17],
 
-    labels: ['Total income', 'Total rent', 'Download', 'Views'],
+    labels: ['Internet', 'Water', 'Electricity'],
     fill: {
       opacity: [1, 1, 1, 0.3],
     },

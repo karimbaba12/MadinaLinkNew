@@ -6,7 +6,6 @@
         "**/.DS_Store": true,
         "**/Thumbs.db": true,
         "tsconfig.spec.json": true,
-        "tsconfig.json": true,
         "tsconfig.app.json": true,
         "README.md": true,
         "package.json": true,
@@ -19,7 +18,6 @@
     },
     "hide-files.files": [
         "tsconfig.spec.json",
-        "tsconfig.json",
         "tsconfig.app.json",
         "README.md",
         "package.json",

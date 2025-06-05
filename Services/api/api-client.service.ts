@@ -4061,6 +4061,11 @@ export class SubServiceClient implements ISubServiceClient {
 
 export interface ITaskClient {
     /**
+     * @param userId (optional) 
+     * @return OK
+     */
+    getTasksByRoleId(userId?: number | undefined): Observable<ApiResponse_1OfOfIEnumerable_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+    /**
      * @return OK
      */
     getAll(): Observable<ApiResponse_1OfOfIEnumerable_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
@@ -4102,6 +4107,63 @@ export class TaskClient implements ITaskClient {
     constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
         this.http = http;
         this.baseUrl = baseUrl ?? "";
+    }
+
+    /**
+     * @param userId (optional) 
+     * @return OK
+     */
+    getTasksByRoleId(userId?: number | undefined, httpContext?: HttpContext): Observable<ApiResponse_1OfOfIEnumerable_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e> {
+        let url_ = this.baseUrl + "/api/Task/GetTasksByRoleId?";
+        if (userId === null)
+            throw new Error("The parameter 'userId' cannot be null.");
+        else if (userId !== undefined)
+            url_ += "userId=" + encodeURIComponent("" + userId) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            context: httpContext,
+            headers: new HttpHeaders({
+                "Accept": "text/plain"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetTasksByRoleId(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetTasksByRoleId(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ApiResponse_1OfOfIEnumerable_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ApiResponse_1OfOfIEnumerable_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e>;
+        }));
+    }
+
+    protected processGetTasksByRoleId(response: HttpResponseBase): Observable<ApiResponse_1OfOfIEnumerable_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = ApiResponse_1OfOfIEnumerable_1OfOfTaskDtoAndMLBLLAnd_0AndCulture_neutralAndPublicKeyToken_nullAndCoreLibAnd_0AndCulture_neutralAndPublicKeyToken_7cec85d7bea7798e.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
     }
 
     /**
@@ -7839,7 +7901,9 @@ export class TaskDto implements ITaskDto {
     taskDescription?: string | undefined;
     userId?: number;
     tenantId?: number;
+    createdAt?: number;
     isCompleted?: boolean;
+    roleId?: number;
 
     constructor(data?: ITaskDto) {
         if (data) {
@@ -7856,7 +7920,9 @@ export class TaskDto implements ITaskDto {
             this.taskDescription = _data["taskDescription"];
             this.userId = _data["userId"];
             this.tenantId = _data["tenantId"];
+            this.createdAt = _data["createdAt"];
             this.isCompleted = _data["isCompleted"];
+            this.roleId = _data["roleId"];
         }
     }
 
@@ -7873,7 +7939,9 @@ export class TaskDto implements ITaskDto {
         data["taskDescription"] = this.taskDescription;
         data["userId"] = this.userId;
         data["tenantId"] = this.tenantId;
+        data["createdAt"] = this.createdAt;
         data["isCompleted"] = this.isCompleted;
+        data["roleId"] = this.roleId;
         return data;
     }
 }
@@ -7883,7 +7951,9 @@ export interface ITaskDto {
     taskDescription?: string | undefined;
     userId?: number;
     tenantId?: number;
+    createdAt?: number;
     isCompleted?: boolean;
+    roleId?: number;
 }
 
 export class TenantServiceDto implements ITenantServiceDto {

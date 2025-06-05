@@ -31,8 +31,8 @@
                         </apx-chart>
                     </div>
                     <div class="col-5 text-end">
-                        <h5 class="m-b-5">$30200</h5>
-                        <h6 class="text-primary-500 m-b-0"><i class="ti ti-arrow-up-right"></i> 30.6%</h6>
+                        <h5 class="m-b-5">${{transactionNumber}}</h5>
+                        <!-- <h6 class="text-primary-500 m-b-0"><i class="ti ti-arrow-up-right"></i> 30.6%</h6> -->
                     </div>
                 </div>
             </div>
@@ -72,7 +72,7 @@
                     </div>
                     <div class="col-5 text-end">
                         <h5 class="m-b-5">29K+</h5>
-                        <h6 class="text-warning-500 m-b-0"><i class="ti ti-arrow-up-right"></i> 30.6%</h6>
+                        <!-- <h6 class="text-warning-500 m-b-0"><i class="ti ti-arrow-up-right"></i> 30.6%</h6> -->
                     </div>
                 </div>
             </div>
@@ -122,8 +122,8 @@
                         </apx-chart>
                     </div>
                     <div class="col-5 text-end">
-                        <h5 class="m-b-5">14568</h5>
-                        <h6 class="text-success-500 m-b-0"><i class="ti ti-arrow-up-right"></i> 30.6%</h6>
+                        <h5 class="m-b-5">{{totalTasks}}</h5>
+                        <!-- <h6 class="text-success-500 m-b-0"><i class="ti ti-arrow-up-right"></i> 30.6%</h6> -->
                     </div>
                 </div>
             </div>
@@ -158,14 +158,14 @@
                     </div>
                     <div class="col-5 text-end">
                         <h5 class="m-b-5">$30200</h5>
-                        <p class="text-warn-500 m-b-0"><i class="ti ti-arrow-up-right"></i> 30.6%</p>
+                        <!-- <p class="text-warn-500 m-b-0"><i class="ti ti-arrow-up-right"></i> 30.6%</p> -->
                     </div>
                 </div>
             </div>
         </app-card>
     </div>
-    <div class="col-lg-9">
-        <app-card cardTitle="Monthly Revenue">
+    <div class="col-lg-12 my-2">
+        <app-card cardTitle="Monthly Subscription">
             <apx-chart [chart]="monthlyRevenueChart.chart!" [colors]="monthlyColor" [fill]="monthlyRevenueChart.fill!"
                 [dataLabels]="monthlyRevenueChart.dataLabels!" [stroke]="monthlyRevenueChart.stroke!"
                 [plotOptions]="monthlyRevenueChart.plotOptions!" [grid]="monthlyRevenueChart.grid!"
@@ -173,7 +173,7 @@
             </apx-chart>
         </app-card>
     </div>
-    <div class="col-lg-3">
+    <!-- <div class="col-lg-3 my-3">
         <app-card cardTitle="Project - Able Pro">
             <div class="m-b-25">
                 <p class="m-b-10">Tasks done <span class="float-end">30%</span></p>
@@ -215,8 +215,8 @@
                 </div>
             </div>
         </app-card>
-    </div>
-    <div class="col-lg-9">
+    </div> -->
+    <div class="col-lg-12 my-3">
         <app-card [showHeader]="false">
             <div class="flex align-item-center justify-content-between">
                 <h5 class="m-b-0 customer-report">Project overview</h5>
@@ -232,7 +232,7 @@
                     <div class="m-t-15 row align-item-center">
                         <div class="col-6">
                             <p class="text-muted m-b-5">Total Tasks</p>
-                            <h5 class="m-b-0">34,686</h5>
+                            <h5 class="m-b-0">{{totalTasks}}</h5>
                         </div>
                         <div class="col-6">
                             <apx-chart [series]="totalTasksChart.series!" [chart]="totalTasksChart.chart!"
@@ -246,7 +246,7 @@
                     <div class="m-t-15 row align-item-center">
                         <div class="col-6">
                             <p class="text-muted m-b-5">Pending Tasks</p>
-                            <h5 class="m-b-0">3,786</h5>
+                            <h5 class="m-b-0">{{pendingTasks.length}}</h5>
                         </div>
                         <div class="col-6">
                             <apx-chart [series]="pendingTasksChart.series!" [chart]="pendingTasksChart.chart!"
@@ -256,12 +256,12 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-6 col-xl-4">
+                <!-- <div class="col-md-6 col-xl-4">
                     <div class="m-t-15 grid">
                         <button mat-flat-button class="b-rad-20" color="primary"><i class="ti ti-plus"></i> Add
                             project</button>
                     </div>
-                </div>
+                </div> -->
             </div>
         </app-card>
     </div>
@@ -294,44 +294,250 @@
             </div>
         </app-card>
     </div> -->
-    <div class="col-md-6">
-        <app-card cardTitle="Transaction" headerClass="transaction-card-header" actionClass="card-action block"
-            [padding]="0">
+    <div class="col-md-12">
+        <app-card cardTitle="Tasks" headerClass="transaction-card-header" actionClass="card-action block" [padding]="0">
             <ng-template #headerOptionsTemplate>
                 <a [matMenuTriggerFor]="menu" class="avatar avatar-s hover"><i class="ti ti-dots-vertical f-18"></i></a>
             </ng-template>
-            <mat-tab-group mat-stretch-tabs="false" class="transactions" mat-align-tabs="start">
-                <mat-tab label="All Tasks">
-                    <ng-container *ngTemplateOutlet="Transaction"></ng-container>
-                </mat-tab>
-                <mat-tab label="Success">
-                    <ng-container *ngTemplateOutlet="Transaction"></ng-container>
+
+            <mat-tab-group [(selectedIndex)]="selectedTabIndex" (selectedIndexChange)="onTabChange($event)"
+                mat-stretch-tabs="false" class="transactions" mat-align-tabs="start">
+                <mat-tab label="All Tasks" *ngIf="isAdmin">
+                    <div class="p-3" >
+                        <form [formGroup]="taskForm" (ngSubmit)="createTask()" class="mb-3">
+                            <div class="row g-2">
+                                <div class="col-md-8">
+                                    <mat-form-field appearance="outline" class="w-100">
+                                        <mat-label>Task Description</mat-label>
+                                        <input matInput formControlName="taskDescription" required>
+                                        <mat-error *ngIf="taskForm.get('taskDescription')?.hasError('required')">
+                                            Description is required
+                                        </mat-error>
+                                    </mat-form-field>
+                                </div>
+                                <div class="col-md-4">
+                                    <button mat-flat-button color="primary" class="w-100" type="submit">
+                                        Add Task
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="row g-2 mb-3">
+                                <div class="col-12">
+                                    <h6>Assign to Roles:</h6>
+                                    @for (role of roles; track role.id) {
+                                    <mat-checkbox (change)="toggleRoleSelection(role.id)"
+                                        [checked]="selectedRoles.includes(role.id)">
+                                        {{role.name}}
+                                    </mat-checkbox>
+                                    }
+                                </div>
+                            </div>
+                        </form>
+
+                        <div class="table-responsive">
+                            <table mat-table [dataSource]="dataSource" matSort class="w-100">
+                                <!-- Task ID Column -->
+                                <ng-container matColumnDef="taskId">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
+                                    <td mat-cell *matCellDef="let task">{{task.taskId}}</td>
+                                </ng-container>
+
+                                <!-- Description Column -->
+                                <ng-container matColumnDef="taskDescription">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Description</th>
+                                    <td mat-cell *matCellDef="let task">{{task.taskDescription}}</td>
+                                </ng-container>
+
+                                <!-- Role Column -->
+                                <ng-container matColumnDef="roleId">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Role</th>
+                                    <td mat-cell *matCellDef="let task">
+                                        {{getRoleName(task.roleId)}}
+                                    </td>
+                                </ng-container>
+
+                                <!-- Created At Column -->
+                                <ng-container matColumnDef="createdAt">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Created</th>
+                                    <td mat-cell *matCellDef="let task">
+                                        {{task.createdAt | date:'short'}}
+                                    </td>
+                                </ng-container>
+
+                                <!-- Status Column -->
+                                <ng-container matColumnDef="isCompleted">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
+                                    <td mat-cell *matCellDef="let task">
+                                        <mat-slide-toggle [checked]="task.isCompleted"
+                                            (change)="toggleTaskCompletion(task)">
+                                            {{task.isCompleted ? 'Completed' : 'Pending'}}
+                                        </mat-slide-toggle>
+                                    </td>
+                                </ng-container>
+
+                                <!-- Actions Column -->
+                                <ng-container matColumnDef="actions" *ngIf="isAdmin">
+                                    <th mat-header-cell *matHeaderCellDef>Actions</th>
+                                    <td mat-cell *matCellDef="let task">
+                                        <button mat-icon-button color="warn"  (click)="deleteTask(task.taskId)">
+                                            <mat-icon style="color: red;">delete</mat-icon>
+                                        </button>
+                                    </td>
+                                </ng-container>
+
+                                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                            </table>
+
+                            <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
+                        </div>
+                    </div>
                 </mat-tab>
                 <mat-tab label="Pending">
-                    <ng-container *ngTemplateOutlet="Transaction"></ng-container>
+                    <div class="p-3">
+                        <div *ngIf="pendingTasks.length === 0" class="text-center p-4">
+                            <mat-icon class="text-warn-500" style="font-size: 48px; height: 48px; width: 48px;">
+                                pending_actions
+                            </mat-icon>
+                            <h4 class="m-t-15">No pending tasks</h4>
+                            <p class="text-muted">All caught up! Add new tasks to get started</p>
+                        </div>
+                
+                        <div *ngIf="pendingTasks.length > 0" class="table-responsive">
+                            <table mat-table [dataSource]="dataSource" matSort class="w-100">
+                                <!-- Task ID Column -->
+                                <ng-container matColumnDef="taskId">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
+                                    <td mat-cell *matCellDef="let task">{{task.taskId}}</td>
+                                </ng-container>
+                
+                                <!-- Description Column -->
+                                <ng-container matColumnDef="taskDescription">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Description</th>
+                                    <td mat-cell *matCellDef="let task">{{task.taskDescription}}</td>
+                                </ng-container>
+                
+                                <!-- Role Column -->
+                                <ng-container matColumnDef="roleId">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Role</th>
+                                    <td mat-cell *matCellDef="let task">
+                                        {{getRoleName(task.roleId)}}
+                                    </td>
+                                </ng-container>
+                
+                                <!-- Created At Column -->
+                                <ng-container matColumnDef="createdAt">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Created</th>
+                                    <td mat-cell *matCellDef="let task">
+                                        {{task.createdAt | date:'short'}}
+                                    </td>
+                                </ng-container>
+                
+                                <!-- Status Column -->
+                                <ng-container matColumnDef="isCompleted">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
+                                    <td mat-cell *matCellDef="let task">
+                                        <mat-slide-toggle [checked]="task.isCompleted" (change)="toggleTaskCompletion(task)">
+                                            {{task.isCompleted ? 'Completed' : 'Pending'}}
+                                        </mat-slide-toggle>
+                                    </td>
+                                </ng-container>
+                
+                                <!-- Actions Column -->
+                                <ng-container matColumnDef="actions">
+                                    <th mat-header-cell *matHeaderCellDef>Actions</th>
+                                    <td mat-cell *matCellDef="let task">
+                                        <button mat-icon-button color="warn" (click)="deleteTask(task.taskId)">
+                                            <mat-icon style="color: red;">delete</mat-icon>
+                                        </button>
+                                    </td>
+                                </ng-container>
+                
+                                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                            </table>
+                
+                            <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
+                        </div>
+                    </div>
                 </mat-tab>
+                <mat-tab label="Completed" >
+                    <div class="p-3" >
+                        <div *ngIf="completedTasks.length === 0" class="text-center p-4">
+                            <mat-icon class="text-success-500" style="font-size: 48px; height: 48px; width: 48px;">
+                                check_circle
+                            </mat-icon>
+                            <h4 class="m-t-15">No completed tasks yet</h4>
+                            <p class="text-muted">Tasks you mark as complete will appear here</p>
+                        </div>
+
+                        <div *ngIf="completedTasks.length > 0" class="table-responsive" >
+                            <table mat-table [dataSource]="dataSource" matSort class="w-100"  >
+                                <!-- Task ID Column -->
+                                <ng-container matColumnDef="taskId" >
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
+                                    <td mat-cell *matCellDef="let task">{{task.taskId}}</td>
+                                </ng-container>
+
+                                <!-- Description Column -->
+                                <ng-container matColumnDef="taskDescription">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Description</th>
+                                    <td mat-cell *matCellDef="let task">{{task.taskDescription}}</td>
+                                </ng-container>
+
+                                <!-- Role Column -->
+                                <ng-container matColumnDef="roleId">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Role</th>
+                                    <td mat-cell *matCellDef="let task">
+                                        {{getRoleName(task.roleId)}}
+                                    </td>
+                                </ng-container>
+
+                                <!-- Created At Column -->
+                                <ng-container matColumnDef="createdAt">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Created</th>
+                                    <td mat-cell *matCellDef="let task">
+                                        {{task.createdAt | date:'short'}}
+                                    </td>
+                                </ng-container>
+
+                                <!-- Status Column -->
+                                <ng-container matColumnDef="isCompleted">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
+                                    <td mat-cell *matCellDef="let task" style="color: rgb(78, 177, 78);">
+                                        Completed
+                                        <!-- <mat-slide-toggle [checked]="task.isCompleted"
+                                            (change)="toggleTaskCompletion(task)">
+                                            {{task.isCompleted ? 'Completed' : 'Pending'}}
+                                        </mat-slide-toggle> -->
+                                    </td>
+                                </ng-container>
+
+                                <!-- Actions Column -->
+                                <ng-container matColumnDef="actions">
+                                    <th mat-header-cell *matHeaderCellDef>Actions</th>
+                                    <td mat-cell *matCellDef="let task">
+                                        <button mat-icon-button color="warn" (click)="deleteTask(task.taskId)">
+                                            <mat-icon style="color: red;">delete</mat-icon>
+                                        </button>
+                                    </td>
+                                </ng-container>
+
+                                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                            </table>
+
+                            <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
+                        </div>
+                    </div>
+                </mat-tab>
+
+              
             </mat-tab-group>
-            <ng-template #actionTemplate>
-                <div class="row g-2">
-                    <div class="col-lg-6 m-t-10">
-                        <div class="grid">
-                            <button class="grid b-rad-20" mat-stroked-button><span class="text-truncate w-100">View all
-                                    Tasks
-                                    History</span></button>
-                        </div>
-                    </div>
-                    <div class="col-lg-6 m-t-10">
-                        <div class="grid">
-                            <button class="grid b-rad-20" mat-flat-button color="primary"><span
-                                    class="text-truncate w-100">Create new
-                                    Task</span></button>
-                        </div>
-                    </div>
-                </div>
-            </ng-template>
         </app-card>
     </div>
-    <div class="col-md-6">
+    <div class="col-md-12 my-3">
         <app-card [showHeader]="false">
             <div class="flex align-item-center justify-content-between">
                 <h5 class="m-b-0">Total Income</h5>
@@ -342,7 +548,7 @@
                 [fill]="totalIncomeChart.fill!" [legend]="totalIncomeChart.legend!"
                 [responsive]="totalIncomeChart.responsive!" [dataLabels]="totalIncomeChart.dataLabels!">
             </apx-chart>
-            <div class="row g-3 m-t-15">
+            <!-- <div class="row g-3 m-t-15">
                 @for (task of income_card; track task) {
                 <div class="col-sm-6 m-t-15">
                     <div class="income-value">
@@ -360,7 +566,7 @@
                     </div>
                 </div>
                 }
-            </div>
+            </div> -->
         </app-card>
     </div>
 </div>
@@ -394,11 +600,11 @@
     </ul>
 </ng-template>
 
-<div class="container center">
+<!-- <div class="container center">
     <div>
         <app-pie-chart></app-pie-chart>
     </div>
     <div>
         <app-line-charts></app-line-charts>
     </div>
-</div>
+</div> -->
